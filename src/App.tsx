@@ -20,6 +20,8 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
+import AscendDropdown from './components/AscendDropdown/AscendDropdown'
+import TabNavigation from './components/TabNavigation/TabNavigation'
 
 // Form validation schema using Zod
 const formSchema = z.object({
@@ -50,11 +52,33 @@ const cities: CityOption[] = [
   { label: 'Mumbai', country: 'India', code: 'BOM' },
 ]
 
+// Sample data for Dropdowns
+const names = [
+  'Oliver Hansen',
+  'Van Henry',
+  'April Tucker',
+  'Ralph Hubbard',
+  'Omar Alexander',
+  'Carlos Abbott',
+  'Miriam Wagner',
+  'Bradley Wilkerson',
+  'Virginia Andrews',
+  'Kelly Snyder',
+]
+
 function App() {
   const count = useAppSelector((state) => state.counter.value)
   const dispatch = useAppDispatch()
   const [selectedCity, setSelectedCity] = useState<CityOption | null>(null)
   const [selectedCities, setSelectedCities] = useState<CityOption[]>([])
+  
+  // Dropdown states for different variants
+  const [defaultDropdown, setDefaultDropdown] = useState<string[]>([])
+  const [roundedDropdown, setRoundedDropdown] = useState<string[]>([])
+  const [squareDropdown, setSquareDropdown] = useState<string[]>([])
+  
+  // Tab Navigation state - persists across entire app
+  const [activeTab, setActiveTab] = useState<string>('experiments')
   
   const {
     register,
@@ -72,20 +96,28 @@ function App() {
   }
 
   return (
-    <Container maxWidth="lg" className="min-h-screen py-8">
-      <Box className="text-center mb-8">
-        <Typography 
-          variant="h2" 
-          component="h1" 
-          className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
-          sx={{ fontWeight: 'bold' }}
-        >
-          Hello World App
-        </Typography>
-        <Typography variant="h6" color="text.secondary">
-          Demonstrating Redux Toolkit, React Hook Form, Tailwind CSS & MUI
-        </Typography>
-      </Box>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      {/* Tab Navigation - Persistent across entire app */}
+      <TabNavigation 
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+      
+      {/* Main Content */}
+      <Container maxWidth="lg" className="min-h-screen py-8" sx={{ marginLeft: 0 }}>
+        <Box className="text-center mb-8">
+          <Typography 
+            variant="h2" 
+            component="h1" 
+            className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+            sx={{ fontWeight: 'bold' }}
+          >
+            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Page
+          </Typography>
+          <Typography variant="h6" color="text.secondary">
+            Tab Navigation: {activeTab} - Persists across entire app
+          </Typography>
+        </Box>
 
       <Box className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Redux Toolkit Demo */}
@@ -297,6 +329,135 @@ function App() {
           </Card>
         </Box>
 
+        {/* Ascend Dropdown Demo - Different Variants */}
+        <Box className="col-span-1 md:col-span-2">
+          <Card elevation={3}>
+            <CardContent>
+              <Typography variant="h5" gutterBottom className="mb-4">
+                Ascend Dropdown Component - 3 Variants
+              </Typography>
+              <Divider className="mb-4" />
+              
+              <Box className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Default Variant */}
+                <Box>
+                  <Typography variant="h6" className="mb-3 text-blue-600">
+                    Default Variant
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" className="mb-3">
+                    Standard border radius (8px) with checkboxes
+                  </Typography>
+                  <AscendDropdown
+                    label="Default Style"
+                    options={names}
+                    value={defaultDropdown}
+                    onChange={setDefaultDropdown}
+                    variant="default"
+                    width="100%"
+                  />
+                  {defaultDropdown.length > 0 && (
+                    <Box className="mt-3 p-2 bg-blue-50 rounded">
+                      <Typography variant="caption" color="text.secondary">
+                        Selected: {defaultDropdown.length}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Rounded Variant */}
+                <Box>
+                  <Typography variant="h6" className="mb-3 text-purple-600">
+                    Rounded Variant
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" className="mb-3">
+                    Round corners (16px) with checkboxes
+                  </Typography>
+                  <AscendDropdown
+                    label="Rounded Style"
+                    options={names}
+                    value={roundedDropdown}
+                    onChange={setRoundedDropdown}
+                    variant="rounded"
+                    width="100%"
+                  />
+                  {roundedDropdown.length > 0 && (
+                    <Box className="mt-3 p-2 bg-purple-50 rounded-xl">
+                      <Typography variant="caption" color="text.secondary">
+                        Selected: {roundedDropdown.length}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Square Variant */}
+                <Box>
+                  <Typography variant="h6" className="mb-3 text-green-600">
+                    Square Variant
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" className="mb-3">
+                    Minimal border radius (4px) with checkboxes
+                  </Typography>
+                  <AscendDropdown
+                    label="Square Style"
+                    options={names}
+                    value={squareDropdown}
+                    onChange={setSquareDropdown}
+                    variant="square"
+                    width="100%"
+                  />
+                  {squareDropdown.length > 0 && (
+                    <Box className="mt-3 p-2 bg-green-50 rounded-sm">
+                      <Typography variant="caption" color="text.secondary">
+                        Selected: {squareDropdown.length}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+
+              <Divider className="my-6" />
+              
+              {/* Show Count Feature */}
+              <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <Box>
+                  <Typography variant="h6" className="mb-3 text-teal-600">
+                    Show Count Feature
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" className="mb-3">
+                    Display "Label (2)" format instead of showing all selected values
+                  </Typography>
+                  <AscendDropdown
+                    label="Status"
+                    options={names}
+                    value={defaultDropdown}
+                    onChange={setDefaultDropdown}
+                    variant="rounded"
+                    width="100%"
+                    showCount={true}
+                  />
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" className="mb-3 text-orange-600">
+                    Custom Border Radius
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" className="mb-3">
+                    You can pass a custom borderRadius prop for complete control
+                  </Typography>
+                  <AscendDropdown
+                    label="Custom 24px Radius"
+                    options={names}
+                    value={roundedDropdown}
+                    onChange={setRoundedDropdown}
+                    borderRadius="24px"
+                    width="100%"
+                  />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+
         {/* Tailwind CSS Demo */}
         <Box className="col-span-1 md:col-span-2">
           <Paper elevation={3} className="p-6">
@@ -333,7 +494,8 @@ function App() {
           </Paper>
         </Box>
       </Box>
-    </Container>
+      </Container>
+    </Box>
   )
 }
 
