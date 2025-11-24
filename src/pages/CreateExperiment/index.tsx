@@ -1,83 +1,85 @@
-import { Box, IconButton, Typography } from '@mui/material'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
-import { useNavigate } from 'react-router'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useEffect } from 'react'
-import AscendTextFieldControlled from '../../components/AscendTextField/AscendTextFieldControlled'
+import { Box, IconButton, Typography } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useEffect } from "react";
+import AscendTextFieldControlled from "../../components/AscendTextField/AscendTextFieldControlled";
 
 // Form validation schema
 const experimentSchema = z.object({
-  experimentName: z.string().min(1, 'Experiment name is required'),
-  experimentId: z.string().min(1, 'Experiment ID is required'),
-  hypothesis: z.string().min(1, 'Hypothesis is required').max(120, 'Maximum 120 characters allowed'),
-  description: z.string().max(300, 'Maximum 300 characters allowed').optional(),
+  experimentName: z.string().min(1, "Experiment name is required"),
+  experimentId: z.string().min(1, "Experiment ID is required"),
+  hypothesis: z
+    .string()
+    .min(1, "Hypothesis is required")
+    .max(120, "Maximum 120 characters allowed"),
+  description: z.string().max(300, "Maximum 300 characters allowed").optional(),
   rateLimit: z.string().optional(),
   maxUsers: z.string().optional(),
-})
+});
 
-type ExperimentFormData = z.infer<typeof experimentSchema>
+type ExperimentFormData = z.infer<typeof experimentSchema>;
 
 const CreateExperiment = () => {
-  const navigate = useNavigate()
-  
-  const {
-    control,
-    watch,
-  } = useForm<ExperimentFormData>({
+  const navigate = useNavigate();
+
+  const { control, watch } = useForm<ExperimentFormData>({
     resolver: zodResolver(experimentSchema),
-    mode: 'onChange', // Validate on every change
+    mode: "onChange", // Validate on every change
     defaultValues: {
-      experimentName: 'IPL 2024 Experiment',
-      experimentId: 'IPL-2024-Experiment',
-      hypothesis: 'The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit',
-      description: 'The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.',
-      rateLimit: '100%',
-      maxUsers: '',
+      experimentName: "IPL 2024 Experiment",
+      experimentId: "IPL-2024-Experiment",
+      hypothesis:
+        "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
+      description:
+        "The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.",
+      rateLimit: "100%",
+      maxUsers: "",
     },
-  })
+  });
 
   // Watch all form values and log changes
-  const formValues = watch()
-  
+  const formValues = watch();
+
   useEffect(() => {
-    console.log('Form values changed:', formValues)
-  }, [formValues])
+    console.log("Form values changed:", formValues);
+  }, [formValues]);
 
   const handleBack = () => {
-    navigate(-1) // Go back to previous page
-  }
+    navigate(-1); // Go back to previous page
+  };
 
   return (
     <Box>
       {/* Header with back button */}
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
           gap: 2,
           padding: 2,
-          borderBottom: '1px solid',
-          borderColor: 'divider',
+          borderBottom: "1px solid",
+          borderColor: "divider",
         }}
       >
         <IconButton onClick={handleBack} aria-label="go back">
-          <ArrowBackIcon 
-            sx={{ 
-              color: '#595959',
-              fontSize: '1rem'
-            }} 
+          <ArrowBackIcon
+            sx={{
+              color: "#595959",
+              fontSize: "1rem",
+            }}
           />
         </IconButton>
-        <Typography 
-          component="h1" 
-          sx={{ 
-            fontFamily: 'Inter',
+        <Typography
+          component="h1"
+          sx={{
+            fontFamily: "Inter",
             fontWeight: 600,
-            fontSize: '1rem', // 16px
-            color: '#333333'
+            fontSize: "1rem", // 16px
+            color: "#333333",
           }}
         >
           New Experiment
@@ -88,35 +90,35 @@ const CreateExperiment = () => {
       <Box sx={{ padding: 3 }}>
         <Box
           sx={{
-            padding: '1.5rem', // 24px
-            border: '1px solid',
-            borderColor: '#DADADD',
-            borderRadius: '0.5rem' // 8px
+            padding: "1.5rem", // 24px
+            border: "1px solid",
+            borderColor: "#DADADD",
+            borderRadius: "0.5rem", // 8px
           }}
         >
           {/* Section Header */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
             <Typography
               sx={{
-                fontFamily: 'Inter',
+                fontFamily: "Inter",
                 fontWeight: 600,
-                fontSize: '1rem', // 16px
-                color: '#333333'
+                fontSize: "1rem", // 16px
+                color: "#333333",
               }}
             >
               Experiment Details
             </Typography>
             <InfoOutlinedIcon
               sx={{
-                width: '1rem', // 8px
-                height: '1rem', // 8px
-                color: '#DADADA'
+                width: "1rem", // 8px
+                height: "1rem", // 8px
+                color: "#DADADA",
               }}
             />
           </Box>
 
           {/* Input Fields */}
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: "flex", gap: 2 }}>
             <AscendTextFieldControlled
               name="experimentName"
               control={control}
@@ -134,7 +136,7 @@ const CreateExperiment = () => {
           </Box>
 
           {/* Hypothesis Field */}
-          <Box sx={{ mt: '1.5rem' }}>
+          <Box sx={{ mt: "1.5rem" }}>
             <AscendTextFieldControlled
               name="hypothesis"
               control={control}
@@ -145,13 +147,13 @@ const CreateExperiment = () => {
           </Box>
 
           {/* Description Field */}
-          <Box sx={{ mt: '1.5rem' }}>
+          <Box sx={{ mt: "1.5rem" }}>
             <AscendTextFieldControlled
               name="description"
               control={control}
               label="Description (optional)"
               placeholder="Enter description"
-              height='120px'
+              height="120px"
             />
           </Box>
         </Box>
@@ -159,30 +161,30 @@ const CreateExperiment = () => {
         {/* Variants and Targeting Section */}
         <Box
           sx={{
-            padding: '1.5rem', // 24px
-            border: '1px solid',
-            borderColor: '#DADADD',
-            borderRadius: '0.5rem', // 8px
-            mt: '1.5rem' // 24px gap from previous box
+            padding: "1.5rem", // 24px
+            border: "1px solid",
+            borderColor: "#DADADD",
+            borderRadius: "0.5rem", // 8px
+            mt: "1.5rem", // 24px gap from previous box
           }}
         >
           {/* Section Header */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
             <Typography
               sx={{
-                fontFamily: 'Inter',
+                fontFamily: "Inter",
                 fontWeight: 600,
-                fontSize: '1rem', // 16px
-                color: '#333333'
+                fontSize: "1rem", // 16px
+                color: "#333333",
               }}
             >
               Variants and Targeting
             </Typography>
             <InfoOutlinedIcon
               sx={{
-                width: '1rem',
-                height: '1rem',
-                color: '#DADADA'
+                width: "1rem",
+                height: "1rem",
+                color: "#DADADA",
               }}
             />
           </Box>
@@ -193,30 +195,30 @@ const CreateExperiment = () => {
         {/* Advance Configuration Section */}
         <Box
           sx={{
-            padding: '1.5rem', // 24px
-            border: '1px solid',
-            borderColor: '#DADADD',
-            borderRadius: '0.5rem', // 8px
-            mt: '1.5rem' // 24px gap from previous box
+            padding: "1.5rem", // 24px
+            border: "1px solid",
+            borderColor: "#DADADD",
+            borderRadius: "0.5rem", // 8px
+            mt: "1.5rem", // 24px gap from previous box
           }}
         >
           {/* Section Header */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
             <Typography
               sx={{
-                fontFamily: 'Inter',
+                fontFamily: "Inter",
                 fontWeight: 600,
-                fontSize: '1rem', // 16px
-                color: '#333333'
+                fontSize: "1rem", // 16px
+                color: "#333333",
               }}
             >
               Advance Configuration
             </Typography>
             <InfoOutlinedIcon
               sx={{
-                width: '1rem',
-                height: '1rem',
-                color: '#DADADA'
+                width: "1rem",
+                height: "1rem",
+                color: "#DADADA",
               }}
             />
           </Box>
@@ -234,7 +236,7 @@ const CreateExperiment = () => {
           </Box>
 
           {/* Maximum Users Field */}
-          <Box sx={{ mt: '1.5rem' }}>
+          <Box sx={{ mt: "1.5rem" }}>
             <AscendTextFieldControlled
               name="maxUsers"
               control={control}
@@ -247,7 +249,7 @@ const CreateExperiment = () => {
         </Box>
       </Box>
     </Box>
-  )
-}
+  );
+};
 
-export default CreateExperiment
+export default CreateExperiment;

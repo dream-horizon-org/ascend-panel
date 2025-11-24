@@ -1,9 +1,7 @@
 import { FC, ReactNode } from "react";
 import TextField, { TextFieldProps } from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
-import { Search as SearchIcon } from '@mui/icons-material';
-
-
+import { Search as SearchIcon } from "@mui/icons-material";
 
 type AscendSearchbarProps = TextFieldProps & {
   startIcon?: ReactNode | null;
@@ -24,9 +22,8 @@ const AscendSearchbar: FC<AscendSearchbarProps> = ({
   InputProps,
   ...props
 }) => {
-  const iconToShow = startIcon !== undefined 
-    ? startIcon 
-    : (showIcon ? <SearchIcon /> : null);
+  const iconToShow =
+    startIcon !== undefined ? startIcon : showIcon ? <SearchIcon /> : null;
 
   return (
     <TextField
@@ -37,10 +34,10 @@ const AscendSearchbar: FC<AscendSearchbarProps> = ({
       InputProps={{
         ...InputProps,
         startAdornment: iconToShow ? (
-          <InputAdornment position="start">
-            {iconToShow}
-          </InputAdornment>
-        ) : InputProps?.startAdornment,
+          <InputAdornment position="start">{iconToShow}</InputAdornment>
+        ) : (
+          InputProps?.startAdornment
+        ),
       }}
       {...props}
     />
@@ -48,4 +45,3 @@ const AscendSearchbar: FC<AscendSearchbarProps> = ({
 };
 
 export default AscendSearchbar;
-

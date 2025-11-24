@@ -1,10 +1,15 @@
-import { ReactElement } from 'react';
-import Autocomplete, { AutocompleteProps } from '@mui/material/Autocomplete';
-import AscendTextField from '../AscendTextField/AscendTextField';
+import { ReactElement } from "react";
+import Autocomplete, { AutocompleteProps } from "@mui/material/Autocomplete";
+import AscendTextField from "../AscendTextField/AscendTextField";
 
 type AscendAutoCompleteProps<T> = Omit<
-  AutocompleteProps<T, boolean | undefined, boolean | undefined, boolean | undefined>,
-  'renderInput'
+  AutocompleteProps<
+    T,
+    boolean | undefined,
+    boolean | undefined,
+    boolean | undefined
+  >,
+  "renderInput"
 > & {
   label: string;
   infoText?: string;

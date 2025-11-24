@@ -1,7 +1,7 @@
 import { FC, ReactNode } from "react";
 import Button, { ButtonProps } from "@mui/material/Button";
 
-type AscendButtonProps = Omit<ButtonProps, 'startIcon' | 'endIcon'> & {
+type AscendButtonProps = Omit<ButtonProps, "startIcon" | "endIcon"> & {
   startIcon?: ReactNode;
   endIcon?: ReactNode;
   children: ReactNode;
@@ -37,4 +37,3 @@ const AscendButton: FC<AscendButtonProps> = ({
 };
 
 export default AscendButton;
-
