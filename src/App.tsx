@@ -20,6 +20,7 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
+import AscendPaper from './components/AscendPaper/AscendPaper'
 
 // Form validation schema using Zod
 const formSchema = z.object({
@@ -296,6 +297,14 @@ function App() {
             </CardContent>
           </Card>
         </Box>
+
+        {/* AscendPaper Component Demo */}
+          <AscendPaper elevation={2} className="p-6">
+            <Typography variant="h5" gutterBottom className="mb-4">
+              AscendPaper Component with List Items
+            </Typography>
+          </AscendPaper>
+        
 
         {/* Tailwind CSS Demo */}
         <Box className="col-span-1 md:col-span-2">
