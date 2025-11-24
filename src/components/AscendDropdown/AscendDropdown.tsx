@@ -25,13 +25,14 @@ type DropdownVariant = 'default' | 'rounded' | 'square';
 interface AscendDropdownProps {
   label: string;
   options: string[];
-  value: string[];
-  onChange: (value: string[]) => void;
+  value: string[] | string;
+  onChange: (value: string[] | string) => void;
   variant?: DropdownVariant;
   borderRadius?: string | number;
   width?: string | number;
   showCheckbox?: boolean;
   showCount?: boolean;
+  multiple?: boolean;
   sx?: SxProps<Theme>;
 }
 
@@ -45,6 +46,7 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
   width = 300,
   showCheckbox = true,
   showCount = false,
+  multiple = true,
   sx = {},
 }) => {
   // Determine border radius based on variant
@@ -68,20 +70,31 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
     const {
       target: { value: newValue },
     } = event;
-    onChange(
-      typeof newValue === 'string' ? newValue.split(',') : newValue
-    );
+    
+    if (multiple) {
+      onChange(
+        typeof newValue === 'string' ? newValue.split(',') : newValue
+      );
+    } else {
+      onChange(newValue as string);
+    }
   };
 
   const computedBorderRadius = getBorderRadius();
-  const hasSelectedItems = value.length > 0;
+  const hasSelectedItems = multiple 
+    ? (value as string[]).length > 0 
+    : value !== '';
 
-  // Render value based on showCount prop
-  const renderDisplayValue = (selected: string[]) => {
-    if (showCount && selected.length > 0) {
-      return `${label} (${selected.length})`;
+  // Render value based on showCount prop and selection mode
+  const renderDisplayValue = (selected: string[] | string) => {
+    if (multiple) {
+      const selectedArray = selected as string[];
+      if (showCount && selectedArray.length > 0) {
+        return `${label} (${selectedArray.length})`;
+      }
+      return selectedArray.join(', ');
     }
-    return selected.join(', ');
+    return selected as string;
   };
 
   return (
@@ -108,7 +121,7 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
       <Select
         labelId={`${label}-label`}
         id={`${label}-select`}
-        multiple
+        multiple={multiple}
         value={value}
         onChange={handleChange}
         input={<OutlinedInput label="" notched={false} />}
@@ -131,7 +144,7 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
       >
         {options.map((option) => (
           <MenuItem key={option} value={option}>
-            {showCheckbox && <Checkbox checked={value.includes(option)} />}
+            {multiple && showCheckbox && <Checkbox checked={(value as string[]).includes(option)} />}
             <ListItemText primary={option} />
           </MenuItem>
         ))}

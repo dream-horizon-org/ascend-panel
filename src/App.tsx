@@ -76,6 +76,7 @@ function App() {
   const [defaultDropdown, setDefaultDropdown] = useState<string[]>([])
   const [roundedDropdown, setRoundedDropdown] = useState<string[]>([])
   const [squareDropdown, setSquareDropdown] = useState<string[]>([])
+  const [singleSelectDropdown, setSingleSelectDropdown] = useState<string>('')
   
   // Tab Navigation state - persists across entire app
   const [activeTab, setActiveTab] = useState<string>('experiments')
@@ -351,7 +352,7 @@ function App() {
                     label="Default Style"
                     options={names}
                     value={defaultDropdown}
-                    onChange={setDefaultDropdown}
+                    onChange={(val) => setDefaultDropdown(val as string[])}
                     variant="default"
                     width="100%"
                   />
@@ -376,7 +377,7 @@ function App() {
                     label="Rounded Style"
                     options={names}
                     value={roundedDropdown}
-                    onChange={setRoundedDropdown}
+                    onChange={(val) => setRoundedDropdown(val as string[])}
                     variant="rounded"
                     width="100%"
                   />
@@ -401,7 +402,7 @@ function App() {
                     label="Square Style"
                     options={names}
                     value={squareDropdown}
-                    onChange={setSquareDropdown}
+                    onChange={(val) => setSquareDropdown(val as string[])}
                     variant="square"
                     width="100%"
                   />
@@ -430,7 +431,7 @@ function App() {
                     label="Status"
                     options={names}
                     value={defaultDropdown}
-                    onChange={setDefaultDropdown}
+                    onChange={(val) => setDefaultDropdown(val as string[])}
                     variant="rounded"
                     width="100%"
                     showCount={true}
@@ -448,11 +449,39 @@ function App() {
                     label="Custom 24px Radius"
                     options={names}
                     value={roundedDropdown}
-                    onChange={setRoundedDropdown}
+                    onChange={(val) => setRoundedDropdown(val as string[])}
                     borderRadius="24px"
                     width="100%"
                   />
                 </Box>
+              </Box>
+
+              <Divider className="my-6" />
+
+              {/* Single Select Feature */}
+              <Box>
+                <Typography variant="h6" className="mb-3 text-indigo-600">
+                  Single Select Dropdown
+                </Typography>
+                <Typography variant="body2" color="text.secondary" className="mb-3">
+                  Select only one item and dropdown closes automatically after selection
+                </Typography>
+                <AscendDropdown
+                  label="Select Person"
+                  options={names}
+                  value={singleSelectDropdown}
+                  onChange={(val) => setSingleSelectDropdown(val as string)}
+                  variant="rounded"
+                  width={400}
+                  multiple={false}
+                />
+                {singleSelectDropdown && (
+                  <Box className="mt-3 p-2 bg-indigo-50 rounded">
+                    <Typography variant="caption" color="text.secondary">
+                      Selected: <strong>{singleSelectDropdown}</strong>
+                    </Typography>
+                  </Box>
+                )}
               </Box>
             </CardContent>
           </Card>
