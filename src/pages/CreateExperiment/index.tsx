@@ -2,10 +2,49 @@ import { Box, IconButton, Typography } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import { useNavigate } from 'react-router'
-import AscendTextField from '../../components/AscendTextField/AscendTextField'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useEffect } from 'react'
+import AscendTextFieldControlled from '../../components/AscendTextField/AscendTextFieldControlled'
+
+// Form validation schema
+const experimentSchema = z.object({
+  experimentName: z.string().min(1, 'Experiment name is required'),
+  experimentId: z.string().min(1, 'Experiment ID is required'),
+  hypothesis: z.string().min(1, 'Hypothesis is required').max(120, 'Maximum 120 characters allowed'),
+  description: z.string().max(300, 'Maximum 300 characters allowed').optional(),
+  rateLimit: z.string().optional(),
+  maxUsers: z.string().optional(),
+})
+
+type ExperimentFormData = z.infer<typeof experimentSchema>
 
 const CreateExperiment = () => {
   const navigate = useNavigate()
+  
+  const {
+    control,
+    watch,
+  } = useForm<ExperimentFormData>({
+    resolver: zodResolver(experimentSchema),
+    mode: 'onChange', // Validate on every change
+    defaultValues: {
+      experimentName: 'IPL 2024 Experiment',
+      experimentId: 'IPL-2024-Experiment',
+      hypothesis: 'The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit',
+      description: 'The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.',
+      rateLimit: '100%',
+      maxUsers: '',
+    },
+  })
+
+  // Watch all form values and log changes
+  const formValues = watch()
+  
+  useEffect(() => {
+    console.log('Form values changed:', formValues)
+  }, [formValues])
 
   const handleBack = () => {
     navigate(-1) // Go back to previous page
@@ -78,38 +117,41 @@ const CreateExperiment = () => {
 
           {/* Input Fields */}
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <AscendTextField
+            <AscendTextFieldControlled
+              name="experimentName"
+              control={control}
               label="Experiment Name"
               placeholder="Enter Experiment Name"
-              value={'IPL 2024 Experiment'}
               infoText="Provide a unique name for your experiment"
             />
-            <AscendTextField
+            <AscendTextFieldControlled
+              name="experimentId"
+              control={control}
               label="Experiment ID"
               placeholder="Enter experiment id"
-              value={'IPL-2024-Experiment'}
               infoText="Unique identifier for the experiment"
             />
           </Box>
 
           {/* Hypothesis Field */}
           <Box sx={{ mt: '1.5rem' }}>
-            <AscendTextField
+            <AscendTextFieldControlled
+              name="hypothesis"
+              control={control}
               label="Hypothesis"
               placeholder="Enter hypothesis"
               infoText="Describe the hypothesis for this experiment"
-              value={'The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit'}
-              
             />
           </Box>
 
           {/* Description Field */}
           <Box sx={{ mt: '1.5rem' }}>
-            <AscendTextField
+            <AscendTextFieldControlled
+              name="description"
+              control={control}
               label="Description (optional)"
               placeholder="Enter description"
               height='120px'
-              value={'The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.'}
             />
           </Box>
         </Box>
@@ -181,18 +223,21 @@ const CreateExperiment = () => {
 
           {/* Rate Limiting Field */}
           <Box>
-            <AscendTextField
+            <AscendTextFieldControlled
+              name="rateLimit"
+              control={control}
               label="Rate Limiting (optional)"
               placeholder="Enter rate"
               infoText="Set the maximum rate limit for this experiment"
               width="10%"
-              value={'100%'}
             />
           </Box>
 
           {/* Maximum Users Field */}
           <Box sx={{ mt: '1.5rem' }}>
-            <AscendTextField
+            <AscendTextFieldControlled
+              name="maxUsers"
+              control={control}
               label="Maximum Users (optional)"
               placeholder="######"
               infoText="Set the maximum number of users for this experiment"
