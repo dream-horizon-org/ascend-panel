@@ -214,6 +214,15 @@ export default function VariantsFlow() {
     {
       name: 'Variant 2',
       keyValues: [{ key: '', type: 'type', value: '' },
+        { key: 'color', type: 'string', value: 'blue' },
+        { key: 'size', type: 'number', value: '12' },
+        { key: 'enabled', type: 'boolean', value: 'true' },
+        { key: 'color', type: 'string', value: 'blue' },
+        { key: 'size', type: 'number', value: '12' },
+        { key: 'enabled', type: 'boolean', value: 'true' },
+        { key: 'color', type: 'string', value: 'blue' },
+        { key: 'size', type: 'number', value: '12' },
+        { key: 'enabled', type: 'boolean', value: 'true' },
       ]
     },
     {
