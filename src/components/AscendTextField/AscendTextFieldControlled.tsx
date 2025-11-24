@@ -1,8 +1,11 @@
-import { Control, Controller, FieldValues, Path } from 'react-hook-form';
-import AscendTextField from './AscendTextField';
-import { TextFieldProps } from '@mui/material/TextField';
+import { Control, Controller, FieldValues, Path } from "react-hook-form";
+import AscendTextField from "./AscendTextField";
+import { TextFieldProps } from "@mui/material/TextField";
 
-type AscendTextFieldControlledProps<T extends FieldValues> = Omit<TextFieldProps, 'name'> & {
+type AscendTextFieldControlledProps<T extends FieldValues> = Omit<
+  TextFieldProps,
+  "name"
+> & {
   name: Path<T>;
   control: Control<T>;
   label: string;
@@ -11,7 +14,7 @@ type AscendTextFieldControlledProps<T extends FieldValues> = Omit<TextFieldProps
   className?: string;
   width?: string;
   height?: string;
-}
+};
 
 function AscendTextFieldControlled<T extends FieldValues>({
   name,
@@ -47,4 +50,3 @@ function AscendTextFieldControlled<T extends FieldValues>({
 }
 
 export default AscendTextFieldControlled;
-

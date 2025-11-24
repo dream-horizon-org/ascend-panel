@@ -4,7 +4,10 @@ import Tooltip from "@mui/material/Tooltip";
 import TextField, { TextFieldProps } from "@mui/material/TextField";
 import { useTheme } from "@mui/material/styles";
 
-type AscendTextFieldProps = Omit<TextFieldProps, 'label' | 'error' | 'helperText'> & {
+type AscendTextFieldProps = Omit<
+  TextFieldProps,
+  "label" | "error" | "helperText"
+> & {
   label: string;
   infoText?: string;
   required?: boolean;
@@ -13,7 +16,7 @@ type AscendTextFieldProps = Omit<TextFieldProps, 'label' | 'error' | 'helperText
   height?: string;
   error?: boolean;
   helperText?: React.ReactNode;
-}
+};
 
 const AscendTextField: FC<AscendTextFieldProps> = ({
   label,
@@ -30,11 +33,14 @@ const AscendTextField: FC<AscendTextFieldProps> = ({
   const styles = theme.customComponents.ascendTextField;
 
   return (
-    <div className={`flex flex-col ${width ? '' : 'w-full'} ${className}`} style={{ width }}>
+    <div
+      className={`flex flex-col ${width ? "" : "w-full"} ${className}`}
+      style={{ width }}
+    >
       <div className="flex items-center gap-1 mb-1">
-        <label 
+        <label
           className="leading-4 font-inter"
-          style={{ 
+          style={{
             fontSize: styles.label.fontSize,
             fontWeight: styles.label.fontWeight,
             color: styles.label.color,
@@ -47,8 +53,8 @@ const AscendTextField: FC<AscendTextFieldProps> = ({
         {infoText && (
           <Tooltip title={infoText} arrow>
             <InfoOutlinedIcon
-              sx={{ 
-                fontSize: styles.icon.fontSize, 
+              sx={{
+                fontSize: styles.icon.fontSize,
                 color: styles.icon.color,
               }}
               className="w-4 h-4 leading-[100%] cursor-pointer hover:opacity-80"
@@ -65,37 +71,37 @@ const AscendTextField: FC<AscendTextFieldProps> = ({
         helperText={helperText}
         {...props}
         sx={{
-          '& .MuiOutlinedInput-root': {
+          "& .MuiOutlinedInput-root": {
             borderRadius: styles.border.radius,
-            '& fieldset': {
+            "& fieldset": {
               borderColor: error ? undefined : styles.border.color,
             },
-            '&:hover fieldset': {
+            "&:hover fieldset": {
               borderColor: error ? undefined : styles.border.color,
             },
-            '&.Mui-focused fieldset': {
+            "&.Mui-focused fieldset": {
               borderColor: error ? undefined : styles.border.focusColor,
-              borderWidth: '1px',
+              borderWidth: "1px",
             },
-            '&.Mui-disabled': {
+            "&.Mui-disabled": {
               backgroundColor: styles.disabled.backgroundColor,
             },
             ...(height && {
               height: height,
-              alignItems: 'flex-start',
+              alignItems: "flex-start",
               padding: 0,
             }),
           },
-          '& .MuiOutlinedInput-input': {
+          "& .MuiOutlinedInput-input": {
             color: styles.input.textColor,
-            '&.Mui-disabled': {
+            "&.Mui-disabled": {
               color: styles.input.textColor,
               WebkitTextFillColor: styles.input.textColor,
             },
             ...(height && {
-              height: '100%',
-              padding: '8px 14px',
-              boxSizing: 'border-box',
+              height: "100%",
+              padding: "8px 14px",
+              boxSizing: "border-box",
             }),
           },
           ...props.sx,
