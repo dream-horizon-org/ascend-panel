@@ -2,6 +2,7 @@ import { FC } from "react";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import Tooltip from "@mui/material/Tooltip";
 import TextField, { TextFieldProps } from "@mui/material/TextField";
+import { useTheme } from "@mui/material/styles";
 
 type AscendTextFieldProps = TextFieldProps & {
   label: string;
@@ -21,10 +22,20 @@ const AscendTextField: FC<AscendTextFieldProps> = ({
   height,
   ...props
 }) => {
+  const theme = useTheme();
+  const styles = theme.customComponents.ascendTextField;
+
   return (
     <div className={`flex flex-col ${width ? '' : 'w-full'} ${className}`} style={{ width }}>
       <div className="flex items-center gap-1 mb-1">
-        <label className="text-[0.75rem] leading-4 font-normal font-inter text-[#828592]">
+        <label 
+          className="leading-4 font-inter"
+          style={{ 
+            fontSize: styles.label.fontSize,
+            fontWeight: styles.label.fontWeight,
+            color: styles.label.color,
+          }}
+        >
           {label}
           {required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
@@ -33,8 +44,8 @@ const AscendTextField: FC<AscendTextFieldProps> = ({
           <Tooltip title={infoText} arrow>
             <InfoOutlinedIcon
               sx={{ 
-                fontSize: '1rem', 
-                color: '#33343E',
+                fontSize: styles.icon.fontSize, 
+                color: styles.icon.color,
               }}
               className="w-4 h-4 leading-[100%] cursor-pointer hover:opacity-80"
             />
@@ -49,19 +60,19 @@ const AscendTextField: FC<AscendTextFieldProps> = ({
         {...props}
         sx={{
           '& .MuiOutlinedInput-root': {
-            borderRadius: '2px',
+            borderRadius: styles.border.radius,
             '& fieldset': {
-              borderColor: '#DADADD',
+              borderColor: styles.border.color,
             },
             '&:hover fieldset': {
-              borderColor: '#DADADD',
+              borderColor: styles.border.color,
             },
             '&.Mui-focused fieldset': {
-              borderColor: '#4A4B54',
+              borderColor: styles.border.focusColor,
               borderWidth: '1px',
             },
             '&.Mui-disabled': {
-              backgroundColor: '#e6e8f2',
+              backgroundColor: styles.disabled.backgroundColor,
             },
             ...(height && {
               height: height,
@@ -70,10 +81,10 @@ const AscendTextField: FC<AscendTextFieldProps> = ({
             }),
           },
           '& .MuiOutlinedInput-input': {
-            color: '#454854',
+            color: styles.input.textColor,
             '&.Mui-disabled': {
-              color: '#454854',
-              WebkitTextFillColor: '#454854',
+              color: styles.input.textColor,
+              WebkitTextFillColor: styles.input.textColor,
             },
             ...(height && {
               height: '100%',
