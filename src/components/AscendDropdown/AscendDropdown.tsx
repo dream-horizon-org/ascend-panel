@@ -6,6 +6,8 @@ import FormControl from '@mui/material/FormControl';
 import ListItemText from '@mui/material/ListItemText';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
+import Box from '@mui/material/Box';
 import { SxProps, Theme } from '@mui/material/styles';
 
 const ITEM_HEIGHT = 48;
@@ -33,6 +35,7 @@ interface AscendDropdownProps {
   showCheckbox?: boolean;
   showCount?: boolean;
   multiple?: boolean;
+  renderAsChips?: boolean;
   sx?: SxProps<Theme>;
 }
 
@@ -47,6 +50,7 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
   showCheckbox = true,
   showCount = false,
   multiple = true,
+  renderAsChips = false,
   sx = {},
 }) => {
   // Determine border radius based on variant
@@ -85,13 +89,55 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
     ? (value as string[]).length > 0 
     : value !== '';
 
+  // Handle chip deletion
+  const handleChipDelete = (event: React.MouseEvent, chipValue: string) => {
+    event.stopPropagation(); // Prevent dropdown from opening
+    if (multiple) {
+      const selectedArray = value as string[];
+      const newValue = selectedArray.filter((item) => item !== chipValue);
+      onChange(newValue);
+    }
+  };
+
   // Render value based on showCount prop and selection mode
   const renderDisplayValue = (selected: string[] | string) => {
     if (multiple) {
       const selectedArray = selected as string[];
+      
+      // Render as chips/tags
+      if (renderAsChips && selectedArray.length > 0) {
+        return (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            {selectedArray.map((value) => (
+              <Chip 
+                key={value} 
+                label={value} 
+                size="small"
+                onDelete={(e) => handleChipDelete(e, value)}
+                onMouseDown={(e) => e.stopPropagation()}
+                sx={{
+                  backgroundColor: '#e3f2fd',
+                  color: '#1976d2',
+                  fontWeight: 500,
+                  '& .MuiChip-deleteIcon': {
+                    color: '#1976d2',
+                    '&:hover': {
+                      color: '#1565c0',
+                    },
+                  },
+                }}
+              />
+            ))}
+          </Box>
+        );
+      }
+      
+      // Render as count
       if (showCount && selectedArray.length > 0) {
         return `${label} (${selectedArray.length})`;
       }
+      
+      // Render as comma-separated text
       return selectedArray.join(', ');
     }
     return selected as string;

@@ -77,6 +77,7 @@ function App() {
   const [roundedDropdown, setRoundedDropdown] = useState<string[]>([])
   const [squareDropdown, setSquareDropdown] = useState<string[]>([])
   const [singleSelectDropdown, setSingleSelectDropdown] = useState<string>('')
+  const [chipsDropdown, setChipsDropdown] = useState<string[]>([])
   
   // Tab Navigation state - persists across entire app
   const [activeTab, setActiveTab] = useState<string>('experiments')
@@ -459,29 +460,56 @@ function App() {
               <Divider className="my-6" />
 
               {/* Single Select Feature */}
-              <Box>
-                <Typography variant="h6" className="mb-3 text-indigo-600">
-                  Single Select Dropdown
-                </Typography>
-                <Typography variant="body2" color="text.secondary" className="mb-3">
-                  Select only one item and dropdown closes automatically after selection
-                </Typography>
-                <AscendDropdown
-                  label="Select Person"
-                  options={names}
-                  value={singleSelectDropdown}
-                  onChange={(val) => setSingleSelectDropdown(val as string)}
-                  variant="rounded"
-                  width={400}
-                  multiple={false}
-                />
-                {singleSelectDropdown && (
-                  <Box className="mt-3 p-2 bg-indigo-50 rounded">
-                    <Typography variant="caption" color="text.secondary">
-                      Selected: <strong>{singleSelectDropdown}</strong>
-                    </Typography>
-                  </Box>
-                )}
+              <Box className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Box>
+                  <Typography variant="h6" className="mb-3 text-indigo-600">
+                    Single Select Dropdown
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" className="mb-3">
+                    Select only one item and dropdown closes automatically after selection
+                  </Typography>
+                  <AscendDropdown
+                    label="Select Person"
+                    options={names}
+                    value={singleSelectDropdown}
+                    onChange={(val) => setSingleSelectDropdown(val as string)}
+                    variant="rounded"
+                    width="100%"
+                    multiple={false}
+                  />
+                  {singleSelectDropdown && (
+                    <Box className="mt-3 p-2 bg-indigo-50 rounded">
+                      <Typography variant="caption" color="text.secondary">
+                        Selected: <strong>{singleSelectDropdown}</strong>
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                <Box>
+                  <Typography variant="h6" className="mb-3 text-pink-600">
+                    Chips/Tags Display
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" className="mb-3">
+                    Selected items appear as chips/tags instead of comma-separated text
+                  </Typography>
+                  <AscendDropdown
+                    label="Select Tags"
+                    options={names}
+                    value={chipsDropdown}
+                    onChange={(val) => setChipsDropdown(val as string[])}
+                    variant="rounded"
+                    width="100%"
+                    renderAsChips={true}
+                  />
+                  {chipsDropdown.length > 0 && (
+                    <Box className="mt-3 p-2 bg-pink-50 rounded">
+                      <Typography variant="caption" color="text.secondary">
+                        Selected: {chipsDropdown.length} items
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
               </Box>
             </CardContent>
           </Card>
