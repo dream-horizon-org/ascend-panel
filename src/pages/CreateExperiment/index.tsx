@@ -1,12 +1,14 @@
-import { Box, IconButton, Typography } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import { useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useEffect } from "react";
-import AscendTextFieldControlled from "../../components/AscendTextField/AscendTextFieldControlled";
+
+import { Box, IconButton, Typography } from '@mui/material'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import { useNavigate } from 'react-router'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useEffect } from 'react'
+import AscendTextFieldControlled from '../../components/AscendTextField/AscendTextFieldControlled'
+import VariantsFlow from './components/VariantsFlow'
 
 // Form validation schema
 const experimentSchema = z.object({
@@ -189,7 +191,8 @@ const CreateExperiment = () => {
             />
           </Box>
 
-          {/* Content will go here */}
+          {/* Variants Flow */}
+          <VariantsFlow />
         </Box>
 
         {/* Advance Configuration Section */}
