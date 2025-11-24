@@ -4,13 +4,15 @@ import Tooltip from "@mui/material/Tooltip";
 import TextField, { TextFieldProps } from "@mui/material/TextField";
 import { useTheme } from "@mui/material/styles";
 
-type AscendTextFieldProps = TextFieldProps & {
+type AscendTextFieldProps = Omit<TextFieldProps, 'label' | 'error' | 'helperText'> & {
   label: string;
   infoText?: string;
   required?: boolean;
   className?: string;
   width?: string;
   height?: string;
+  error?: boolean;
+  helperText?: React.ReactNode;
 }
 
 const AscendTextField: FC<AscendTextFieldProps> = ({
@@ -20,6 +22,8 @@ const AscendTextField: FC<AscendTextFieldProps> = ({
   className = "",
   width,
   height,
+  error,
+  helperText,
   ...props
 }) => {
   const theme = useTheme();
@@ -57,18 +61,20 @@ const AscendTextField: FC<AscendTextFieldProps> = ({
         size="small"
         fullWidth
         multiline={height ? true : props.multiline}
+        error={error}
+        helperText={helperText}
         {...props}
         sx={{
           '& .MuiOutlinedInput-root': {
             borderRadius: styles.border.radius,
             '& fieldset': {
-              borderColor: styles.border.color,
+              borderColor: error ? undefined : styles.border.color,
             },
             '&:hover fieldset': {
-              borderColor: styles.border.color,
+              borderColor: error ? undefined : styles.border.color,
             },
             '&.Mui-focused fieldset': {
-              borderColor: styles.border.focusColor,
+              borderColor: error ? undefined : styles.border.focusColor,
               borderWidth: '1px',
             },
             '&.Mui-disabled': {
