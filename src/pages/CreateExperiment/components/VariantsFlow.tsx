@@ -72,6 +72,7 @@ const VariantNode = ({ data }: any) => {
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       <TextField
+        placeholder="Variant Name"
         size="small"
         value={data.name}
         onChange={(e) => data.onNameChange?.(e.target.value)}
@@ -114,7 +115,7 @@ const VariantNode = ({ data }: any) => {
           />
           
           {/* Show delete button only if more than one item */}
-          {keyValues.length > 1 ? (
+          {keyValues.length > 1 && (
             <IconButton 
               size="small" 
               sx={{ color: '#666666', width: 40, height: 40, flexShrink: 0 }}
@@ -122,8 +123,6 @@ const VariantNode = ({ data }: any) => {
             >
               <DeleteIcon fontSize="small" />
             </IconButton>
-          ) : (
-            <Box sx={{ width: 40, height: 40, flexShrink: 0 }} /> // Placeholder to maintain alignment
           )}
           
           {/* Only show add button for the last item */}
