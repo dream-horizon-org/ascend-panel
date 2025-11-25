@@ -5,7 +5,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Control, useFieldArray } from 'react-hook-form';
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 
 // Custom node for Targeting
 const TargetingNode = ({ data }: any) => {
@@ -185,6 +185,9 @@ interface VariantsFlowProps {
 }
 
 export default function VariantsFlow({ control }: VariantsFlowProps) {
+  // Track if traffic splits have been manually edited
+  const [isTrafficEdited, setIsTrafficEdited] = useState(false);
+  
   // Use field arrays for proper react-hook-form management
   const { fields: variantFields, append: appendVariant, update: updateVariant } = useFieldArray({
     control,
@@ -197,9 +200,86 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     keyValues: v.keyValues
   })), [variantFields]);
   
+  // Function to redistribute traffic equally among all variants
+  const redistributeEqually = useCallback((totalVariants: number) => {
+    const equalSplit = Math.floor(100 / totalVariants);
+    const remainder = 100 % totalVariants;
+    
+    for (let i = 0; i < totalVariants; i++) {
+      const currentVariant: any = variantFields[i];
+      // Give remainder to first variant(s)
+      const split = i < remainder ? equalSplit + 1 : equalSplit;
+      updateVariant(i, { ...currentVariant, trafficSplit: split.toString() });
+    }
+  }, [variantFields, updateVariant]);
+  
+  // Function to handle traffic split change with circular redistribution
+  const handleTrafficSplitChange = useCallback((variantIndex: number, newValue: string) => {
+    // Only allow numbers and empty string
+    if (newValue !== '' && !/^\d+$/.test(newValue)) {
+      return;
+    }
+    
+    // Mark as edited
+    setIsTrafficEdited(true);
+    
+    const newValueNum = newValue === '' ? 0 : parseInt(newValue, 10);
+    
+    // Clamp between 0 and 100
+    const clampedValue = Math.min(100, Math.max(0, newValueNum));
+    
+    const currentVariant: any = variantFields[variantIndex];
+    const oldValue = parseInt(currentVariant.trafficSplit || '0', 10);
+    let remainingDifference = oldValue - clampedValue;
+    
+    // Update current variant
+    updateVariant(variantIndex, { ...currentVariant, trafficSplit: clampedValue.toString() });
+    
+    // If there's a difference, redistribute circularly to next variants
+    if (remainingDifference !== 0 && variantFields.length > 1) {
+      let currentIndex = variantIndex;
+      let checkedCount = 0;
+      
+      // Continue redistributing until difference is 0 or we've checked all variants
+      while (remainingDifference !== 0 && checkedCount < variantFields.length - 1) {
+        // Get next index (circular)
+        currentIndex = (currentIndex + 1) % variantFields.length;
+        
+        // Skip the variant we're editing
+        if (currentIndex === variantIndex) {
+          continue;
+        }
+        
+        const targetVariant: any = variantFields[currentIndex];
+        const targetValue = parseInt(targetVariant.trafficSplit || '0', 10);
+        const newTargetValue = targetValue + remainingDifference;
+        
+        // Clamp the new value between 0 and 100
+        const clampedTargetValue = Math.min(100, Math.max(0, newTargetValue));
+        
+        // Calculate how much difference was actually absorbed
+        const absorbed = clampedTargetValue - targetValue;
+        remainingDifference -= absorbed;
+        
+        // Update the target variant
+        updateVariant(currentIndex, { ...targetVariant, trafficSplit: clampedTargetValue.toString() });
+        
+        checkedCount++;
+        
+        // If this variant absorbed all the difference, we're done
+        if (remainingDifference === 0) {
+          break;
+        }
+      }
+    }
+  }, [variantFields, updateVariant]);
+  
   // Generate nodes with onChange handlers (memoized for performance)
   const nodes = useMemo(() => {
-    const generateNodesWithHandlers = (variantsConfig: any[]) => {
+    const generateNodesWithHandlers = (
+      variantsConfig: any[], 
+      handleTrafficSplitChange: (index: number, value: string) => void
+    ) => {
     const COLUMN_GAP = 400;
     const MIN_SPACING = 50;
     const START_X = 5;
@@ -213,7 +293,8 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     const variantPositions: number[] = [];
     
     variantsConfig.forEach((config) => {
-      const cardHeight = BASE_HEIGHT + config.keyValues.length * ROW_HEIGHT;
+      const keyValuesLength = config.keyValues?.length || 1;
+      const cardHeight = BASE_HEIGHT + keyValuesLength * ROW_HEIGHT;
       variantPositions.push(currentY + cardHeight / 2);
       currentY += cardHeight + MIN_SPACING;
     });
@@ -232,7 +313,8 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     currentY = START_Y;
     
     variantsConfig.forEach((config, i) => {
-      const cardHeight = BASE_HEIGHT + config.keyValues.length * ROW_HEIGHT;
+      const keyValuesLength = config.keyValues?.length || 1;
+      const cardHeight = BASE_HEIGHT + keyValuesLength * ROW_HEIGHT;
       
       nodes.push({
         id: `split-${i + 1}`,
@@ -240,13 +322,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
         position: { x: START_X + COLUMN_GAP, y: currentY + cardHeight / 2 -30 },
         data: { 
           percentage: config.trafficSplit || '',
-          onChange: (value: string) => {
-            // Only allow numbers and empty string
-            if (value === '' || /^\d+$/.test(value)) {
-              const currentVariant: any = variantFields[i];
-              updateVariant(i, { ...currentVariant, trafficSplit: value });
-            }
-          }
+          onChange: (value: string) => handleTrafficSplitChange(i, value)
         }
       });
 
@@ -256,26 +332,26 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
         position: { x: START_X + COLUMN_GAP * 2, y: currentY },
         data: { 
           name: config.name,
-          keyValues: config.keyValues,
+          keyValues: config.keyValues || [{ key: '', type: 'type', value: '' }],
           onNameChange: (value: string) => {
             const currentVariant: any = variantFields[i];
             updateVariant(i, { ...currentVariant, name: value });
           },
           onKeyValueChange: (index: number, field: string, value: string) => {
             const currentVariant: any = variantFields[i];
-            const newKeyValues = [...currentVariant.keyValues];
+            const newKeyValues = [...(currentVariant.keyValues || [])];
             newKeyValues[index] = { ...newKeyValues[index], [field]: value };
             updateVariant(i, { ...currentVariant, keyValues: newKeyValues });
           },
           onAddKeyValue: (afterIndex: number) => {
             const currentVariant: any = variantFields[i];
-            const newKeyValues = [...currentVariant.keyValues];
+            const newKeyValues = [...(currentVariant.keyValues || [])];
             newKeyValues.splice(afterIndex + 1, 0, { key: '', type: 'type', value: '' });
             updateVariant(i, { ...currentVariant, keyValues: newKeyValues });
           },
           onDeleteKeyValue: (index: number) => {
             const currentVariant: any = variantFields[i];
-            const newKeyValues = [...currentVariant.keyValues];
+            const newKeyValues = [...(currentVariant.keyValues || [])];
             // Only allow delete if more than one key-value pair
             if (newKeyValues.length > 1) {
               newKeyValues.splice(index, 1);
@@ -291,8 +367,8 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     return nodes;
     };
     
-    return generateNodesWithHandlers(variantsConfig);
-  }, [variantsConfig, variantFields, updateVariant]);
+    return generateNodesWithHandlers(variantsConfig, handleTrafficSplitChange);
+  }, [variantsConfig, variantFields, updateVariant, handleTrafficSplitChange]);
   
   const edges = useMemo(() => generateEdges(variantsConfig.length), [variantsConfig.length]);
   
@@ -302,7 +378,8 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     const BASE_HEIGHT = 64;
     const MIN_SPACING = 50;
     return 200 + variantsConfig.reduce((sum: number, config: any) => {
-      return sum + BASE_HEIGHT + config.keyValues.length * ROW_HEIGHT + MIN_SPACING;
+      const keyValuesLength = config.keyValues?.length || 1;
+      return sum + BASE_HEIGHT + keyValuesLength * ROW_HEIGHT + MIN_SPACING;
     }, 0);
   }, [variantsConfig]);
 
@@ -336,11 +413,24 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
             // Calculate variant number: Control Group is index 0, Variant 2 is index 1, etc.
             // So new variant number = current length + 1
             const newVariantNumber = variantFields.length + 1;
-            appendVariant({
-              name: `Variant ${newVariantNumber}`,
-              trafficSplit: '50',
-              keyValues: [{ key: '', type: 'type', value: '' }]
-            });
+            
+            if (isTrafficEdited) {
+              // If traffic has been edited, add new variant with 0%
+              appendVariant({
+                name: `Variant ${newVariantNumber}`,
+                trafficSplit: '0',
+                keyValues: [{ key: '', type: 'type', value: '' }]
+              });
+            } else {
+              // If not edited, add variant and redistribute equally
+              appendVariant({
+                name: `Variant ${newVariantNumber}`,
+                trafficSplit: '0', // Temporary value
+                keyValues: [{ key: '', type: 'type', value: '' }]
+              });
+              // Redistribute after the variant is added
+              setTimeout(() => redistributeEqually(variantFields.length + 1), 0);
+            }
           }}
           sx={{ textTransform: 'none', color: '#333333', fontFamily: 'Inter', fontWeight: 500, fontSize: '0.875rem' }}
         >
