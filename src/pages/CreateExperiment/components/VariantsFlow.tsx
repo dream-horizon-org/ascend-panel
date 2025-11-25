@@ -3,6 +3,9 @@ import '@xyflow/react/dist/style.css';
 import { Box, TextField, Select, MenuItem, IconButton, Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Control, useWatch, UseFormSetValue } from 'react-hook-form';
+import { useMemo } from 'react';
 
 // Custom node for Targeting
 const TargetingNode = ({ data }: any) => {
@@ -37,7 +40,10 @@ const TrafficSplitNode = ({ data }: any) => {
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       <TextField
         size="small"
-        value={data.percentage}
+        type="text"
+        value={data.percentage || ''}
+        onChange={(e) => data.onChange?.(e.target.value)}
+        placeholder="0"
         sx={{ width: '80px', '& .MuiOutlinedInput-root': { borderRadius: '0.25rem' } }}
       />
       <Box sx={{ fontSize: '0.875rem', color: '#666666' }}>%</Box>
@@ -53,12 +59,12 @@ const VariantNode = ({ data }: any) => {
   return (
     <Box
       sx={{
-        border: '1px solid #DADADD',
-        borderRadius: '0.5rem',
-        padding: '1rem',
-        borderLeft: '4px solid #2196f3',
+        borderTopRightRadius: '0.5rem',
+        borderBottomRightRadius: '0.5rem',
+        paddingX: '1rem',
+        borderLeft: '4px solid #0060E526',
         backgroundColor: 'white',
-        minWidth: '300px',
+        minWidth: '350px',
       }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
@@ -66,6 +72,7 @@ const VariantNode = ({ data }: any) => {
         fullWidth
         size="small"
         value={data.name}
+        onChange={(e) => data.onNameChange?.(e.target.value)}
         sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { borderRadius: '0.25rem' } }}
       />
       
@@ -76,11 +83,13 @@ const VariantNode = ({ data }: any) => {
             size="small" 
             placeholder="Key" 
             value={kv.key}
+            onChange={(e) => data.onKeyValueChange?.(index, 'key', e.target.value)}
             sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '0.25rem' } }} 
           />
           <Select 
             size="small" 
             value={kv.type}
+            onChange={(e) => data.onKeyValueChange?.(index, 'type', e.target.value)}
             sx={{ flex: 1, borderRadius: '0.25rem' }}
           >
             <MenuItem value="type">Type</MenuItem>
@@ -92,11 +101,35 @@ const VariantNode = ({ data }: any) => {
             size="small" 
             placeholder="Value" 
             value={kv.value}
+            onChange={(e) => data.onKeyValueChange?.(index, 'value', e.target.value)}
             sx={{ flex: 2, '& .MuiOutlinedInput-root': { borderRadius: '0.25rem' } }} 
           />
-          <IconButton size="small" sx={{ color: '#666666' }}>
-            <AddIcon fontSize="small" />
-          </IconButton>
+          
+          {/* Show delete button only if more than one item */}
+          {keyValues.length > 1 ? (
+            <IconButton 
+              size="small" 
+              sx={{ color: '#666666' }}
+              onClick={() => data.onDeleteKeyValue?.(index)}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          ) : (
+            <Box sx={{ width: 40 }} /> // Placeholder to maintain layout
+          )}
+          
+          {/* Only show add button for the last item */}
+          {index === keyValues.length - 1 ? (
+            <IconButton 
+              size="small" 
+              sx={{ color: '#666666' }}
+              onClick={() => data.onAddKeyValue?.(index)}
+            >
+              <AddIcon fontSize="small" />
+            </IconButton>
+          ) : (
+            <Box sx={{ width: 40 }} /> // Placeholder to maintain layout
+          )}
         </Box>
       ))}
     </Box>
@@ -109,68 +142,6 @@ const nodeTypes = {
   variant: VariantNode,
 };
 
-// Auto-layout function to calculate positions with dynamic heights
-const calculateLayout = (variantsConfig: Array<{ name: string; keyValues: any[] }>) => {
-  const COLUMN_GAP = 400;
-  const MIN_SPACING = 50; // Minimum gap between cards
-  const START_X = 5;
-  const START_Y = 50;
-  const ROW_HEIGHT = 48; // Height per key-value row
-  const BASE_HEIGHT = 80; // Base card height
-  const TARGETING_HEIGHT = 100; // Approximate height of targeting box
-
-  const nodes = [];
-  let currentY = START_Y;
-  const variantPositions: number[] = [];
-  
-  // Calculate all variant positions first
-  variantsConfig.forEach((config) => {
-    const cardHeight = BASE_HEIGHT + config.keyValues.length * ROW_HEIGHT;
-    variantPositions.push(currentY + cardHeight / 2); // Store center position
-    currentY += cardHeight + MIN_SPACING;
-  });
-  
-  // Calculate targeting position - center it between first and last variant
-  const firstVariantCenter = variantPositions[0];
-  const lastVariantCenter = variantPositions[variantPositions.length - 1];
-  const targetingY = (firstVariantCenter + lastVariantCenter) / 2 - TARGETING_HEIGHT / 2;
-  
-  nodes.push({
-    id: 'targeting',
-    type: 'targeting',
-    position: { x: START_X, y: targetingY },
-    data: { label: 'Everyone' }
-  });
-
-  // Reset for second pass
-  currentY = START_Y;
-  
-  // Traffic splits and variants with dynamic spacing
-  variantsConfig.forEach((config, i) => {
-    const cardHeight = BASE_HEIGHT + config.keyValues.length * ROW_HEIGHT;
-    
-    // Traffic split positioned at card center
-    nodes.push({
-      id: `split-${i + 1}`,
-      type: 'trafficSplit',
-      position: { x: START_X + COLUMN_GAP, y: currentY + cardHeight / 2 - 20 },
-      data: { percentage: '50' }
-    });
-
-    // Variant card
-    nodes.push({
-      id: i === 0 ? 'control' : `variant-${i}`,
-      type: 'variant',
-      position: { x: START_X + COLUMN_GAP * 2, y: currentY },
-      data: { name: config.name, keyValues: config.keyValues }
-    });
-    
-    // Move to next position
-    currentY += cardHeight + MIN_SPACING;
-  });
-
-  return nodes;
-};
 
 
 // Auto-generate edges based on number of variants
@@ -202,53 +173,134 @@ const generateEdges = (variants: number) => {
   return edges;
 };
 
-export default function VariantsFlow() {
-  // Define variants with their key-values
-  const variantsConfig = [
-    {
-      name: 'Control Group',
-      keyValues: [
-        { key: 'color', type: 'string', value: 'blue' },
-      ]
-    },
-    {
-      name: 'Variant 2',
-      keyValues: [{ key: '', type: 'type', value: '' },
-        { key: 'color', type: 'string', value: 'blue' },
-        { key: 'size', type: 'number', value: '12' },
-        { key: 'enabled', type: 'boolean', value: 'true' },
-        { key: 'color', type: 'string', value: 'blue' },
-        { key: 'size', type: 'number', value: '12' },
-        { key: 'enabled', type: 'boolean', value: 'true' },
-        { key: 'color', type: 'string', value: 'blue' },
-        { key: 'size', type: 'number', value: '12' },
-        { key: 'enabled', type: 'boolean', value: 'true' },
-      ]
-    },
-    {
-      name: 'Variant 3',
-      keyValues: [{ key: '', type: 'type', value: '' }]
-    },
-    {
-      name: 'Variant 4',
-      keyValues: [{ key: '', type: 'type', value: '' }]
-    },
-    {
-      name: 'Variant 5',
-      keyValues: [{ key: '', type: 'type', value: '' }]
-    }
-  ];
+interface VariantsFlowProps {
+  control: Control<any>;
+  setValue: UseFormSetValue<any>;
+}
+
+export default function VariantsFlow({ control, setValue }: VariantsFlowProps) {
+  // Watch the variants from form state
+  const variants = useWatch({ control, name: 'variants' }) || [];
+  const trafficSplits = useWatch({ control, name: 'trafficSplits' }) || [];
   
-  const nodes = calculateLayout(variantsConfig);
-  const edges = generateEdges(variantsConfig.length);
+  const variantsConfig = useMemo(() => variants.map((v: any) => ({
+    name: v.name,
+    keyValues: v.keyValues
+  })), [variants]);
   
-  // Calculate canvas height dynamically based on card heights
-  const ROW_HEIGHT = 48;
-  const BASE_HEIGHT = 80;
-  const MIN_SPACING = 50;
-  const canvasHeight = 200 + variantsConfig.reduce((sum, config) => {
-    return sum + BASE_HEIGHT + config.keyValues.length * ROW_HEIGHT + MIN_SPACING;
-  }, 0);
+  // Generate nodes with onChange handlers (memoized for performance)
+  const nodes = useMemo(() => {
+    const generateNodesWithHandlers = (variantsConfig: any[]) => {
+    const COLUMN_GAP = 400;
+    const MIN_SPACING = 50;
+    const START_X = 5;
+    const START_Y = 50;
+    const ROW_HEIGHT = 48;
+    const BASE_HEIGHT = 64;
+    const TARGETING_HEIGHT = 100;
+
+    const nodes = [];
+    let currentY = START_Y;
+    const variantPositions: number[] = [];
+    
+    variantsConfig.forEach((config) => {
+      const cardHeight = BASE_HEIGHT + config.keyValues.length * ROW_HEIGHT;
+      variantPositions.push(currentY + cardHeight / 2);
+      currentY += cardHeight + MIN_SPACING;
+    });
+    
+    const firstVariantCenter = variantPositions[0];
+    const lastVariantCenter = variantPositions[variantPositions.length - 1];
+    const targetingY = (firstVariantCenter + lastVariantCenter) / 2 - TARGETING_HEIGHT / 2;
+    
+    nodes.push({
+      id: 'targeting',
+      type: 'targeting',
+      position: { x: START_X, y: targetingY },
+      data: { label: 'Everyone' }
+    });
+
+    currentY = START_Y;
+    
+    variantsConfig.forEach((config, i) => {
+      const cardHeight = BASE_HEIGHT + config.keyValues.length * ROW_HEIGHT;
+      
+      nodes.push({
+        id: `split-${i + 1}`,
+        type: 'trafficSplit',
+        position: { x: START_X + COLUMN_GAP, y: currentY + cardHeight / 2 - 20 },
+        data: { 
+          percentage: trafficSplits[i] !== undefined ? trafficSplits[i] : '50',
+          onChange: (value: string) => {
+            // Only allow numbers and empty string
+            if (value === '' || /^\d+$/.test(value)) {
+              const newSplits = [...trafficSplits];
+              newSplits[i] = value;
+              setValue('trafficSplits', newSplits);
+            }
+          }
+        }
+      });
+
+      nodes.push({
+        id: i === 0 ? 'control' : `variant-${i}`,
+        type: 'variant',
+        position: { x: START_X + COLUMN_GAP * 2, y: currentY },
+        data: { 
+          name: config.name,
+          keyValues: config.keyValues,
+          onNameChange: (value: string) => {
+            const newVariants = [...variants];
+            newVariants[i] = { ...newVariants[i], name: value };
+            setValue('variants', newVariants);
+          },
+          onKeyValueChange: (index: number, field: string, value: string) => {
+            const newVariants = [...variants];
+            const newKeyValues = [...newVariants[i].keyValues];
+            newKeyValues[index] = { ...newKeyValues[index], [field]: value };
+            newVariants[i] = { ...newVariants[i], keyValues: newKeyValues };
+            setValue('variants', newVariants);
+          },
+          onAddKeyValue: (afterIndex: number) => {
+            const newVariants = [...variants];
+            const newKeyValues = [...newVariants[i].keyValues];
+            newKeyValues.splice(afterIndex + 1, 0, { key: '', type: 'type', value: '' });
+            newVariants[i] = { ...newVariants[i], keyValues: newKeyValues };
+            setValue('variants', newVariants);
+          },
+          onDeleteKeyValue: (index: number) => {
+            const newVariants = [...variants];
+            const newKeyValues = [...newVariants[i].keyValues];
+            // Only allow delete if more than one key-value pair
+            if (newKeyValues.length > 1) {
+              newKeyValues.splice(index, 1);
+              newVariants[i] = { ...newVariants[i], keyValues: newKeyValues };
+              setValue('variants', newVariants);
+            }
+          }
+        }
+      });
+      
+      currentY += cardHeight + MIN_SPACING;
+    });
+
+    return nodes;
+    };
+    
+    return generateNodesWithHandlers(variantsConfig);
+  }, [variantsConfig, trafficSplits, variants, setValue]);
+  
+  const edges = useMemo(() => generateEdges(variantsConfig.length), [variantsConfig.length]);
+  
+  // Calculate canvas height dynamically
+  const canvasHeight = useMemo(() => {
+    const ROW_HEIGHT = 48;
+    const BASE_HEIGHT = 64;
+    const MIN_SPACING = 50;
+    return 200 + variantsConfig.reduce((sum: number, config: any) => {
+      return sum + BASE_HEIGHT + config.keyValues.length * ROW_HEIGHT + MIN_SPACING;
+    }, 0);
+  }, [variantsConfig]);
 
   return (
     <Box>
