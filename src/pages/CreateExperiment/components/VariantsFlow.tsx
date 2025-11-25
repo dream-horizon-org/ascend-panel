@@ -191,7 +191,7 @@ export default function VariantsFlow({ control, setValue }: VariantsFlowProps) {
   // Generate nodes with onChange handlers (memoized for performance)
   const nodes = useMemo(() => {
     const generateNodesWithHandlers = (variantsConfig: any[]) => {
-    const COLUMN_GAP = 400;
+    const COLUMN_GAP = 500;
     const MIN_SPACING = 50;
     const START_X = 5;
     const START_Y = 50;
@@ -228,7 +228,7 @@ export default function VariantsFlow({ control, setValue }: VariantsFlowProps) {
       nodes.push({
         id: `split-${i + 1}`,
         type: 'trafficSplit',
-        position: { x: START_X + COLUMN_GAP, y: currentY + cardHeight / 2 - 20 },
+        position: { x: START_X + COLUMN_GAP, y: currentY + cardHeight / 2 -30 },
         data: { 
           percentage: trafficSplits[i] !== undefined ? trafficSplits[i] : '50',
           onChange: (value: string) => {
