@@ -21,12 +21,13 @@ createRoot(rootElement).render(
     <Provider store={store}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <BrowserRouter>
+        {/* <BrowserRouter>
           <Routes>
             <Route path="/" element={<App />} />
             <Route path="/create-experiment" element={<CreateExperiment />} />
           </Routes>
-        </BrowserRouter>
+        </BrowserRouter> */}
+        <App />
       </ThemeProvider>
     </Provider>
   </StrictMode>,

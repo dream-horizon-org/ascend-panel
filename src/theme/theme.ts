@@ -3,6 +3,25 @@ import { createTheme } from "@mui/material/styles";
 // Extend the Theme interface to include custom properties
 declare module "@mui/material/styles" {
   interface Theme {
+    customColors: {
+      appBar: {
+        background: string;
+        text: string;
+        border: string;
+        logoPlaceholder: string;
+        linkHover: string;
+      };
+      sidebar: {
+        border: string;
+        iconColor: string;
+        selectedBackground: string;
+        indicatorColor: string;
+      };
+      text: {
+        heading: string;
+        body: string;
+      };
+    };
     customComponents: {
       ascendTextField: {
         label: {
@@ -29,6 +48,25 @@ declare module "@mui/material/styles" {
     };
   }
   interface ThemeOptions {
+    customColors?: {
+      appBar?: {
+        background?: string;
+        text?: string;
+        border?: string;
+        logoPlaceholder?: string;
+        linkHover?: string;
+      };
+      sidebar?: {
+        border?: string;
+        iconColor?: string;
+        selectedBackground?: string;
+        indicatorColor?: string;
+      };
+      text?: {
+        heading?: string;
+        body?: string;
+      };
+    };
     customComponents?: {
       ascendTextField?: {
         label?: {
@@ -63,6 +101,25 @@ export const theme = createTheme({
     },
     secondary: {
       main: "#dc004e",
+    },
+  },
+  customColors: {
+    appBar: {
+      background: "#fff",
+      text: "#000",
+      border: "#E0E0E0",
+      logoPlaceholder: "#9AA5B1",
+      linkHover: "#1976d2",
+    },
+    sidebar: {
+      border: "#E0E0E0",
+      iconColor: "#33343E",
+      selectedBackground: "#E3F2FD",
+      indicatorColor: "#0060E5",
+    },
+    text: {
+      heading: "#212121",
+      body: "#454854",
     },
   },
   customComponents: {
