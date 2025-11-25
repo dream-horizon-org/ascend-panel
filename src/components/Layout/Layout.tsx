@@ -1,12 +1,14 @@
 import React from "react";
 import { Box } from "@mui/material";
-import AppBar from "../AppBar/AppBar.tsx";
-import SideNavTabs from "../TabNavigation/TabNavigation.tsx";
+import { useTheme } from "@mui/material/styles";
+import AppBar from "../AscendAppBar/AscendAppBar.tsx";
+import SideNavTabs from "../AscendTabNavigation/AscendTabNavigation.tsx";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const theme = useTheme();
+
   return (
     <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      {/* --- Top AppBar --- */}
       <Box
         sx={{
           position: "fixed",
@@ -14,18 +16,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           zIndex: (theme) => theme.zIndex.appBar + 1,
         }}
       >
-            <AppBar />
+        <AppBar />
       </Box>
 
-      {/* --- Sidebar + Content Container --- */}
-      <Box sx={{ display: "flex", width: "100%", marginTop: "56px" }}>
-        {/* Side Navigation (Fixed) */}
+      <Box
+        sx={{
+          display: "flex",
+          width: "100%",
+          marginTop: theme.customSpacing.appBarHeight,
+        }}
+      >
         <Box
           sx={{
-            width: "48px",
-            height: "calc(100vh - 56px)",
+            width: theme.customSpacing.sidebarWidth,
+            height: `calc(100vh - ${theme.customSpacing.appBarHeight})`,
             position: "fixed",
-            top: "56px",
+            top: theme.customSpacing.appBarHeight,
             left: 0,
             display: "flex",
             justifyContent: "center",
@@ -34,15 +40,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <SideNavTabs />
         </Box>
 
-        {/* Main Content Area */}
         <Box
           component="main"
           sx={{
             flexGrow: 1,
-            padding: "20px",
-            marginLeft: "48px",
+            padding: theme.customSpacing.contentPadding,
+            marginLeft: theme.customSpacing.sidebarWidth,
             overflowY: "auto",
-            height: "calc(100vh - 56px)",
+            height: `calc(100vh - ${theme.customSpacing.appBarHeight})`,
           }}
         >
           {children}

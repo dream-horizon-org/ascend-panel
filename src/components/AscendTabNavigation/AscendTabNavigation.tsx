@@ -16,12 +16,12 @@ export default function SideNavTabs() {
   return (
     <Box
       sx={{
-        width: "48px",
+        width: theme.customComponents.sidebar.width,
         height: "100%",
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-start",
-        borderRight: `1px solid ${theme.customColors.sidebar.border}`,
+        borderRight: `1px solid ${theme.palette.divider}`,
       }}
     >
       <Tabs
@@ -34,29 +34,29 @@ export default function SideNavTabs() {
           "& .MuiTabs-indicator": {
             display: "block",
             left: 0,
-            width: "4px",
-            backgroundColor: theme.customColors.sidebar.indicatorColor,
-            borderRadius: "0 4px 4px 0",
+            width: theme.customComponents.sidebar.indicatorWidth,
+            backgroundColor: theme.palette.primary.main,
+            borderRadius: theme.customComponents.sidebar.indicatorBorderRadius,
           },
           "& .MuiTab-root": {
-            minWidth: "48px",
-            width: "48px",
-            height: "48px",
-            padding: "12px",
-            minHeight: "48px",
+            minWidth: theme.customComponents.sidebar.tabSize,
+            width: theme.customComponents.sidebar.tabSize,
+            height: theme.customComponents.sidebar.tabSize,
+            padding: theme.customComponents.sidebar.tabPadding,
+            minHeight: theme.customComponents.sidebar.tabSize,
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             position: "relative",
           },
           "& .Mui-selected": {
-            backgroundColor: theme.customColors.sidebar.selectedBackground,
+            backgroundColor: theme.palette.primary.light,
           },
           "& .MuiTab-root svg": {
-            width: "24px",
-            height: "24px",
-            fontSize: "24px",
-            color: theme.customColors.sidebar.iconColor,
+            width: theme.customComponents.sidebar.iconSize,
+            height: theme.customComponents.sidebar.iconSize,
+            fontSize: theme.customComponents.sidebar.iconSize,
+            color: theme.palette.neutral.main,
           },
         }}
       >
