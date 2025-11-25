@@ -72,11 +72,10 @@ const VariantNode = ({ data }: any) => {
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       <TextField
-        fullWidth
         size="small"
         value={data.name}
         onChange={(e) => data.onNameChange?.(e.target.value)}
-        sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { borderRadius: '0.25rem' } }}
+        sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { borderRadius: '0.25rem' }, width: '40%' }}
       />
       
       {/* Multiple Key-Value Rows */}
@@ -93,9 +92,15 @@ const VariantNode = ({ data }: any) => {
             size="small" 
             value={kv.type}
             onChange={(e) => data.onKeyValueChange?.(index, 'type', e.target.value)}
-            sx={{ flex: 1, borderRadius: '0.25rem' }}
+            displayEmpty
+            renderValue={(selected) => {
+              if (!selected || selected === 'type' || selected === '') {
+                return <Box sx={{ color: '#999999' }}>Type</Box>;
+              }
+              return selected.charAt(0).toUpperCase() + selected.slice(1);
+            }}
+            sx={{ width: '120px', borderRadius: '0.25rem' }}
           >
-            <MenuItem value="type">Type</MenuItem>
             <MenuItem value="string">String</MenuItem>
             <MenuItem value="number">Number</MenuItem>
             <MenuItem value="boolean">Boolean</MenuItem>
@@ -112,26 +117,26 @@ const VariantNode = ({ data }: any) => {
           {keyValues.length > 1 ? (
             <IconButton 
               size="small" 
-              sx={{ color: '#666666' }}
+              sx={{ color: '#666666', width: 40, height: 40, flexShrink: 0 }}
               onClick={() => data.onDeleteKeyValue?.(index)}
             >
               <DeleteIcon fontSize="small" />
             </IconButton>
           ) : (
-            <Box sx={{ width: 40 }} /> // Placeholder to maintain layout
+            <Box sx={{ width: 40, height: 40, flexShrink: 0 }} /> // Placeholder to maintain alignment
           )}
           
           {/* Only show add button for the last item */}
           {index === keyValues.length - 1 ? (
             <IconButton 
               size="small" 
-              sx={{ color: '#666666' }}
+              sx={{ color: '#666666', width: 40, height: 40, flexShrink: 0 }}
               onClick={() => data.onAddKeyValue?.(index)}
             >
               <AddIcon fontSize="small" />
             </IconButton>
           ) : (
-            <Box sx={{ width: 40 }} /> // Placeholder to maintain layout
+            <Box sx={{ width: 40, height: 40, flexShrink: 0 }} /> // Placeholder to maintain alignment
           )}
         </Box>
       ))}
