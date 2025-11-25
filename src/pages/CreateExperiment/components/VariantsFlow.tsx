@@ -1,6 +1,6 @@
 import { ReactFlow, Handle, Position } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Box, TextField, Select, MenuItem, IconButton, Button } from '@mui/material';
+import { Box, TextField, Select, MenuItem, IconButton, Button, InputAdornment } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -36,7 +36,7 @@ const TargetingNode = ({ data }: any) => {
 // Custom node for Traffic Split
 const TrafficSplitNode = ({ data }: any) => {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       <TextField
         size="small"
@@ -44,9 +44,11 @@ const TrafficSplitNode = ({ data }: any) => {
         value={data.percentage || ''}
         onChange={(e) => data.onChange?.(e.target.value)}
         placeholder="0"
+        InputProps={{
+          endAdornment: <InputAdornment position="end">%</InputAdornment>,
+        }}
         sx={{ width: '80px', '& .MuiOutlinedInput-root': { borderRadius: '0.25rem' } }}
       />
-      <Box sx={{ fontSize: '0.875rem', color: '#666666' }}>%</Box>
       <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
     </Box>
   );
@@ -191,7 +193,7 @@ export default function VariantsFlow({ control, setValue }: VariantsFlowProps) {
   // Generate nodes with onChange handlers (memoized for performance)
   const nodes = useMemo(() => {
     const generateNodesWithHandlers = (variantsConfig: any[]) => {
-    const COLUMN_GAP = 500;
+    const COLUMN_GAP = 400;
     const MIN_SPACING = 50;
     const START_X = 5;
     const START_Y = 50;
