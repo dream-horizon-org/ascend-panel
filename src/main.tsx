@@ -9,6 +9,7 @@ import { store } from "./store/store.ts";
 import { theme } from "./theme/theme.ts";
 import { BrowserRouter, Route, Routes } from "react-router";
 import CreateExperiment from "./pages/CreateExperiment";
+import ExperimentDetails from "./pages/ExperimentDetails/ExperimentDetails.tsx";
 
 const rootElement = document.getElementById("root");
 
@@ -25,6 +26,8 @@ createRoot(rootElement).render(
           <Routes>
             <Route path="/" element={<App />} />
             <Route path="/create-experiment" element={<CreateExperiment />} />
+            <Route path="/experiment" element={<ExperimentDetails />} />
+
           </Routes>
         </BrowserRouter>
       </ThemeProvider>
