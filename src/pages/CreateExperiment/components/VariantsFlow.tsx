@@ -63,7 +63,8 @@ const VariantNode = ({ data }: any) => {
       sx={{
         borderTopRightRadius: '0.5rem',
         borderBottomRightRadius: '0.5rem',
-        paddingX: '1rem',
+        paddingLeft: '0.5rem',
+        paddingRight: '1rem',
         borderLeft: '4px solid #0060E526',
         backgroundColor: 'white',
         minWidth: '350px',
@@ -306,7 +307,7 @@ export default function VariantsFlow({ control, setValue }: VariantsFlowProps) {
 
   return (
     <Box>
-      <Box sx={{ height: `${canvasHeight}px`, width: '100%', border: '1px solid #f0f0f0', borderRadius: '0.5rem', overflow: 'auto' }}>
+      <Box sx={{ height: `${canvasHeight}px`, width: '100%', overflow: 'auto', mb: 0 }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -327,8 +328,22 @@ export default function VariantsFlow({ control, setValue }: VariantsFlowProps) {
 
         </ReactFlow>
       </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-        <Button startIcon={<AddIcon />} sx={{ textTransform: 'none', color: '#333333', fontFamily: 'Inter', fontWeight: 500, fontSize: '0.875rem' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Button 
+          startIcon={<AddIcon />} 
+          onClick={() => {
+            // Calculate variant number: Control Group is index 0, Variant 2 is index 1, etc.
+            // So new variant number = current length + 1
+            const newVariantNumber = variants.length + 1;
+            const newVariant = {
+              name: `Variant ${newVariantNumber}`,
+              keyValues: [{ key: '', type: 'type', value: '' }]
+            };
+            setValue('variants', [...variants, newVariant]);
+            setValue('trafficSplits', [...trafficSplits, '50']);
+          }}
+          sx={{ textTransform: 'none', color: '#333333', fontFamily: 'Inter', fontWeight: 500, fontSize: '0.875rem' }}
+        >
           Add Variant
         </Button>
       </Box>
