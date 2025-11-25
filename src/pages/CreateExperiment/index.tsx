@@ -53,27 +53,17 @@ const CreateExperiment = () => {
       variants: [
         {
           name: 'Control Group',
-          trafficSplit: '25',
+          trafficSplit: '50',
           keyValues: [
             { key: '', type: '', value: 'blue' },
           ]
         },
         {
           name: 'Variant 1',
-          trafficSplit: '25',
+          trafficSplit: '50',
           keyValues: [
             { key: '', type: '', value: '' },
           ]
-        },
-        {
-          name: 'Variant 2',
-          trafficSplit: '25',
-          keyValues: [{ key: '', type: '', value: '' }]
-        },
-        {
-          name: 'Variant 3',
-          trafficSplit: '25',
-          keyValues: [{ key: '', type: '', value: '' }]
         },
       ],
     },
