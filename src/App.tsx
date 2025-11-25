@@ -1,62 +1,66 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useAppSelector, useAppDispatch } from './store/hooks'
-import { increment, decrement, incrementByAmount } from './store/slices/counterSlice'
-import { 
-  Container, 
-  Paper, 
-  Typography, 
-  TextField, 
-  Button, 
-  Box, 
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useAppSelector, useAppDispatch } from "./store/hooks";
+import {
+  increment,
+  decrement,
+  incrementByAmount,
+} from "./store/slices/counterSlice";
+import {
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Box,
   Card,
   CardContent,
   Divider,
   Autocomplete,
-  Chip
-} from '@mui/material'
-import AddIcon from '@mui/icons-material/Add'
-import RemoveIcon from '@mui/icons-material/Remove'
-import LocationOnIcon from '@mui/icons-material/LocationOn'
-import AscendPaper from './components/AscendPaper/AscendPaper'
+  Chip,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import AscendPaper from "./components/AscendPaper/AscendPaper";
 
 // Form validation schema using Zod
 const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  message: z.string().min(10, 'Message must be at least 10 characters'),
-})
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
+});
 
-type FormData = z.infer<typeof formSchema>
+type FormData = z.infer<typeof formSchema>;
 
 // Sample data for Autocomplete
 interface CityOption {
-  label: string
-  country: string
-  code: string
+  label: string;
+  country: string;
+  code: string;
 }
 
 const cities: CityOption[] = [
-  { label: 'New York', country: 'USA', code: 'NYC' },
-  { label: 'London', country: 'UK', code: 'LON' },
-  { label: 'Tokyo', country: 'Japan', code: 'TYO' },
-  { label: 'Paris', country: 'France', code: 'PAR' },
-  { label: 'Sydney', country: 'Australia', code: 'SYD' },
-  { label: 'Berlin', country: 'Germany', code: 'BER' },
-  { label: 'Toronto', country: 'Canada', code: 'YYZ' },
-  { label: 'Dubai', country: 'UAE', code: 'DXB' },
-  { label: 'Singapore', country: 'Singapore', code: 'SIN' },
-  { label: 'Mumbai', country: 'India', code: 'BOM' },
-]
+  { label: "New York", country: "USA", code: "NYC" },
+  { label: "London", country: "UK", code: "LON" },
+  { label: "Tokyo", country: "Japan", code: "TYO" },
+  { label: "Paris", country: "France", code: "PAR" },
+  { label: "Sydney", country: "Australia", code: "SYD" },
+  { label: "Berlin", country: "Germany", code: "BER" },
+  { label: "Toronto", country: "Canada", code: "YYZ" },
+  { label: "Dubai", country: "UAE", code: "DXB" },
+  { label: "Singapore", country: "Singapore", code: "SIN" },
+  { label: "Mumbai", country: "India", code: "BOM" },
+];
 
 function App() {
-  const count = useAppSelector((state) => state.counter.value)
-  const dispatch = useAppDispatch()
-  const [selectedCity, setSelectedCity] = useState<CityOption | null>(null)
-  const [selectedCities, setSelectedCities] = useState<CityOption[]>([])
-  
+  const count = useAppSelector((state) => state.counter.value);
+  const dispatch = useAppDispatch();
+  const [selectedCity, setSelectedCity] = useState<CityOption | null>(null);
+  const [selectedCities, setSelectedCities] = useState<CityOption[]>([]);
+
   const {
     register,
     handleSubmit,
@@ -64,22 +68,22 @@ function App() {
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-  })
+  });
 
   const onSubmit = (data: FormData) => {
-    console.log('Form submitted:', data)
-    alert(`Hello ${data.name}! Your message: ${data.message}`)
-    reset()
-  }
+    console.log("Form submitted:", data);
+    alert(`Hello ${data.name}! Your message: ${data.message}`);
+    reset();
+  };
 
   return (
     <Container maxWidth="lg" className="min-h-screen py-8">
       <Box className="text-center mb-8">
-        <Typography 
-          variant="h2" 
-          component="h1" 
+        <Typography
+          variant="h2"
+          component="h1"
           className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
-          sx={{ fontWeight: 'bold' }}
+          sx={{ fontWeight: "bold" }}
         >
           Hello World App
         </Typography>
@@ -98,8 +102,8 @@ function App() {
               </Typography>
               <Divider className="mb-4" />
               <Box className="text-center">
-                <Typography 
-                  variant="h3" 
+                <Typography
+                  variant="h3"
                   className="mb-6 font-bold text-blue-600"
                 >
                   {count}
@@ -149,7 +153,7 @@ function App() {
                 <TextField
                   fullWidth
                   label="Name"
-                  {...register('name')}
+                  {...register("name")}
                   error={!!errors.name}
                   helperText={errors.name?.message}
                   className="mb-4"
@@ -158,7 +162,7 @@ function App() {
                   fullWidth
                   label="Email"
                   type="email"
-                  {...register('email')}
+                  {...register("email")}
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   className="mb-4"
@@ -168,7 +172,7 @@ function App() {
                   label="Message"
                   multiline
                   rows={4}
-                  {...register('message')}
+                  {...register("message")}
                   error={!!errors.message}
                   helperText={errors.message?.message}
                   className="mb-4"
@@ -207,7 +211,9 @@ function App() {
                 options={cities}
                 value={selectedCity}
                 onChange={(_, newValue) => setSelectedCity(newValue)}
-                getOptionLabel={(option) => `${option.label}, ${option.country}`}
+                getOptionLabel={(option) =>
+                  `${option.label}, ${option.country}`
+                }
                 renderInput={(params) => (
                   <TextField
                     {...params}
@@ -215,13 +221,17 @@ function App() {
                     placeholder="Search cities..."
                     InputProps={{
                       ...params.InputProps,
-                      startAdornment: <LocationOnIcon sx={{ ml: 1, color: 'text.secondary' }} />,
+                      startAdornment: (
+                        <LocationOnIcon
+                          sx={{ ml: 1, color: "text.secondary" }}
+                        />
+                      ),
                     }}
                   />
                 )}
                 renderOption={(props, option) => (
                   <Box component="li" {...props} key={option.code}>
-                    <LocationOnIcon sx={{ mr: 2, color: 'text.secondary' }} />
+                    <LocationOnIcon sx={{ mr: 2, color: "text.secondary" }} />
                     <Box>
                       <Typography variant="body1">{option.label}</Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -235,7 +245,8 @@ function App() {
               {selectedCity && (
                 <Box className="mt-4 p-3 bg-blue-50 rounded-lg">
                   <Typography variant="body2" color="text.secondary">
-                    Selected: <strong>{selectedCity.label}</strong> ({selectedCity.country})
+                    Selected: <strong>{selectedCity.label}</strong> (
+                    {selectedCity.country})
                   </Typography>
                 </Box>
               )}
@@ -279,7 +290,11 @@ function App() {
               />
               {selectedCities.length > 0 && (
                 <Box className="mt-4 p-3 bg-purple-50 rounded-lg">
-                  <Typography variant="body2" color="text.secondary" className="mb-2">
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    className="mb-2"
+                  >
                     Selected Cities ({selectedCities.length}):
                   </Typography>
                   <Box className="flex flex-wrap gap-1">
@@ -343,8 +358,7 @@ function App() {
         </Box>
       </Box>
     </Container>
-  )
+  );
 }
 
-export default App
-
+export default App;
