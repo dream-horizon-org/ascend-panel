@@ -23,13 +23,13 @@ const experimentSchema = z.object({
   maxUsers: z.string().optional(),
   variants: z.array(z.object({
     name: z.string(),
+    trafficSplit: z.string(),
     keyValues: z.array(z.object({
       key: z.string(),
       type: z.string(),
       value: z.string(),
     }))
   })),
-  trafficSplits: z.array(z.string()),
 });
 
 type ExperimentFormData = z.infer<typeof experimentSchema>;
@@ -38,7 +38,7 @@ const CreateExperiment = () => {
   const navigate = useNavigate();
   const [submittedData, setSubmittedData] = useState<ExperimentFormData | null>(null);
 
-  const { control, setValue, handleSubmit } = useForm<ExperimentFormData>({
+  const { control, handleSubmit } = useForm<ExperimentFormData>({
     resolver: zodResolver(experimentSchema),
     mode: "onChange", // Validate on every change
     defaultValues: {
@@ -53,39 +53,29 @@ const CreateExperiment = () => {
       variants: [
         {
           name: 'Control Group',
+          trafficSplit: '25',
           keyValues: [
-            { key: 'color', type: 'string', value: 'blue' },
+            { key: '', type: '', value: 'blue' },
+          ]
+        },
+        {
+          name: 'Variant 1',
+          trafficSplit: '25',
+          keyValues: [
+            { key: '', type: '', value: '' },
           ]
         },
         {
           name: 'Variant 2',
-          keyValues: [
-            { key: '', type: 'type', value: '' },
-            { key: 'color', type: 'string', value: 'blue' },
-            { key: 'size', type: 'number', value: '12' },
-            { key: 'enabled', type: 'boolean', value: 'true' },
-            { key: 'color', type: 'string', value: 'blue' },
-            { key: 'size', type: 'number', value: '12' },
-            { key: 'enabled', type: 'boolean', value: 'true' },
-            { key: 'color', type: 'string', value: 'blue' },
-            { key: 'size', type: 'number', value: '12' },
-            { key: 'enabled', type: 'boolean', value: 'true' },
-          ]
+          trafficSplit: '25',
+          keyValues: [{ key: '', type: '', value: '' }]
         },
         {
           name: 'Variant 3',
-          keyValues: [{ key: '', type: 'type', value: '' }]
+          trafficSplit: '25',
+          keyValues: [{ key: '', type: '', value: '' }]
         },
-        {
-          name: 'Variant 4',
-          keyValues: [{ key: '', type: 'type', value: '' }]
-        },
-        {
-          name: 'Variant 5',
-          keyValues: [{ key: '', type: 'type', value: '' }]
-        }
       ],
-      trafficSplits: ['50', '50', '50', '50', '50'],
     },
   });
 
@@ -243,7 +233,7 @@ const CreateExperiment = () => {
           </Box>
 
           {/* Variants Flow */}
-          <VariantsFlow control={control} setValue={setValue} />
+          <VariantsFlow control={control} />
         </Box>
 
         {/* Advance Configuration Section */}

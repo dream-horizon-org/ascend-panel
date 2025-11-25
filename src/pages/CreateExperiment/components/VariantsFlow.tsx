@@ -4,7 +4,7 @@ import { Box, TextField, Select, MenuItem, IconButton, Button, InputAdornment } 
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Control, useWatch, UseFormSetValue } from 'react-hook-form';
+import { Control, useFieldArray } from 'react-hook-form';
 import { useMemo } from 'react';
 
 // Custom node for Targeting
@@ -182,18 +182,20 @@ const generateEdges = (variants: number) => {
 
 interface VariantsFlowProps {
   control: Control<any>;
-  setValue: UseFormSetValue<any>;
 }
 
-export default function VariantsFlow({ control, setValue }: VariantsFlowProps) {
-  // Watch the variants from form state
-  const variants = useWatch({ control, name: 'variants' }) || [];
-  const trafficSplits = useWatch({ control, name: 'trafficSplits' }) || [];
+export default function VariantsFlow({ control }: VariantsFlowProps) {
+  // Use field arrays for proper react-hook-form management
+  const { fields: variantFields, append: appendVariant, update: updateVariant } = useFieldArray({
+    control,
+    name: 'variants'
+  });
   
-  const variantsConfig = useMemo(() => variants.map((v: any) => ({
+  const variantsConfig = useMemo(() => variantFields.map((v: any) => ({
     name: v.name,
+    trafficSplit: v.trafficSplit,
     keyValues: v.keyValues
-  })), [variants]);
+  })), [variantFields]);
   
   // Generate nodes with onChange handlers (memoized for performance)
   const nodes = useMemo(() => {
@@ -237,13 +239,12 @@ export default function VariantsFlow({ control, setValue }: VariantsFlowProps) {
         type: 'trafficSplit',
         position: { x: START_X + COLUMN_GAP, y: currentY + cardHeight / 2 -30 },
         data: { 
-          percentage: trafficSplits[i] !== undefined ? trafficSplits[i] : '50',
+          percentage: config.trafficSplit || '',
           onChange: (value: string) => {
             // Only allow numbers and empty string
             if (value === '' || /^\d+$/.test(value)) {
-              const newSplits = [...trafficSplits];
-              newSplits[i] = value;
-              setValue('trafficSplits', newSplits);
+              const currentVariant: any = variantFields[i];
+              updateVariant(i, { ...currentVariant, trafficSplit: value });
             }
           }
         }
@@ -257,32 +258,28 @@ export default function VariantsFlow({ control, setValue }: VariantsFlowProps) {
           name: config.name,
           keyValues: config.keyValues,
           onNameChange: (value: string) => {
-            const newVariants = [...variants];
-            newVariants[i] = { ...newVariants[i], name: value };
-            setValue('variants', newVariants);
+            const currentVariant: any = variantFields[i];
+            updateVariant(i, { ...currentVariant, name: value });
           },
           onKeyValueChange: (index: number, field: string, value: string) => {
-            const newVariants = [...variants];
-            const newKeyValues = [...newVariants[i].keyValues];
+            const currentVariant: any = variantFields[i];
+            const newKeyValues = [...currentVariant.keyValues];
             newKeyValues[index] = { ...newKeyValues[index], [field]: value };
-            newVariants[i] = { ...newVariants[i], keyValues: newKeyValues };
-            setValue('variants', newVariants);
+            updateVariant(i, { ...currentVariant, keyValues: newKeyValues });
           },
           onAddKeyValue: (afterIndex: number) => {
-            const newVariants = [...variants];
-            const newKeyValues = [...newVariants[i].keyValues];
+            const currentVariant: any = variantFields[i];
+            const newKeyValues = [...currentVariant.keyValues];
             newKeyValues.splice(afterIndex + 1, 0, { key: '', type: 'type', value: '' });
-            newVariants[i] = { ...newVariants[i], keyValues: newKeyValues };
-            setValue('variants', newVariants);
+            updateVariant(i, { ...currentVariant, keyValues: newKeyValues });
           },
           onDeleteKeyValue: (index: number) => {
-            const newVariants = [...variants];
-            const newKeyValues = [...newVariants[i].keyValues];
+            const currentVariant: any = variantFields[i];
+            const newKeyValues = [...currentVariant.keyValues];
             // Only allow delete if more than one key-value pair
             if (newKeyValues.length > 1) {
               newKeyValues.splice(index, 1);
-              newVariants[i] = { ...newVariants[i], keyValues: newKeyValues };
-              setValue('variants', newVariants);
+              updateVariant(i, { ...currentVariant, keyValues: newKeyValues });
             }
           }
         }
@@ -295,7 +292,7 @@ export default function VariantsFlow({ control, setValue }: VariantsFlowProps) {
     };
     
     return generateNodesWithHandlers(variantsConfig);
-  }, [variantsConfig, trafficSplits, variants, setValue]);
+  }, [variantsConfig, variantFields, updateVariant]);
   
   const edges = useMemo(() => generateEdges(variantsConfig.length), [variantsConfig.length]);
   
@@ -338,13 +335,12 @@ export default function VariantsFlow({ control, setValue }: VariantsFlowProps) {
           onClick={() => {
             // Calculate variant number: Control Group is index 0, Variant 2 is index 1, etc.
             // So new variant number = current length + 1
-            const newVariantNumber = variants.length + 1;
-            const newVariant = {
+            const newVariantNumber = variantFields.length + 1;
+            appendVariant({
               name: `Variant ${newVariantNumber}`,
+              trafficSplit: '50',
               keyValues: [{ key: '', type: 'type', value: '' }]
-            };
-            setValue('variants', [...variants, newVariant]);
-            setValue('trafficSplits', [...trafficSplits, '50']);
+            });
           }}
           sx={{ textTransform: 'none', color: '#333333', fontFamily: 'Inter', fontWeight: 500, fontSize: '0.875rem' }}
         >
