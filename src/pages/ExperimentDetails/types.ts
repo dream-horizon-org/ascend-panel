@@ -12,6 +12,9 @@ export type ExperimentDetailsHeaderProps = {
   onCopyId?: () => void;
   onMenuClick?: () => void;
   onConcludeClick?: () => void;
+  onCloneExperiment?: () => void;
+  onTerminateExperiment?: () => void;
+  onDeclareWinner?: (winner: "Control Group" | "Variant 1") => void;
   className?: string;
 };
 

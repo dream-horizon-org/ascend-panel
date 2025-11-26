@@ -1,10 +1,12 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Box, Typography, IconButton, Chip, Divider, useTheme } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import AscendButton from "../../components/AscendButton/AscendButton";
+import AscendMenu from "../../components/AscendMenu/AscendMenu";
+import AscendMenuItem from "../../components/AscendMenuItem/AscendMenuItem";
 import { ExperimentDetailsHeaderProps } from "./types";
 
 const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
@@ -15,9 +17,59 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
   onCopyId,
   onMenuClick,
   onConcludeClick,
+  onCloneExperiment,
+  onTerminateExperiment,
+  onDeclareWinner,
   className = "",
 }) => {
   const theme = useTheme();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [concludeAnchorEl, setConcludeAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const concludeOpen = Boolean(concludeAnchorEl);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+    if (onMenuClick) {
+      onMenuClick();
+    }
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleConcludeClick = (event: React.MouseEvent<HTMLElement>) => {
+    setConcludeAnchorEl(event.currentTarget);
+    if (onConcludeClick) {
+      onConcludeClick();
+    }
+  };
+
+  const handleConcludeMenuClose = () => {
+    setConcludeAnchorEl(null);
+  };
+
+  const handleCloneExperiment = () => {
+    handleMenuClose();
+    if (onCloneExperiment) {
+      onCloneExperiment();
+    }
+  };
+
+  const handleTerminateExperiment = () => {
+    handleMenuClose();
+    if (onTerminateExperiment) {
+      onTerminateExperiment();
+    }
+  };
+
+  const handleDeclareWinner = (winner: "Control Group" | "Variant 1") => {
+    handleConcludeMenuClose();
+    if (onDeclareWinner) {
+      onDeclareWinner(winner);
+    }
+  };
 
   const getStatusColor = (color?: string) => {
     switch (color) {
@@ -148,43 +200,92 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
       <Box sx={{ flexGrow: 1 }} />
 
       {/* Menu Button */}
-      {onMenuClick && (
-        <IconButton
-          onClick={onMenuClick}
-          aria-label="more options"
-          sx={{
-            padding: "0.5rem",
-            color: theme.palette.text.secondary,
-            backgroundColor: theme.palette.background.default,
-            borderRadius: "0.5rem",
-            "&:hover": {
-              backgroundColor: theme.palette.divider,
-            },
-          }}
-        >
-          <MoreVertIcon sx={{ fontSize: "1.25rem" }} />
-        </IconButton>
-      )}
+      <IconButton
+        onClick={handleMenuClick}
+        aria-label="more options"
+        aria-controls={open ? "experiment-menu" : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? "true" : undefined}
+        sx={{
+          padding: "0.5rem",
+          color: theme.palette.text.secondary,
+          backgroundColor: theme.palette.background.default,
+          borderRadius: "0.5rem",
+          "&:hover": {
+            backgroundColor: theme.palette.divider,
+          },
+        }}
+      >
+        <MoreVertIcon sx={{ fontSize: "1.25rem" }} />
+      </IconButton>
+
+      {/* Dropdown Menu */}
+      <AscendMenu
+        id="experiment-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleMenuClose}
+      >
+        <AscendMenuItem onClick={handleCloneExperiment}>
+          Clone Experiment
+        </AscendMenuItem>
+        <AscendMenuItem onClick={handleTerminateExperiment}>
+          Terminate Experiment
+        </AscendMenuItem>
+      </AscendMenu>
 
       {/* Conclude Button */}
-      {onConcludeClick && (
-        <AscendButton
-          variant="contained"
-          color="primary"
-          onClick={onConcludeClick}
-          endIcon={<KeyboardArrowDownIcon />}
+      <AscendButton
+        variant="contained"
+        color="primary"
+        onClick={handleConcludeClick}
+        aria-controls={concludeOpen ? "conclude-menu" : undefined}
+        aria-haspopup="true"
+        aria-expanded={concludeOpen ? "true" : undefined}
+        endIcon={<KeyboardArrowDownIcon />}
+        sx={{
+          borderRadius: "0.5rem",
+          textTransform: "none",
+          fontFamily: "Inter",
+          fontWeight: 500,
+          fontSize: "0.875rem",
+          padding: "0.5rem 1rem",
+        }}
+      >
+        Conclude
+      </AscendButton>
+
+      {/* Conclude Dropdown Menu */}
+      <AscendMenu
+        id="conclude-menu"
+        anchorEl={concludeAnchorEl}
+        open={concludeOpen}
+        onClose={handleConcludeMenuClose}
+      >
+        <Box
           sx={{
-            borderRadius: "0.5rem",
-            textTransform: "none",
-            fontFamily: "Inter",
-            fontWeight: 500,
-            fontSize: "0.875rem",
-            padding: "0.5rem 1rem",
+            padding: "0.75rem 1rem",
+            borderBottom: `1px solid ${theme.palette.divider}`,
           }}
         >
-          Conclude
-        </AscendButton>
-      )}
+          <Typography
+            sx={{
+              fontFamily: "Inter",
+              fontSize: "0.875rem",
+              fontWeight: 600,
+              color: theme.palette.text.primary,
+            }}
+          >
+            Declare Winner
+          </Typography>
+        </Box>
+        <AscendMenuItem onClick={() => handleDeclareWinner("Control Group")}>
+          Control Group
+        </AscendMenuItem>
+        <AscendMenuItem onClick={() => handleDeclareWinner("Variant 1")}>
+          Variant 1
+        </AscendMenuItem>
+      </AscendMenu>
     </Box>
   );
 };

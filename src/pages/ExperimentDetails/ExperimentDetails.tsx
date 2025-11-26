@@ -51,6 +51,18 @@ export default function ExperimentDetails() {
         console.log("Conclude clicked");
     };
 
+    const handleCloneExperiment = () => {
+        console.log("Clone Experiment clicked");
+    };
+
+    const handleTerminateExperiment = () => {
+        console.log("Terminate Experiment clicked");
+    };
+
+    const handleDeclareWinner = (winner: "Control Group" | "Variant 1") => {
+        console.log(`Declare Winner: ${winner}`);
+    };
+
     return (
         <Layout>
             <Box>
@@ -62,6 +74,9 @@ export default function ExperimentDetails() {
                     onCopyId={handleCopyId}
                     onMenuClick={handleMenuClick}
                     onConcludeClick={handleConcludeClick}
+                    onCloneExperiment={handleCloneExperiment}
+                    onTerminateExperiment={handleTerminateExperiment}
+                    onDeclareWinner={handleDeclareWinner}
                 />
                 <Box className="p-6" sx={{ backgroundColor: theme.palette.background.default, minHeight: "100vh" }}>
                     {/* Metric Cards */}
