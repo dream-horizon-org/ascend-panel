@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Box, Typography, IconButton, Chip, Divider } from "@mui/material";
+import { Box, Typography, IconButton, Chip, Divider, useTheme } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -17,6 +17,8 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
   onConcludeClick,
   className = "",
 }) => {
+  const theme = useTheme();
+
   const getStatusColor = (color?: string) => {
     switch (color) {
       case "active":
@@ -51,9 +53,9 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
 
   return (
     <Box
-      className={`flex items-center gap-4 px-4 py-3 border-b border-gray-200 ${className}`}
+      className={`flex items-center gap-4 py-3 border-b border-gray-200 ${className}`}
       sx={{
-        backgroundColor: "#FFFFFF",
+        backgroundColor: theme.palette.background.paper,
       }}
     >
       {/* Back Arrow */}
@@ -63,7 +65,7 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
           aria-label="go back"
           sx={{
             padding: "0.5rem",
-            color: "#595959",
+            color: theme.palette.text.secondary,
           }}
         >
           <ArrowBackIcon sx={{ fontSize: "1rem" }} />
@@ -77,7 +79,7 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
           fontFamily: "Inter",
           fontWeight: 600,
           fontSize: "1rem",
-          color: "#333333",
+          color: theme.palette.text.primary,
         }}
       >
         {title}
@@ -106,7 +108,7 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
           orientation="vertical"
           flexItem
           sx={{
-            borderColor: "#DADADD",
+            borderColor: theme.palette.divider,
             height: "1.5rem",
             margin: "0 0.5rem",
           }}
@@ -121,7 +123,7 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
               fontFamily: "Inter",
               fontWeight: 400,
               fontSize: "0.875rem",
-              color: "#666666",
+              color: theme.palette.text.secondary,
             }}
           >
             {experimentId}
@@ -131,7 +133,7 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
             aria-label="copy experiment id"
             sx={{
               padding: "0.25rem",
-              color: "#666666",
+              color: theme.palette.text.secondary,
               "&:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.04)",
               },
@@ -152,11 +154,11 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
           aria-label="more options"
           sx={{
             padding: "0.5rem",
-            color: "#666666",
-            backgroundColor: "#F5F5F5",
+            color: theme.palette.text.secondary,
+            backgroundColor: theme.palette.background.default,
             borderRadius: "0.5rem",
             "&:hover": {
-              backgroundColor: "#E0E0E0",
+              backgroundColor: theme.palette.divider,
             },
           }}
         >
