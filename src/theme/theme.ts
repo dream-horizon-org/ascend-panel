@@ -27,14 +27,6 @@ type CustomComponents = {
     indicatorBorderRadius: string;
     iconSize: string;
   };
-  dropdown: {
-    sm: string;
-    md: string;
-    lg: string;
-    chipSmallHeight: string;
-    chipMediumHeight: string;
-    chipLimit: number;
-  };
   ascendTextField: {
     label: {
       color: string;
@@ -152,14 +144,6 @@ export const theme = createTheme({
       indicatorWidth: "4px",
       indicatorBorderRadius: "0 4px 4px 0",
       iconSize: "24px",
-    },
-    dropdown: {
-      sm: "28px",
-      md: "32px",
-      lg: "40px",
-      chipSmallHeight: "20px",
-      chipMediumHeight: "24px",
-      chipLimit: 2,
     },
     ascendTextField: {
       label: {
