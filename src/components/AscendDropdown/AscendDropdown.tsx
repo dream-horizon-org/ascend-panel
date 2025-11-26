@@ -55,7 +55,8 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
   const theme = useTheme();
   const isMultiple = variant !== "single";
 
-  const getBorderRadius = () => theme.customComponents.dropdown.borderRadius[borderRadius];
+  const getBorderRadius = () =>
+    theme.customComponents.dropdown.borderRadius[borderRadius];
   const [internalValue, setInternalValue] = React.useState<string | string[]>(
     isMultiple ? [] : "",
   );

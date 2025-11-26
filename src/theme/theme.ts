@@ -57,6 +57,11 @@ type CustomComponents = {
     chipMediumHeight: string;
     chipLimit1: number;
     chipLimit2: number;
+    borderRadius: {
+      sm: string;
+      md: string;
+      lg: string;
+    };
   };
 };
 
@@ -175,6 +180,11 @@ export const theme = createTheme({
       chipMediumHeight: "24px",
       chipLimit1: 5,
       chipLimit2: 3,
+      borderRadius: {
+        sm: "0px",
+        md: "12px",
+        lg: "999px",
+      },
     },
   },
 });
