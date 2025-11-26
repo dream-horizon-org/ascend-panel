@@ -1,61 +1,78 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useAppSelector, useAppDispatch } from './store/hooks'
-import { increment, decrement, incrementByAmount } from './store/slices/counterSlice'
-import { 
-  Container, 
-  Paper, 
-  Typography, 
-  TextField, 
-  Button, 
-  Box, 
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useAppSelector, useAppDispatch } from "./store/hooks";
+import {
+  increment,
+  decrement,
+  incrementByAmount,
+} from "./store/slices/counterSlice";
+import {
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Box,
   Card,
   CardContent,
   Divider,
   Autocomplete,
-  Chip
-} from '@mui/material'
-import AddIcon from '@mui/icons-material/Add'
-import RemoveIcon from '@mui/icons-material/Remove'
-import LocationOnIcon from '@mui/icons-material/LocationOn'
+  Chip,
+  IconButton,
+  Slider,
+  Checkbox,
+  FormControlLabel,
+  MenuItem,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import { Remove as RemoveIcon } from "@mui/icons-material";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import CloseIcon from "@mui/icons-material/Close";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import AscendModal from "./components/AscendModal/AscendModal";
 
 // Form validation schema using Zod
 const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  message: z.string().min(10, 'Message must be at least 10 characters'),
-})
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
+});
 
-type FormData = z.infer<typeof formSchema>
+type FormData = z.infer<typeof formSchema>;
 
 // Sample data for Autocomplete
 interface CityOption {
-  label: string
-  country: string
-  code: string
+  label: string;
+  country: string;
+  code: string;
 }
 
 const cities: CityOption[] = [
-  { label: 'New York', country: 'USA', code: 'NYC' },
-  { label: 'London', country: 'UK', code: 'LON' },
-  { label: 'Tokyo', country: 'Japan', code: 'TYO' },
-  { label: 'Paris', country: 'France', code: 'PAR' },
-  { label: 'Sydney', country: 'Australia', code: 'SYD' },
-  { label: 'Berlin', country: 'Germany', code: 'BER' },
-  { label: 'Toronto', country: 'Canada', code: 'YYZ' },
-  { label: 'Dubai', country: 'UAE', code: 'DXB' },
-  { label: 'Singapore', country: 'Singapore', code: 'SIN' },
-  { label: 'Mumbai', country: 'India', code: 'BOM' },
-]
+  { label: "New York", country: "USA", code: "NYC" },
+  { label: "London", country: "UK", code: "LON" },
+  { label: "Tokyo", country: "Japan", code: "TYO" },
+  { label: "Paris", country: "France", code: "PAR" },
+  { label: "Sydney", country: "Australia", code: "SYD" },
+  { label: "Berlin", country: "Germany", code: "BER" },
+  { label: "Toronto", country: "Canada", code: "YYZ" },
+  { label: "Dubai", country: "UAE", code: "DXB" },
+  { label: "Singapore", country: "Singapore", code: "SIN" },
+  { label: "Mumbai", country: "India", code: "BOM" },
+];
 
 function App() {
-  const count = useAppSelector((state) => state.counter.value)
-  const dispatch = useAppDispatch()
-  const [selectedCity, setSelectedCity] = useState<CityOption | null>(null)
-  const [selectedCities, setSelectedCities] = useState<CityOption[]>([])
+  const count = useAppSelector((state) => state.counter.value);
+  const dispatch = useAppDispatch();
+  const [selectedCity, setSelectedCity] = useState<CityOption | null>(null);
+  const [selectedCities, setSelectedCities] = useState<CityOption[]>([]);
   
+  // Modal states
+  const [parentModalOpen, setParentModalOpen] = useState(false);
+  const [childModalOpen, setChildModalOpen] = useState(false);
+  const [exposureValue, setExposureValue] = useState(30);
+
   const {
     register,
     handleSubmit,
@@ -63,28 +80,55 @@ function App() {
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-  })
+  });
 
   const onSubmit = (data: FormData) => {
-    console.log('Form submitted:', data)
-    alert(`Hello ${data.name}! Your message: ${data.message}`)
-    reset()
-  }
+    console.log("Form submitted:", data);
+    alert(`Hello ${data.name}! Your message: ${data.message}`);
+    reset();
+  };
+
+  // Handle parent modal close attempt - show child modal instead
+  const handleParentModalClose = () => {
+    setChildModalOpen(true);
+  };
+
+  // Handle child modal actions
+  const handleChildModalCancel = () => {
+    setChildModalOpen(false);
+    // Stay in parent modal
+  };
+
+  const handleChildModalExit = () => {
+    setChildModalOpen(false);
+    setParentModalOpen(false);
+    // Close both modals
+  };
 
   return (
     <Container maxWidth="lg" className="min-h-screen py-8">
       <Box className="text-center mb-8">
-        <Typography 
-          variant="h2" 
-          component="h1" 
+        <Typography
+          variant="h2"
+          component="h1"
           className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
-          sx={{ fontWeight: 'bold' }}
+          sx={{ fontWeight: "bold" }}
         >
           Hello World App
         </Typography>
         <Typography variant="h6" color="text.secondary">
           Demonstrating Redux Toolkit, React Hook Form, Tailwind CSS & MUI
         </Typography>
+        <Box className="mt-4">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setParentModalOpen(true)}
+            sx={{ mt: 2 }}
+          >
+            Open Targeting Modal
+          </Button>
+        </Box>
       </Box>
 
       <Box className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -97,8 +141,8 @@ function App() {
               </Typography>
               <Divider className="mb-4" />
               <Box className="text-center">
-                <Typography 
-                  variant="h3" 
+                <Typography
+                  variant="h3"
                   className="mb-6 font-bold text-blue-600"
                 >
                   {count}
@@ -148,7 +192,7 @@ function App() {
                 <TextField
                   fullWidth
                   label="Name"
-                  {...register('name')}
+                  {...register("name")}
                   error={!!errors.name}
                   helperText={errors.name?.message}
                   className="mb-4"
@@ -157,7 +201,7 @@ function App() {
                   fullWidth
                   label="Email"
                   type="email"
-                  {...register('email')}
+                  {...register("email")}
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   className="mb-4"
@@ -167,7 +211,7 @@ function App() {
                   label="Message"
                   multiline
                   rows={4}
-                  {...register('message')}
+                  {...register("message")}
                   error={!!errors.message}
                   helperText={errors.message?.message}
                   className="mb-4"
@@ -206,7 +250,9 @@ function App() {
                 options={cities}
                 value={selectedCity}
                 onChange={(_, newValue) => setSelectedCity(newValue)}
-                getOptionLabel={(option) => `${option.label}, ${option.country}`}
+                getOptionLabel={(option) =>
+                  `${option.label}, ${option.country}`
+                }
                 renderInput={(params) => (
                   <TextField
                     {...params}
@@ -214,13 +260,17 @@ function App() {
                     placeholder="Search cities..."
                     InputProps={{
                       ...params.InputProps,
-                      startAdornment: <LocationOnIcon sx={{ ml: 1, color: 'text.secondary' }} />,
+                      startAdornment: (
+                        <LocationOnIcon
+                          sx={{ ml: 1, color: "text.secondary" }}
+                        />
+                      ),
                     }}
                   />
                 )}
                 renderOption={(props, option) => (
                   <Box component="li" {...props} key={option.code}>
-                    <LocationOnIcon sx={{ mr: 2, color: 'text.secondary' }} />
+                    <LocationOnIcon sx={{ mr: 2, color: "text.secondary" }} />
                     <Box>
                       <Typography variant="body1">{option.label}</Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -234,7 +284,8 @@ function App() {
               {selectedCity && (
                 <Box className="mt-4 p-3 bg-blue-50 rounded-lg">
                   <Typography variant="body2" color="text.secondary">
-                    Selected: <strong>{selectedCity.label}</strong> ({selectedCity.country})
+                    Selected: <strong>{selectedCity.label}</strong> (
+                    {selectedCity.country})
                   </Typography>
                 </Box>
               )}
@@ -278,7 +329,11 @@ function App() {
               />
               {selectedCities.length > 0 && (
                 <Box className="mt-4 p-3 bg-purple-50 rounded-lg">
-                  <Typography variant="body2" color="text.secondary" className="mb-2">
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    className="mb-2"
+                  >
                     Selected Cities ({selectedCities.length}):
                   </Typography>
                   <Box className="flex flex-wrap gap-1">
@@ -333,9 +388,178 @@ function App() {
           </Paper>
         </Box>
       </Box>
+
+      {/* Parent Modal - Targeting */}
+      <AscendModal
+        config={{
+          width: 600,
+          closeOnBackdropClick: false,
+          closeOnEscape: false,
+          showCloseButton: false,
+          nestedModal: {
+            width: 400,
+            showCloseButton: false,
+            children: (
+              <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Close without saving?
+                  </Typography>
+                  <IconButton
+                    size="small"
+                    onClick={handleChildModalCancel}
+                    sx={{ ml: 'auto' }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Discarding this will remove all information saved
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                  <Button onClick={handleChildModalCancel} variant="text" color="primary">
+                    Cancel
+                  </Button>
+                  <Button onClick={handleChildModalExit} variant="contained" color="primary">
+                    Exit
+                  </Button>
+                </Box>
+              </Box>
+            ),
+          },
+          actions: (
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', width: '100%' }}>
+              <Button onClick={handleParentModalClose} variant="text" color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleParentModalClose} variant="contained" color="primary">
+                Save
+              </Button>
+            </Box>
+          ),
+          children: (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {/* Header with Title and Close Button */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  Targeting
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={handleParentModalClose}
+                  sx={{ ml: 'auto' }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+
+              {/* Filters Section */}
+              <Box>
+                <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                  Filters
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                  Users are filtered out irrespective of cohorts
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Typography variant="body2" sx={{ minWidth: 40 }}>IF</Typography>
+                    <TextField select size="small" defaultValue="App Version" sx={{ minWidth: 150 }}>
+                      <MenuItem value="App Version">App Version</MenuItem>
+                      <MenuItem value="Country">Country</MenuItem>
+                      <MenuItem value="Device">Device</MenuItem>
+                    </TextField>
+                    <TextField select size="small" defaultValue="Is not equal to" sx={{ minWidth: 150 }}>
+                      <MenuItem value="Is not equal to">Is not equal to</MenuItem>
+                      <MenuItem value="Is equal to">Is equal to</MenuItem>
+                      <MenuItem value="Contains">Contains</MenuItem>
+                    </TextField>
+                    <TextField size="small" defaultValue="12.3" sx={{ width: 100 }} />
+                    <IconButton size="small">
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                    <Button size="small" variant="outlined">+3</Button>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Typography variant="body2" sx={{ minWidth: 40 }}>AND</Typography>
+                    <TextField select size="small" defaultValue="Country" sx={{ minWidth: 150 }}>
+                      <MenuItem value="Country">Country</MenuItem>
+                      <MenuItem value="App Version">App Version</MenuItem>
+                      <MenuItem value="Device">Device</MenuItem>
+                    </TextField>
+                    <TextField select size="small" defaultValue="Is equal to" sx={{ minWidth: 150 }}>
+                      <MenuItem value="Is equal to">Is equal to</MenuItem>
+                      <MenuItem value="Is not equal to">Is not equal to</MenuItem>
+                      <MenuItem value="Contains">Contains</MenuItem>
+                    </TextField>
+                    <TextField size="small" defaultValue="India" sx={{ width: 100 }} />
+                    <IconButton size="small" color="primary">
+                      <AddIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </Box>
+              </Box>
+
+              {/* Cohorts Section */}
+              <Box>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                  Cohorts
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+                  {['Tag1', 'Tag2', 'Tag3', 'Tag4'].map((tag, index) => (
+                    <Chip
+                      key={index}
+                      label={tag}
+                      onDelete={() => {}}
+                      size="small"
+                      sx={{ mb: 1 }}
+                    />
+                  ))}
+                  <Button size="small" variant="outlined">+3</Button>
+                </Box>
+                <FormControlLabel
+                  control={<Checkbox />}
+                  label="Assign cohorts directly to variants"
+                />
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                  Assigning cohorts will make it <strong>inaccurate and risky</strong>. Make sure to verify each cohort.
+                </Typography>
+              </Box>
+
+              {/* Exposure Section */}
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Exposure
+                  </Typography>
+                  <InfoOutlinedIcon fontSize="small" color="action" />
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Slider
+                    value={exposureValue}
+                    onChange={(_, newValue) => setExposureValue(newValue as number)}
+                    min={0}
+                    max={100}
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField
+                    value={`${exposureValue}%`}
+                    size="small"
+                    sx={{ width: 80 }}
+                    inputProps={{ readOnly: true }}
+                  />
+                </Box>
+              </Box>
+            </Box>
+          ),
+        }}
+        open={parentModalOpen}
+        onClose={handleParentModalClose}
+        nestedModalOpen={childModalOpen}
+        onNestedModalClose={handleChildModalCancel}
+      />
     </Container>
-  )
+  );
 }
 
-export default App
-
+export default App;
