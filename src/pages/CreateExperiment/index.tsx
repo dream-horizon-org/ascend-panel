@@ -1,12 +1,14 @@
-import { Box, IconButton, Typography } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import { useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useEffect } from "react";
-import AscendTextFieldControlled from "../../components/AscendTextField/AscendTextFieldControlled";
+
+import { Box, IconButton, Typography, Button } from '@mui/material'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import { useNavigate } from 'react-router'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useState } from 'react'
+import AscendTextFieldControlled from '../../components/AscendTextField/AscendTextFieldControlled'
+import VariantsFlow from './components/VariantsFlow'
 
 // Form validation schema
 const experimentSchema = z.object({
@@ -19,16 +21,26 @@ const experimentSchema = z.object({
   description: z.string().max(300, "Maximum 300 characters allowed").optional(),
   rateLimit: z.string().optional(),
   maxUsers: z.string().optional(),
+  variants: z.array(z.object({
+    name: z.string().min(1, "Variant name is required"),
+    trafficSplit: z.string(),
+    keyValues: z.array(z.object({
+      key: z.string(),
+      type: z.string(),
+      value: z.string(),
+    }))
+  })),
 });
 
 type ExperimentFormData = z.infer<typeof experimentSchema>;
 
 const CreateExperiment = () => {
   const navigate = useNavigate();
+  const [submittedData, setSubmittedData] = useState<ExperimentFormData | null>(null);
 
-  const { control, watch } = useForm<ExperimentFormData>({
+  const { control, handleSubmit } = useForm<ExperimentFormData>({
     resolver: zodResolver(experimentSchema),
-    mode: "onChange", // Validate on every change
+    mode: "onSubmit", // Validate only on submit
     defaultValues: {
       experimentName: "IPL 2024 Experiment",
       experimentId: "IPL-2024-Experiment",
@@ -38,18 +50,39 @@ const CreateExperiment = () => {
         "The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.",
       rateLimit: "100%",
       maxUsers: "",
+      variants: [
+        {
+          name: 'Control Group',
+          trafficSplit: '50',
+          keyValues: [
+            { key: '', type: '', value: 'blue' },
+          ]
+        },
+        {
+          name: 'Variant 1',
+          trafficSplit: '50',
+          keyValues: [
+            { key: '', type: '', value: '' },
+          ]
+        },
+      ],
     },
   });
 
   // Watch all form values and log changes
-  const formValues = watch();
+  // const formValues = watch();
 
-  useEffect(() => {
-    console.log("Form values changed:", formValues);
-  }, [formValues]);
+  // useEffect(() => {
+  //   console.log("Form values changed:", formValues);
+  // }, [formValues]);
 
   const handleBack = () => {
     navigate(-1); // Go back to previous page
+  };
+
+  const onSubmit = (data: ExperimentFormData) => {
+    setSubmittedData(data);
+    console.log('Form submitted:', data);
   };
 
   return (
@@ -189,7 +222,8 @@ const CreateExperiment = () => {
             />
           </Box>
 
-          {/* Content will go here */}
+          {/* Variants Flow */}
+          <VariantsFlow control={control} />
         </Box>
 
         {/* Advance Configuration Section */}
@@ -247,6 +281,69 @@ const CreateExperiment = () => {
             />
           </Box>
         </Box>
+
+        {/* Submit Button */}
+        <Box sx={{ mt: "2rem", display: "flex", justifyContent: "flex-end" }}>
+          <Button
+            variant="contained"
+            onClick={handleSubmit(onSubmit)}
+            sx={{
+              backgroundColor: "#0060E5",
+              color: "white",
+              textTransform: "none",
+              fontFamily: "Inter",
+              fontWeight: 600,
+              fontSize: "0.875rem",
+              padding: "0.625rem 2rem",
+              borderRadius: "0.5rem",
+              "&:hover": {
+                backgroundColor: "#0050C5",
+              },
+            }}
+          >
+            Create Experiment
+          </Button>
+        </Box>
+
+        {/* Display Submitted Data */}
+        {submittedData && (
+          <Box
+            sx={{
+              mt: "2rem",
+              padding: "1.5rem",
+              border: "1px solid #DADADD",
+              borderRadius: "0.5rem",
+              backgroundColor: "#F9F9F9",
+            }}
+          >
+            <Typography
+              sx={{
+                fontFamily: "Inter",
+                fontWeight: 600,
+                fontSize: "1rem",
+                color: "#333333",
+                mb: "1rem",
+              }}
+            >
+              Submitted Form Data
+            </Typography>
+            <Box
+              component="pre"
+              sx={{
+                backgroundColor: "white",
+                padding: "1rem",
+                borderRadius: "0.5rem",
+                overflow: "auto",
+                maxHeight: "400px",
+                fontSize: "0.75rem",
+                fontFamily: "monospace",
+                border: "1px solid #E0E0E0",
+              }}
+            >
+              {JSON.stringify(submittedData, null, 2)}
+            </Box>
+          </Box>
+        )}
       </Box>
     </Box>
   );
