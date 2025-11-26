@@ -120,7 +120,11 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
     }
 
     if (variant === "multi-chip") {
-      const chipLimit = theme.customComponents.dropdown.chipLimit;
+        let chipLimit = theme.customComponents.dropdown.chipLimit2;
+        if(size=='lg') {
+            chipLimit = theme.customComponents.dropdown.chipLimit1;
+        }
+      
       const visibleChips = (selected as string[]).slice(0, chipLimit);
       const remainingCount = (selected as string[]).length - chipLimit;
 
