@@ -49,6 +49,20 @@ type CustomComponents = {
       backgroundColor: string;
     };
   };
+  dropdown: {
+    sm: string;
+    md: string;
+    lg: string;
+    chipSmallHeight: string;
+    chipMediumHeight: string;
+    chipLimit1: number;
+    chipLimit2: number;
+    borderRadius: {
+      sm: string;
+      md: string;
+      lg: string;
+    };
+  };
 };
 
 declare module "@mui/material/styles" {
@@ -58,12 +72,18 @@ declare module "@mui/material/styles" {
       light: string;
       dark: string;
     };
+    border: {
+      main: string;
+    };
   }
   interface PaletteOptions {
     neutral?: {
       main: string;
       light: string;
       dark: string;
+    };
+    border?: {
+      main: string;
     };
   }
   interface Theme {
@@ -99,6 +119,9 @@ export const theme = createTheme({
       main: "#33343E",
       light: "#9AA5B1",
       dark: "#454854",
+    },
+    border: {
+      main: "#DADADD",
     },
   },
   customSpacing: {
@@ -147,6 +170,20 @@ export const theme = createTheme({
       },
       disabled: {
         backgroundColor: "#e6e8f2",
+      },
+    },
+    dropdown: {
+      sm: "28px",
+      md: "32px",
+      lg: "40px",
+      chipSmallHeight: "20px",
+      chipMediumHeight: "24px",
+      chipLimit1: 5,
+      chipLimit2: 3,
+      borderRadius: {
+        sm: "0px",
+        md: "12px",
+        lg: "999px",
       },
     },
   },
