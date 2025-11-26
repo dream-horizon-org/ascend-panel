@@ -57,6 +57,15 @@ type CustomComponents = {
       backgroundColor: string;
     };
   };
+  dropdown: {
+    sm: string;
+    md: string;
+    lg: string;
+    chipSmallHeight: string;
+    chipMediumHeight: string;
+    chipLimit1: number;
+    chipLimit2: number;
+  };
 };
 
 declare module "@mui/material/styles" {
@@ -173,6 +182,15 @@ export const theme = createTheme({
       disabled: {
         backgroundColor: "#e6e8f2",
       },
+    },
+    dropdown: {
+      sm: "28px",
+      md: "32px",
+      lg: "40px",
+      chipSmallHeight: "20px",
+      chipMediumHeight: "24px",
+      chipLimit1: 5,
+      chipLimit2: 3,
     },
   },
 });
