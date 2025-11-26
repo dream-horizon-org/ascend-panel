@@ -15,10 +15,12 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 type DropdownSize = "sm" | "md" | "lg";
 type DropdownVariant = "single" | "multi-checkbox" | "multi-chip";
+type DropdownBorderRadius = "sm" | "md" | "lg";
 
 interface AscendDropdownProps {
   variant?: DropdownVariant;
   size?: DropdownSize;
+  borderRadius?: DropdownBorderRadius;
   label?: string;
   placeholder?: string;
   options: string[];
@@ -40,6 +42,7 @@ const MENU_PROPS = {
 const AscendDropdown: React.FC<AscendDropdownProps> = ({
   variant = "single",
   size = "md",
+  borderRadius = "md",
   label,
   placeholder = "Select...",
   options,
@@ -52,8 +55,7 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
   const theme = useTheme();
   const isMultiple = variant !== "single";
 
-  // Auto-apply 999px for multi-checkbox, 4px for others
-  const borderRadius = variant === "multi-checkbox" ? "999px" : "4px";
+  const getBorderRadius = () => theme.customComponents.dropdown.borderRadius[borderRadius];
   const [internalValue, setInternalValue] = React.useState<string | string[]>(
     isMultiple ? [] : "",
   );
@@ -171,7 +173,7 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
         displayEmpty
         sx={{
           height: getHeight(),
-          borderRadius: borderRadius,
+          borderRadius: getBorderRadius(),
           "& .MuiSelect-select": {
             display: "flex",
             alignItems: "center",
@@ -187,7 +189,7 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
                 : "inherit",
           },
           "& .MuiOutlinedInput-notchedOutline": {
-            borderRadius: borderRadius,
+            borderRadius: getBorderRadius(),
             borderWidth: "1px",
             borderColor:
               variant === "multi-checkbox" &&
