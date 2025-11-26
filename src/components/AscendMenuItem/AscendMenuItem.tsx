@@ -38,4 +38,3 @@ const AscendMenuItem: FC<AscendMenuItemProps> = ({
 };
 
 export default AscendMenuItem;
-

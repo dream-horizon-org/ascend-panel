@@ -32,4 +32,3 @@ export type Variant = {
   percentage: number;
   userCount: number;
 };
-

@@ -27,7 +27,6 @@ createRoot(rootElement).render(
             <Route path="/" element={<App />} />
             <Route path="/create-experiment" element={<CreateExperiment />} />
             <Route path="/experiment" element={<ExperimentDetails />} />
-
           </Routes>
         </BrowserRouter>
       </ThemeProvider>

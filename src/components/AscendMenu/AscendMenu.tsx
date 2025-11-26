@@ -44,4 +44,3 @@ const AscendMenu: FC<AscendMenuProps> = ({
 };
 
 export default AscendMenu;
-

@@ -1,5 +1,12 @@
 import { FC, useState } from "react";
-import { Box, Typography, IconButton, Chip, Divider, useTheme } from "@mui/material";
+import {
+  Box,
+  Typography,
+  IconButton,
+  Chip,
+  Divider,
+  useTheme,
+} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -24,7 +31,9 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
 }) => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [concludeAnchorEl, setConcludeAnchorEl] = useState<null | HTMLElement>(null);
+  const [concludeAnchorEl, setConcludeAnchorEl] = useState<null | HTMLElement>(
+    null,
+  );
   const open = Boolean(anchorEl);
   const concludeOpen = Boolean(concludeAnchorEl);
 
@@ -291,4 +300,3 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
 };
 
 export default ExperimentDetailsHeader;
-

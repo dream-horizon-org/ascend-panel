@@ -26,4 +26,3 @@ const AscendPaper: FC<AscendPaperProps> = ({
 };
 
 export default AscendPaper;
-
