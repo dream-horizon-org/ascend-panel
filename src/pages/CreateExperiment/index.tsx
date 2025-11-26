@@ -22,7 +22,7 @@ const experimentSchema = z.object({
   rateLimit: z.string().optional(),
   maxUsers: z.string().optional(),
   variants: z.array(z.object({
-    name: z.string(),
+    name: z.string().min(1, "Variant name is required"),
     trafficSplit: z.string(),
     keyValues: z.array(z.object({
       key: z.string(),
@@ -40,7 +40,7 @@ const CreateExperiment = () => {
 
   const { control, handleSubmit } = useForm<ExperimentFormData>({
     resolver: zodResolver(experimentSchema),
-    mode: "onChange", // Validate on every change
+    mode: "onSubmit", // Validate only on submit
     defaultValues: {
       experimentName: "IPL 2024 Experiment",
       experimentId: "IPL-2024-Experiment",
