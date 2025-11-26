@@ -51,7 +51,7 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
 }) => {
   const theme = useTheme();
   const isMultiple = variant !== "single";
-  
+
   // Auto-apply 999px for multi-checkbox, 4px for others
   const borderRadius = variant === "multi-checkbox" ? "999px" : "4px";
   const [internalValue, setInternalValue] = React.useState<string | string[]>(
@@ -83,17 +83,18 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
     return theme.customComponents.dropdown.chipSmallHeight;
   };
 
-  const handleDeleteChip = (chipToDelete: string) => (event: React.MouseEvent) => {
-    event.stopPropagation();
-    if (!Array.isArray(value)) return;
-    
-    const newValue = value.filter((item) => item !== chipToDelete);
-    
-    if (controlledValue === undefined) {
-      setInternalValue(newValue);
-    }
-    onChange?.(newValue);
-  };
+  const handleDeleteChip =
+    (chipToDelete: string) => (event: React.MouseEvent) => {
+      event.stopPropagation();
+      if (!Array.isArray(value)) return;
+
+      const newValue = value.filter((item) => item !== chipToDelete);
+
+      if (controlledValue === undefined) {
+        setInternalValue(newValue);
+      }
+      onChange?.(newValue);
+    };
 
   const renderValue = (selected: string | string[]) => {
     const isEmpty = isMultiple
@@ -120,11 +121,11 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
     }
 
     if (variant === "multi-chip") {
-        let chipLimit = theme.customComponents.dropdown.chipLimit2;
-        if(size=='lg') {
-            chipLimit = theme.customComponents.dropdown.chipLimit1;
-        }
-      
+      let chipLimit = theme.customComponents.dropdown.chipLimit2;
+      if (size == "lg") {
+        chipLimit = theme.customComponents.dropdown.chipLimit1;
+      }
+
       const visibleChips = (selected as string[]).slice(0, chipLimit);
       const remainingCount = (selected as string[]).length - chipLimit;
 
@@ -229,7 +230,9 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
         {options.map((option) => (
           <MenuItem key={option} value={option}>
             {(variant === "multi-checkbox" || variant === "multi-chip") && (
-              <Checkbox checked={Array.isArray(value) && value.includes(option)} />
+              <Checkbox
+                checked={Array.isArray(value) && value.includes(option)}
+              />
             )}
             <ListItemText primary={option} />
           </MenuItem>
