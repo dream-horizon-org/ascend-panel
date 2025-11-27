@@ -170,7 +170,6 @@ const CreateExperiment = () => {
               label="Experiment ID"
               placeholder="Enter experiment id"
               infoText="Unique identifier for the experiment"
-
             />
           </Box>
 
