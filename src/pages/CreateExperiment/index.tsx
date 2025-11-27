@@ -45,12 +45,12 @@ const CreateExperiment = () => {
     null,
   );
 
-  const { control, handleSubmit } = useForm<ExperimentFormData>({
+  const { control, handleSubmit, setValue } = useForm<ExperimentFormData>({
     resolver: zodResolver(experimentSchema),
     mode: "onSubmit", // Validate only on submit
     defaultValues: {
-      experimentName: "IPL 2024 Experiment",
-      experimentId: "IPL-2024-Experiment",
+      experimentName: "",
+      experimentId: "",
       hypothesis:
         "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
       description:
@@ -73,12 +73,12 @@ const CreateExperiment = () => {
     },
   });
 
-  // Watch all form values and log changes
-  // const formValues = watch();
-
-  // useEffect(() => {
-  //   console.log("Form values changed:", formValues);
-  // }, [formValues]);
+  // Auto-generate experimentId from experimentName
+  const handleExperimentNameChange = (value: string) => {
+    // Generate ID: remove spaces, replace with underscore, convert to lowercase
+    const generatedId = value.replace(/\s+/g, "_").toLowerCase();
+    setValue("experimentId", generatedId, { shouldValidate: false });
+  };
 
   const handleBack = () => {
     navigate(-1); // Go back to previous page
@@ -162,6 +162,7 @@ const CreateExperiment = () => {
               label="Experiment Name"
               placeholder="Enter Experiment Name"
               infoText="Provide a unique name for your experiment"
+              onChangeCustom={handleExperimentNameChange}
             />
             <AscendTextFieldControlled
               name="experimentId"
@@ -169,6 +170,7 @@ const CreateExperiment = () => {
               label="Experiment ID"
               placeholder="Enter experiment id"
               infoText="Unique identifier for the experiment"
+
             />
           </Box>
 
