@@ -1,10 +1,10 @@
-import { Control, Controller } from 'react-hook-form';
-import Autocomplete from '@mui/material/Autocomplete';
-import Chip from '@mui/material/Chip';
-import CloseIcon from '@mui/icons-material/Close';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { SxProps, Theme } from '@mui/material/styles';
-import AscendTextField from '../AscendTextField/AscendTextField';
+import { Control, Controller } from "react-hook-form";
+import Autocomplete from "@mui/material/Autocomplete";
+import Chip from "@mui/material/Chip";
+import CloseIcon from "@mui/icons-material/Close";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { SxProps, Theme } from "@mui/material/styles";
+import AscendTextField from "../AscendTextField/AscendTextField";
 
 interface AscendAutoCompleteControlledProps {
   name: string;
@@ -68,7 +68,7 @@ const AscendAutoCompleteControlled = ({
             renderInput={(params) => (
               <AscendTextField
                 {...params}
-                label={label || ''}
+                label={label || ""}
                 infoText={infoText}
                 required={required}
                 placeholder={placeholder}
@@ -84,4 +84,3 @@ const AscendAutoCompleteControlled = ({
 };
 
 export default AscendAutoCompleteControlled;
-
