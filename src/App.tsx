@@ -26,6 +26,7 @@ import {
   FormControlLabel,
   MenuItem,
 } from "@mui/material";
+import Layout from "./components/Layout/Layout";
 import AddIcon from "@mui/icons-material/Add";
 import { Remove as RemoveIcon } from "@mui/icons-material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -106,18 +107,17 @@ function App() {
   };
 
   return (
-    <Container maxWidth="lg" className="min-h-screen py-8">
-      <Box className="text-center mb-8">
+    <Layout>
+      <Box>
         <Typography
-          variant="h2"
-          component="h1"
-          className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
-          sx={{ fontWeight: "bold" }}
+          variant="h4"
+          sx={{ fontWeight: 600, mb: 2 }}
+          color="text.primary"
         >
-          Hello World App
+          Welcome to Ascend
         </Typography>
-        <Typography variant="h6" color="text.secondary">
-          Demonstrating Redux Toolkit, React Hook Form, Tailwind CSS & MUI
+        <Typography variant="body1" color="text.secondary">
+          Select a tab from the sidebar to navigate
         </Typography>
         <Box className="mt-4">
           <Button
@@ -130,7 +130,6 @@ function App() {
           </Button>
         </Box>
       </Box>
-
       <Box className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Redux Toolkit Demo */}
         <Box>
@@ -558,7 +557,7 @@ function App() {
         nestedModalOpen={childModalOpen}
         onNestedModalClose={handleChildModalCancel}
       />
-    </Container>
+  </Layout>
   );
 }
 
