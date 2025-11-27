@@ -538,7 +538,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       nodes.push({
         id: "targeting",
         type: "targeting",
-        position: { x: START_X, y: targetingY },
+        position: { x: START_X, y: targetingY + 20 },
         data: { label: "Everyone" },
       });
 
