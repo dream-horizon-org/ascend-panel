@@ -136,7 +136,7 @@ const VariantNode = ({ data }: any) => {
       }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
-      
+
       {/* Variant Name Row */}
       <Box
         sx={{
@@ -255,11 +255,12 @@ const VariantNode = ({ data }: any) => {
                   opacity: 1,
                 },
               }),
-              ...(kv.type === "json" && kv.value && {
-                "& .MuiInputBase-input": {
-                  color: "#828592",
-                },
-              }),
+              ...(kv.type === "json" &&
+                kv.value && {
+                  "& .MuiInputBase-input": {
+                    color: "#828592",
+                  },
+                }),
             }}
           />
 
@@ -273,7 +274,7 @@ const VariantNode = ({ data }: any) => {
               <RemoveIcon fontSize="small" />
             </IconButton>
           )}
-          
+
           {/* Placeholder to maintain alignment */}
           {keyValues.length === 1 && (
             <Box sx={{ width: 40, height: 40, flexShrink: 0 }} />
@@ -295,7 +296,7 @@ const VariantNode = ({ data }: any) => {
                     fullWidth
                     value={tempJsonValue}
                     onChange={(e) => handleJsonValueChange(e.target.value)}
-                    placeholder='Enter JSON here'
+                    placeholder="Enter JSON here"
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         fontFamily: "monospace",
@@ -586,9 +587,16 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
               const newKeyValues = [...(currentVariant.keyValues || [])];
               // If changing the type, reset the value field
               if (field === "type") {
-                newKeyValues[index] = { ...newKeyValues[index], [field]: value, value: "" };
+                newKeyValues[index] = {
+                  ...newKeyValues[index],
+                  [field]: value,
+                  value: "",
+                };
               } else {
-                newKeyValues[index] = { ...newKeyValues[index], [field]: value };
+                newKeyValues[index] = {
+                  ...newKeyValues[index],
+                  [field]: value,
+                };
               }
               updateVariant(i, { ...currentVariant, keyValues: newKeyValues });
             },
