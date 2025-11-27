@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { Control, useFieldArray } from "react-hook-form";
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
@@ -159,10 +159,10 @@ const VariantNode = ({ data }: any) => {
         {data.canDelete ? (
           <IconButton
             size="small"
-            sx={{ color: "#666666", width: 40, height: 40, flexShrink: 0 }}
+            sx={{ color: "#828592", width: 40, height: 40, flexShrink: 0 }}
             onClick={() => data.onDeleteVariant?.()}
           >
-            <DeleteIcon fontSize="small" />
+            <DeleteOutlineOutlinedIcon fontSize="small" />
           </IconButton>
         ) : (
           <Box sx={{ width: 40, height: 40, flexShrink: 0 }} />
@@ -267,7 +267,7 @@ const VariantNode = ({ data }: any) => {
           {keyValues.length > 1 && (
             <IconButton
               size="small"
-              sx={{ color: "#666666", width: 40, height: 40, flexShrink: 0 }}
+              sx={{ color: "#828592", width: 40, height: 40, flexShrink: 0 }}
               onClick={() => data.onDeleteKeyValue?.(index)}
             >
               <RemoveIcon fontSize="small" />
@@ -512,7 +512,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       handleTrafficSplitChange: (index: number, value: string) => void,
     ) => {
       const COLUMN_GAP = 400;
-      const MIN_SPACING = 50;
+      const MIN_SPACING = 80;
       const START_X = 5;
       const START_Y = 50;
       const ROW_HEIGHT = 48;
