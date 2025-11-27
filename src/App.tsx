@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAppSelector, useAppDispatch } from "./store/hooks";
+import Layout from "./components/Layout/Layout";
 import {
   increment,
   decrement,
@@ -67,7 +68,7 @@ function App() {
   const dispatch = useAppDispatch();
   const [selectedCity, setSelectedCity] = useState<CityOption | null>(null);
   const [selectedCities, setSelectedCities] = useState<CityOption[]>([]);
-  
+
   // Modal states
   const [parentModalOpen, setParentModalOpen] = useState(false);
   const [childModalOpen, setChildModalOpen] = useState(false);
@@ -106,18 +107,17 @@ function App() {
   };
 
   return (
-    <Container maxWidth="lg" className="min-h-screen py-8">
-      <Box className="text-center mb-8">
+    <Layout>
+      <Box>
         <Typography
-          variant="h2"
-          component="h1"
-          className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
-          sx={{ fontWeight: "bold" }}
+          variant="h4"
+          sx={{ fontWeight: 600, mb: 2 }}
+          color="text.primary"
         >
-          Hello World App
+          Welcome to Ascend
         </Typography>
-        <Typography variant="h6" color="text.secondary">
-          Demonstrating Redux Toolkit, React Hook Form, Tailwind CSS & MUI
+        <Typography variant="body1" color="text.secondary">
+          Select a tab from the sidebar to navigate
         </Typography>
         <Box className="mt-4">
           <Button
@@ -401,26 +401,47 @@ function App() {
             showCloseButton: false,
             children: (
               <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                  }}
+                >
                   <Typography variant="h6" sx={{ fontWeight: 600 }}>
                     Close without saving?
                   </Typography>
                   <IconButton
                     size="small"
                     onClick={handleChildModalCancel}
-                    sx={{ ml: 'auto' }}
+                    sx={{ ml: "auto" }}
                   >
                     <CloseIcon />
                   </IconButton>
                 </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 3 }}
+                >
                   Discarding this will remove all information saved
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                  <Button onClick={handleChildModalCancel} variant="text" color="primary">
+                <Box
+                  sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}
+                >
+                  <Button
+                    onClick={handleChildModalCancel}
+                    variant="text"
+                    color="primary"
+                  >
                     Cancel
                   </Button>
-                  <Button onClick={handleChildModalExit} variant="contained" color="primary">
+                  <Button
+                    onClick={handleChildModalExit}
+                    variant="contained"
+                    color="primary"
+                  >
                     Exit
                   </Button>
                 </Box>
@@ -428,26 +449,48 @@ function App() {
             ),
           },
           actions: (
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', width: '100%' }}>
-              <Button onClick={handleParentModalClose} variant="text" color="primary">
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                justifyContent: "flex-end",
+                width: "100%",
+              }}
+            >
+              <Button
+                onClick={handleParentModalClose}
+                variant="text"
+                color="primary"
+              >
                 Cancel
               </Button>
-              <Button onClick={handleParentModalClose} variant="contained" color="primary">
+              <Button
+                onClick={handleParentModalClose}
+                variant="contained"
+                color="primary"
+              >
                 Save
               </Button>
             </Box>
           ),
           children: (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               {/* Header with Title and Close Button */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
+              >
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                   Targeting
                 </Typography>
                 <IconButton
                   size="small"
                   onClick={handleParentModalClose}
-                  sx={{ ml: 'auto' }}
+                  sx={{ ml: "auto" }}
                 >
                   <CloseIcon />
                 </IconButton>
@@ -458,41 +501,97 @@ function App() {
                 <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
                   Filters
                 </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ mb: 2, display: "block" }}
+                >
                   Users are filtered out irrespective of cohorts
                 </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                    <Typography variant="body2" sx={{ minWidth: 40 }}>IF</Typography>
-                    <TextField select size="small" defaultValue="App Version" sx={{ minWidth: 150 }}>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ minWidth: 40 }}>
+                      IF
+                    </Typography>
+                    <TextField
+                      select
+                      size="small"
+                      defaultValue="App Version"
+                      sx={{ minWidth: 150 }}
+                    >
                       <MenuItem value="App Version">App Version</MenuItem>
                       <MenuItem value="Country">Country</MenuItem>
                       <MenuItem value="Device">Device</MenuItem>
                     </TextField>
-                    <TextField select size="small" defaultValue="Is not equal to" sx={{ minWidth: 150 }}>
-                      <MenuItem value="Is not equal to">Is not equal to</MenuItem>
+                    <TextField
+                      select
+                      size="small"
+                      defaultValue="Is not equal to"
+                      sx={{ minWidth: 150 }}
+                    >
+                      <MenuItem value="Is not equal to">
+                        Is not equal to
+                      </MenuItem>
                       <MenuItem value="Is equal to">Is equal to</MenuItem>
                       <MenuItem value="Contains">Contains</MenuItem>
                     </TextField>
-                    <TextField size="small" defaultValue="12.3" sx={{ width: 100 }} />
+                    <TextField
+                      size="small"
+                      defaultValue="12.3"
+                      sx={{ width: 100 }}
+                    />
                     <IconButton size="small">
                       <CloseIcon fontSize="small" />
                     </IconButton>
-                    <Button size="small" variant="outlined">+3</Button>
+                    <Button size="small" variant="outlined">
+                      +3
+                    </Button>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                    <Typography variant="body2" sx={{ minWidth: 40 }}>AND</Typography>
-                    <TextField select size="small" defaultValue="Country" sx={{ minWidth: 150 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ minWidth: 40 }}>
+                      AND
+                    </Typography>
+                    <TextField
+                      select
+                      size="small"
+                      defaultValue="Country"
+                      sx={{ minWidth: 150 }}
+                    >
                       <MenuItem value="Country">Country</MenuItem>
                       <MenuItem value="App Version">App Version</MenuItem>
                       <MenuItem value="Device">Device</MenuItem>
                     </TextField>
-                    <TextField select size="small" defaultValue="Is equal to" sx={{ minWidth: 150 }}>
+                    <TextField
+                      select
+                      size="small"
+                      defaultValue="Is equal to"
+                      sx={{ minWidth: 150 }}
+                    >
                       <MenuItem value="Is equal to">Is equal to</MenuItem>
-                      <MenuItem value="Is not equal to">Is not equal to</MenuItem>
+                      <MenuItem value="Is not equal to">
+                        Is not equal to
+                      </MenuItem>
                       <MenuItem value="Contains">Contains</MenuItem>
                     </TextField>
-                    <TextField size="small" defaultValue="India" sx={{ width: 100 }} />
+                    <TextField
+                      size="small"
+                      defaultValue="India"
+                      sx={{ width: 100 }}
+                    />
                     <IconButton size="small" color="primary">
                       <AddIcon fontSize="small" />
                     </IconButton>
@@ -505,8 +604,8 @@ function App() {
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                   Cohorts
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-                  {['Tag1', 'Tag2', 'Tag3', 'Tag4'].map((tag, index) => (
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+                  {["Tag1", "Tag2", "Tag3", "Tag4"].map((tag, index) => (
                     <Chip
                       key={index}
                       label={tag}
@@ -515,29 +614,41 @@ function App() {
                       sx={{ mb: 1 }}
                     />
                   ))}
-                  <Button size="small" variant="outlined">+3</Button>
+                  <Button size="small" variant="outlined">
+                    +3
+                  </Button>
                 </Box>
                 <FormControlLabel
                   control={<Checkbox />}
                   label="Assign cohorts directly to variants"
                 />
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                  Assigning cohorts will make it <strong>inaccurate and risky</strong>. Make sure to verify each cohort.
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block", mt: 1 }}
+                >
+                  Assigning cohorts will make it{" "}
+                  <strong>inaccurate and risky</strong>. Make sure to verify
+                  each cohort.
                 </Typography>
               </Box>
 
               {/* Exposure Section */}
               <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+                >
                   <Typography variant="h6" sx={{ fontWeight: 600 }}>
                     Exposure
                   </Typography>
                   <InfoOutlinedIcon fontSize="small" color="action" />
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <Slider
                     value={exposureValue}
-                    onChange={(_, newValue) => setExposureValue(newValue as number)}
+                    onChange={(_, newValue) =>
+                      setExposureValue(newValue as number)
+                    }
                     min={0}
                     max={100}
                     sx={{ flex: 1 }}
@@ -558,7 +669,7 @@ function App() {
         nestedModalOpen={childModalOpen}
         onNestedModalClose={handleChildModalCancel}
       />
-    </Container>
+    </Layout>
   );
 }
 
