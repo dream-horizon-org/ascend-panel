@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAppSelector, useAppDispatch } from "./store/hooks";
-import Layout from "./components/Layout/Layout";
 import {
   increment,
   decrement,
@@ -27,6 +26,7 @@ import {
   FormControlLabel,
   MenuItem,
 } from "@mui/material";
+import Layout from "./components/Layout/Layout";
 import AddIcon from "@mui/icons-material/Add";
 import { Remove as RemoveIcon } from "@mui/icons-material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -130,7 +130,6 @@ function App() {
           </Button>
         </Box>
       </Box>
-
       <Box className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Redux Toolkit Demo */}
         <Box>
