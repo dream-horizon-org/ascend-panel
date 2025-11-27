@@ -308,7 +308,7 @@ const VariantNode = ({ data }: any) => {
                   <>
                     <Button
                       onClick={handleCancelJson}
-                      variant="outlined"
+                      variant="text"
                       sx={{ textTransform: "none" }}
                     >
                       Cancel
