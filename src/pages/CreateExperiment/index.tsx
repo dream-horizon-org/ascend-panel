@@ -1,14 +1,14 @@
-
-import { Box, IconButton, Typography, Button } from '@mui/material'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
-import { useNavigate } from 'react-router'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useState } from 'react'
-import AscendTextFieldControlled from '../../components/AscendTextField/AscendTextFieldControlled'
-import VariantsFlow from './components/VariantsFlow'
+import { Box, IconButton, Typography, Button } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useState } from "react";
+import AscendTextFieldControlled from "../../components/AscendTextField/AscendTextFieldControlled";
+import VariantsFlow from "./components/VariantsFlow";
+import AscendAutoCompleteControlled from "../../components/AscendAutoComplete/AscendAutoCompleteControlled";
 
 // Form validation schema
 const experimentSchema = z.object({
@@ -19,24 +19,31 @@ const experimentSchema = z.object({
     .min(1, "Hypothesis is required")
     .max(120, "Maximum 120 characters allowed"),
   description: z.string().max(300, "Maximum 300 characters allowed").optional(),
+  tags: z.array(z.string()).optional(),
   rateLimit: z.string().optional(),
   maxUsers: z.string().optional(),
-  variants: z.array(z.object({
-    name: z.string().min(1, "Variant name is required"),
-    trafficSplit: z.string(),
-    keyValues: z.array(z.object({
-      key: z.string(),
-      type: z.string(),
-      value: z.string(),
-    }))
-  })),
+  variants: z.array(
+    z.object({
+      name: z.string().min(1, "Variant name is required"),
+      trafficSplit: z.string(),
+      keyValues: z.array(
+        z.object({
+          key: z.string(),
+          type: z.string(),
+          value: z.string(),
+        }),
+      ),
+    }),
+  ),
 });
 
 type ExperimentFormData = z.infer<typeof experimentSchema>;
 
 const CreateExperiment = () => {
   const navigate = useNavigate();
-  const [submittedData, setSubmittedData] = useState<ExperimentFormData | null>(null);
+  const [submittedData, setSubmittedData] = useState<ExperimentFormData | null>(
+    null,
+  );
 
   const { control, handleSubmit } = useForm<ExperimentFormData>({
     resolver: zodResolver(experimentSchema),
@@ -48,22 +55,19 @@ const CreateExperiment = () => {
         "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
       description:
         "The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.",
+      tags: [],
       rateLimit: "100%",
       maxUsers: "",
       variants: [
         {
-          name: 'Control Group',
-          trafficSplit: '50',
-          keyValues: [
-            { key: '', type: '', value: 'blue' },
-          ]
+          name: "Control Group",
+          trafficSplit: "50",
+          keyValues: [{ key: "", type: "", value: "blue" }],
         },
         {
-          name: 'Variant 1',
-          trafficSplit: '50',
-          keyValues: [
-            { key: '', type: '', value: '' },
-          ]
+          name: "Variant 1",
+          trafficSplit: "50",
+          keyValues: [{ key: "", type: "", value: "" }],
         },
       ],
     },
@@ -82,7 +86,7 @@ const CreateExperiment = () => {
 
   const onSubmit = (data: ExperimentFormData) => {
     setSubmittedData(data);
-    console.log('Form submitted:', data);
+    console.log("Form submitted:", data);
   };
 
   return (
@@ -187,6 +191,44 @@ const CreateExperiment = () => {
               label="Description (optional)"
               placeholder="Enter description"
               height="120px"
+            />
+          </Box>
+
+          {/* Tags Field */}
+          <Box sx={{ mt: "1.5rem" }}>
+            <AscendAutoCompleteControlled
+              name="tags"
+              control={control}
+              label="Tags (optional)"
+              placeholder="Select tags"
+              options={[
+                "Performance",
+                "UI/UX",
+                "Backend",
+                "Frontend",
+                "A/B Test",
+                "Feature Flag",
+              ]}
+              multiple
+              filterSelectedOptions
+              chipStyles={{
+                backgroundColor: "#E1E3EA",
+                border: "none",
+                borderRadius: 0,
+                height: "24px",
+                fontSize: "0.75rem",
+                "& .MuiChip-label": {
+                  padding: "0 8px",
+                },
+                "& .MuiChip-deleteIcon": {
+                  color: "#666666",
+                  fontSize: "0.875rem",
+                  margin: "0 4px 0 -4px",
+                  "&:hover": {
+                    color: "#333333",
+                  },
+                },
+              }}
             />
           </Box>
         </Box>
