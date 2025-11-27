@@ -12,8 +12,10 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import RemoveIcon from "@mui/icons-material/Remove";
 import { Control, useFieldArray } from "react-hook-form";
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
+import AscendModal from "../../../components/AscendModal/AscendModal";
 
 // Custom node for Targeting
 const TargetingNode = ({ data }: any) => {
@@ -77,6 +79,50 @@ const TrafficSplitNode = ({ data }: any) => {
 // Custom node for Variant
 const VariantNode = ({ data }: any) => {
   const keyValues = data.keyValues || [{ key: "", type: "", value: "" }];
+  const [jsonModalOpen, setJsonModalOpen] = useState<number | null>(null);
+  const [tempJsonValue, setTempJsonValue] = useState<string>("");
+  const [isValidJson, setIsValidJson] = useState<boolean>(true);
+
+  const validateJson = (value: string) => {
+    if (!value || value.trim() === "") {
+      setIsValidJson(false);
+      return false;
+    }
+
+    try {
+      JSON.parse(value);
+      setIsValidJson(true);
+      return true;
+    } catch (error) {
+      setIsValidJson(false);
+      return false;
+    }
+  };
+
+  const handleOpenJsonModal = (index: number, currentValue: string) => {
+    setTempJsonValue(currentValue || "");
+    validateJson(currentValue || "");
+    setJsonModalOpen(index);
+  };
+
+  const handleJsonValueChange = (value: string) => {
+    setTempJsonValue(value);
+    validateJson(value);
+  };
+
+  const handleSaveJson = (index: number) => {
+    if (isValidJson) {
+      data.onKeyValueChange?.(index, "value", tempJsonValue);
+      setJsonModalOpen(null);
+      setTempJsonValue("");
+    }
+  };
+
+  const handleCancelJson = () => {
+    setJsonModalOpen(null);
+    setTempJsonValue("");
+    setIsValidJson(true);
+  };
 
   return (
     <Box
@@ -86,22 +132,42 @@ const VariantNode = ({ data }: any) => {
         paddingLeft: "0.5rem",
         paddingRight: "1rem",
         borderLeft: "4px solid #0060E526",
-        backgroundColor: "white",
         minWidth: "350px",
       }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
-      <TextField
-        placeholder="Variant Name"
-        size="small"
-        value={data.name || ""}
-        onChange={(e) => data.onNameChange?.(e.target.value)}
+      
+      {/* Variant Name Row */}
+      <Box
         sx={{
+          display: "flex",
+          gap: 1,
+          alignItems: "center",
           mb: 1.5,
-          "& .MuiOutlinedInput-root": { borderRadius: "0.25rem" },
-          width: "40%",
         }}
-      />
+      >
+        <TextField
+          placeholder="Variant Name"
+          size="small"
+          value={data.name || ""}
+          onChange={(e) => data.onNameChange?.(e.target.value)}
+          sx={{
+            flex: 1,
+            "& .MuiOutlinedInput-root": { borderRadius: "0.25rem" },
+          }}
+        />
+        {data.canDelete ? (
+          <IconButton
+            size="small"
+            sx={{ color: "#666666", width: 40, height: 40, flexShrink: 0 }}
+            onClick={() => data.onDeleteVariant?.()}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        ) : (
+          <Box sx={{ width: 40, height: 40, flexShrink: 0 }} />
+        )}
+      </Box>
 
       {/* Multiple Key-Value Rows */}
       {keyValues.map((kv: any, index: number) => (
@@ -144,17 +210,56 @@ const VariantNode = ({ data }: any) => {
             <MenuItem value="string">String</MenuItem>
             <MenuItem value="number">Number</MenuItem>
             <MenuItem value="boolean">Boolean</MenuItem>
+            <MenuItem value="json">Json</MenuItem>
           </Select>
           <TextField
             size="small"
-            placeholder="Value"
-            value={kv.value || ""}
+            placeholder={kv.type === "json" ? "Add JSON" : "Value"}
+            value={
+              kv.type === "json" && kv.value
+                ? "{JSON code preview}"
+                : kv.value || ""
+            }
             onChange={(e) =>
               data.onKeyValueChange?.(index, "value", e.target.value)
             }
+            onClick={
+              kv.type === "json"
+                ? () => handleOpenJsonModal(index, kv.value)
+                : undefined
+            }
+            InputProps={{
+              readOnly: kv.type === "json",
+              endAdornment:
+                kv.type === "json" && kv.value ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => handleOpenJsonModal(index, kv.value)}
+                      sx={{ padding: "4px" }}
+                    >
+                      <EditIcon fontSize="small" sx={{ color: "#0060E5" }} />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              sx: {
+                cursor: kv.type === "json" ? "pointer" : "text",
+              },
+            }}
             sx={{
               flex: 2,
               "& .MuiOutlinedInput-root": { borderRadius: "0.25rem" },
+              ...(kv.type === "json" && {
+                "& .MuiInputBase-input::placeholder": {
+                  color: "#0060E5",
+                  opacity: 1,
+                },
+              }),
+              ...(kv.type === "json" && kv.value && {
+                "& .MuiInputBase-input": {
+                  color: "#828592",
+                },
+              }),
             }}
           />
 
@@ -165,24 +270,83 @@ const VariantNode = ({ data }: any) => {
               sx={{ color: "#666666", width: 40, height: 40, flexShrink: 0 }}
               onClick={() => data.onDeleteKeyValue?.(index)}
             >
-              <DeleteIcon fontSize="small" />
+              <RemoveIcon fontSize="small" />
             </IconButton>
           )}
+          
+          {/* Placeholder to maintain alignment */}
+          {keyValues.length === 1 && (
+            <Box sx={{ width: 40, height: 40, flexShrink: 0 }} />
+          )}
 
-          {/* Only show add button for the last item */}
-          {index === keyValues.length - 1 ? (
-            <IconButton
-              size="small"
-              sx={{ color: "#666666", width: 40, height: 40, flexShrink: 0 }}
-              onClick={() => data.onAddKeyValue?.(index)}
-            >
-              <AddIcon fontSize="small" />
-            </IconButton>
-          ) : (
-            <Box sx={{ width: 40, height: 40, flexShrink: 0 }} /> // Placeholder to maintain alignment
+          {/* JSON Modal */}
+          {jsonModalOpen === index && (
+            <AscendModal
+              open={jsonModalOpen === index}
+              onClose={handleCancelJson}
+              config={{
+                title: `JSON for ${data.name || "Variant"} for ${kv.key || "key"}`,
+                width: 600,
+                maxHeight: "80vh",
+                content: (
+                  <TextField
+                    multiline
+                    rows={15}
+                    fullWidth
+                    value={tempJsonValue}
+                    onChange={(e) => handleJsonValueChange(e.target.value)}
+                    placeholder='Enter JSON here'
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        fontFamily: "monospace",
+                        fontSize: "0.875rem",
+                      },
+                    }}
+                  />
+                ),
+                actions: (
+                  <>
+                    <Button
+                      onClick={handleCancelJson}
+                      variant="outlined"
+                      sx={{ textTransform: "none" }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => handleSaveJson(index)}
+                      variant="contained"
+                      disabled={!isValidJson}
+                      sx={{ textTransform: "none" }}
+                    >
+                      Save
+                    </Button>
+                  </>
+                ),
+                showCloseButton: false,
+              }}
+            />
           )}
         </Box>
       ))}
+
+      {/* Add Parameter Button */}
+      <Button
+        startIcon={<AddIcon />}
+        onClick={() => data.onAddKeyValue?.(keyValues.length - 1)}
+        sx={{
+          textTransform: "none",
+          color: "#333333",
+          fontFamily: "Inter",
+          fontWeight: 500,
+          fontSize: "0.875rem",
+          mt: 1.5,
+          justifyContent: "flex-start",
+          paddingLeft: 0,
+        }}
+      >
+        Add Parameter
+      </Button>
     </Box>
   );
 };
@@ -237,6 +401,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     fields: variantFields,
     append: appendVariant,
     update: updateVariant,
+    remove: removeVariant,
   } = useFieldArray({
     control,
     name: "variants",
@@ -388,7 +553,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
           type: "trafficSplit",
           position: {
             x: START_X + COLUMN_GAP,
-            y: currentY + cardHeight / 2 - 30,
+            y: currentY + cardHeight / 2 - 6,
           },
           data: {
             percentage: config.trafficSplit || "",
@@ -404,14 +569,27 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
           data: {
             name: config.name,
             keyValues: config.keyValues || [{ key: "", type: "", value: "" }],
+            canDelete: variantFields.length > 2,
             onNameChange: (value: string) => {
               const currentVariant: any = variantFields[i];
               updateVariant(i, { ...currentVariant, name: value });
             },
+            onDeleteVariant: () => {
+              // Only allow delete if more than two variants exist
+              if (variantFields.length > 2) {
+                removeVariant(i);
+                setIsTrafficEdited(true); // Mark as edited since we're changing the distribution
+              }
+            },
             onKeyValueChange: (index: number, field: string, value: string) => {
               const currentVariant: any = variantFields[i];
               const newKeyValues = [...(currentVariant.keyValues || [])];
-              newKeyValues[index] = { ...newKeyValues[index], [field]: value };
+              // If changing the type, reset the value field
+              if (field === "type") {
+                newKeyValues[index] = { ...newKeyValues[index], [field]: value, value: "" };
+              } else {
+                newKeyValues[index] = { ...newKeyValues[index], [field]: value };
+              }
               updateVariant(i, { ...currentVariant, keyValues: newKeyValues });
             },
             onAddKeyValue: (afterIndex: number) => {
@@ -450,8 +628,10 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     variantsConfig,
     variantFields,
     updateVariant,
+    removeVariant,
     handleTrafficSplitChange,
     handleTrafficBlur,
+    isTrafficEdited,
   ]);
 
   const edges = useMemo(
