@@ -514,7 +514,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       const COLUMN_GAP = 400;
       const MIN_SPACING = 80;
       const START_X = 5;
-      const START_Y = 50;
+      const START_Y = 0;
       const ROW_HEIGHT = 48;
       const BASE_HEIGHT = 64;
       const TARGETING_HEIGHT = 100;
