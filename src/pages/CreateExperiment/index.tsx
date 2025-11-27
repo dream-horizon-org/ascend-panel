@@ -8,6 +8,7 @@ import { z } from "zod";
 import { useState } from "react";
 import AscendTextFieldControlled from "../../components/AscendTextField/AscendTextFieldControlled";
 import VariantsFlow from "./components/VariantsFlow";
+import AscendAutoCompleteControlled from "../../components/AscendAutoComplete/AscendAutoCompleteControlled";
 
 // Form validation schema
 const experimentSchema = z.object({
@@ -18,6 +19,7 @@ const experimentSchema = z.object({
     .min(1, "Hypothesis is required")
     .max(120, "Maximum 120 characters allowed"),
   description: z.string().max(300, "Maximum 300 characters allowed").optional(),
+  tags: z.array(z.string()).optional(),
   rateLimit: z.string().optional(),
   maxUsers: z.string().optional(),
   variants: z.array(
@@ -53,6 +55,7 @@ const CreateExperiment = () => {
         "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
       description:
         "The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.",
+      tags: [],
       rateLimit: "100%",
       maxUsers: "",
       variants: [
@@ -188,6 +191,44 @@ const CreateExperiment = () => {
               label="Description (optional)"
               placeholder="Enter description"
               height="120px"
+            />
+          </Box>
+
+          {/* Tags Field */}
+          <Box sx={{ mt: "1.5rem" }}>
+            <AscendAutoCompleteControlled
+              name="tags"
+              control={control}
+              label="Tags (optional)"
+              placeholder="Select tags"
+              options={[
+                "Performance",
+                "UI/UX",
+                "Backend",
+                "Frontend",
+                "A/B Test",
+                "Feature Flag",
+              ]}
+              multiple
+              filterSelectedOptions
+              chipStyles={{
+                backgroundColor: "#E1E3EA",
+                border: "none",
+                borderRadius: 0,
+                height: "24px",
+                fontSize: "0.75rem",
+                "& .MuiChip-label": {
+                  padding: "0 8px",
+                },
+                "& .MuiChip-deleteIcon": {
+                  color: "#666666",
+                  fontSize: "0.875rem",
+                  margin: "0 4px 0 -4px",
+                  "&:hover": {
+                    color: "#333333",
+                  },
+                },
+              }}
             />
           </Box>
         </Box>
