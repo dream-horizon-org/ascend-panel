@@ -10,9 +10,6 @@ export { default as apiClient, api } from "./apiClient";
 export { endpoints } from "./endpoints";
 export type { Endpoints } from "./endpoints";
 
-// Generic hook
-export { useAPI } from "./useAPI";
-
 // Query Client
 export { queryClient } from "./queryClient";
 
