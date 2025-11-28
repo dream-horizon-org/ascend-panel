@@ -91,22 +91,22 @@ export const experimentKeys = {
 
 // Fetch functions
 export const fetchExperiments = async (
-  params?: Record<string, any>
+  params?: Record<string, any>,
 ): Promise<ExperimentsResponse> => {
   const response = await api.get<ExperimentsResponse>(
     endpoints.experiments.list,
     {
       params,
-    }
+    },
   );
   return response.data;
 };
 
 export const fetchExperiment = async (
-  id: string | number
+  id: string | number,
 ): Promise<ExperimentResponse> => {
   const response = await api.get<ExperimentApiResponse>(
-    endpoints.experiments.detail(id)
+    endpoints.experiments.detail(id),
   );
   // API returns experiment wrapped in { data: Experiment }
   return response.data.data;
@@ -118,7 +118,7 @@ export const useExperiments = (
   options?: Omit<
     UseQueryOptions<ExperimentsResponse, Error>,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
   return useQuery<ExperimentsResponse, Error>({
     queryKey: experimentKeys.list(params),
@@ -133,7 +133,7 @@ export const useExperiment = (
   options?: Omit<
     UseQueryOptions<ExperimentResponse, Error>,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
   return useQuery<ExperimentResponse, Error>({
     queryKey: experimentKeys.detail(id!),
@@ -143,4 +143,3 @@ export const useExperiment = (
     ...options,
   });
 };
-

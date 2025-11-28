@@ -35,7 +35,7 @@ export const userKeys = {
 
 // Fetch functions
 export const fetchUsers = async (
-  params?: Record<string, any>
+  params?: Record<string, any>,
 ): Promise<UsersResponse> => {
   const response = await api.get<UsersResponse>(endpoints.users.list, {
     params,
@@ -51,10 +51,7 @@ export const fetchUser = async (id: string | number): Promise<UserResponse> => {
 // React Query hooks
 export const useUsers = (
   params?: Record<string, any>,
-  options?: Omit<
-    UseQueryOptions<UsersResponse, Error>,
-    "queryKey" | "queryFn"
-  >
+  options?: Omit<UseQueryOptions<UsersResponse, Error>, "queryKey" | "queryFn">,
 ) => {
   return useQuery<UsersResponse, Error>({
     queryKey: userKeys.list(params),
@@ -66,7 +63,7 @@ export const useUsers = (
 
 export const useUser = (
   id: string | number | null,
-  options?: Omit<UseQueryOptions<UserResponse, Error>, "queryKey" | "queryFn">
+  options?: Omit<UseQueryOptions<UserResponse, Error>, "queryKey" | "queryFn">,
 ) => {
   return useQuery<UserResponse, Error>({
     queryKey: userKeys.detail(id!),
@@ -76,4 +73,3 @@ export const useUser = (
     ...options,
   });
 };
-

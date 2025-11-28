@@ -25,7 +25,7 @@ const apiClient: AxiosInstance = axios.create({
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
-    "Accept": "application/json",
+    Accept: "application/json",
   },
 });
 
@@ -35,7 +35,7 @@ apiClient.interceptors.request.use(
     // Add project key header (required for all requests)
     // const projectKey =
     //   import.meta.env.VITE_PROJECT_KEY || localStorage.getItem("projectKey");
-    const projectKey = "666118b4-a1a5-4849-9837-9f7685a09569" //Hardcoded project Key remove when merging
+    const projectKey = "666118b4-a1a5-4849-9837-9f7685a09569"; //Hardcoded project Key remove when merging
     if (projectKey && config.headers) {
       config.headers["x-project-key"] = projectKey;
     }
@@ -48,13 +48,16 @@ apiClient.interceptors.request.use(
 
     // Log request in development
     if (import.meta.env.DEV) {
-      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
-        data: config.data,
-        params: config.params,
-        headers: {
-          "x-project-key": projectKey ? "***" : "missing",
+      console.log(
+        `[API Request] ${config.method?.toUpperCase()} ${config.url}`,
+        {
+          data: config.data,
+          params: config.params,
+          headers: {
+            "x-project-key": projectKey ? "***" : "missing",
+          },
         },
-      });
+      );
     }
 
     return config;
@@ -62,7 +65,7 @@ apiClient.interceptors.request.use(
   (error) => {
     console.error("[API Request Error]", error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor
@@ -70,10 +73,13 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     // Log response in development
     if (import.meta.env.DEV) {
-      console.log(`[API Response] ${response.config.method?.toUpperCase()} ${response.config.url}`, {
-        status: response.status,
-        data: response.data,
-      });
+      console.log(
+        `[API Response] ${response.config.method?.toUpperCase()} ${response.config.url}`,
+        {
+          status: response.status,
+          data: response.data,
+        },
+      );
     }
 
     return response;
@@ -101,7 +107,10 @@ apiClient.interceptors.response.use(
           console.error("[API] Server Error - Please try again later");
           break;
         default:
-          console.error(`[API Error] ${status}:`, data?.message || error.message);
+          console.error(
+            `[API Error] ${status}:`,
+            data?.message || error.message,
+          );
       }
     } else if (error.request) {
       // Request made but no response received
@@ -112,7 +121,7 @@ apiClient.interceptors.response.use(
           "[API] CORS Error detected. Make sure:",
           "\n1. The backend server is running",
           "\n2. The Vite proxy is configured correctly (vite.config.js)",
-          "\n3. The backend allows requests from the frontend origin"
+          "\n3. The backend allows requests from the frontend origin",
         );
       }
     } else {
@@ -121,14 +130,14 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // Typed API methods
 export const api = {
   get: <T = any>(
     url: string,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> => {
     return apiClient.get<T>(url, config);
   },
@@ -136,7 +145,7 @@ export const api = {
   post: <T = any>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> => {
     return apiClient.post<T>(url, data, config);
   },
@@ -144,7 +153,7 @@ export const api = {
   put: <T = any>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> => {
     return apiClient.put<T>(url, data, config);
   },
@@ -152,18 +161,17 @@ export const api = {
   patch: <T = any>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> => {
     return apiClient.patch<T>(url, data, config);
   },
 
   delete: <T = any>(
     url: string,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> => {
     return apiClient.delete<T>(url, config);
   },
 };
 
 export default apiClient;
-

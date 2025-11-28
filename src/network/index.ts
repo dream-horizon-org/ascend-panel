@@ -21,6 +21,4 @@ export * from "./queries/users";
 export * from "./queries/experiments";
 
 // Mutations
-export * from "./mutations/updateUser";
 export * from "./mutations/experiments";
-

@@ -25,9 +25,7 @@ interface UseAPIResult<T = any> {
  * Supports GET, POST, PUT, PATCH, DELETE methods
  * Returns data, error, loading state, and execute function
  */
-export function useAPI<T = any>(
-  options: UseAPIOptions<T>
-): UseAPIResult<T> {
+export function useAPI<T = any>(options: UseAPIOptions<T>): UseAPIResult<T> {
   const { method = "GET", url, data, config, immediate = false } = options;
 
   const [dataState, setDataState] = useState<T | null>(null);
@@ -58,27 +56,27 @@ export function useAPI<T = any>(
             response = await api.post<T>(
               finalOptions.url,
               finalOptions.data,
-              finalOptions.config
+              finalOptions.config,
             );
             break;
           case "PUT":
             response = await api.put<T>(
               finalOptions.url,
               finalOptions.data,
-              finalOptions.config
+              finalOptions.config,
             );
             break;
           case "PATCH":
             response = await api.patch<T>(
               finalOptions.url,
               finalOptions.data,
-              finalOptions.config
+              finalOptions.config,
             );
             break;
           case "DELETE":
             response = await api.delete<T>(
               finalOptions.url,
-              finalOptions.config
+              finalOptions.config,
             );
             break;
           default:
@@ -96,7 +94,7 @@ export function useAPI<T = any>(
         return null;
       }
     },
-    [method, url, data, config]
+    [method, url, data, config],
   );
 
   const reset = useCallback(() => {
@@ -118,4 +116,3 @@ export function useAPI<T = any>(
     reset,
   };
 }
-

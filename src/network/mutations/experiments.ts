@@ -5,10 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { api } from "../apiClient";
 import { endpoints } from "../endpoints";
-import {
-  experimentKeys,
-  Experiment,
-} from "../queries/experiments";
+import { experimentKeys, Experiment } from "../queries/experiments";
 
 // Types
 export interface CreateExperimentRequest {
@@ -38,11 +35,11 @@ export type ExperimentMutationResponse = Experiment;
 
 // Mutation functions
 export const createExperiment = async (
-  data: CreateExperimentRequest
+  data: CreateExperimentRequest,
 ): Promise<ExperimentMutationResponse> => {
   const response = await api.post<ExperimentMutationApiResponse>(
     endpoints.experiments.create,
-    data
+    data,
   );
   // API returns experiment wrapped in { data: Experiment }
   return response.data.data;
@@ -50,21 +47,21 @@ export const createExperiment = async (
 
 export const updateExperiment = async (
   id: string | number,
-  data: UpdateExperimentRequest
+  data: UpdateExperimentRequest,
 ): Promise<ExperimentMutationResponse> => {
   const response = await api.put<ExperimentMutationApiResponse>(
     endpoints.experiments.update(id),
-    data
+    data,
   );
   // API returns experiment wrapped in { data: Experiment }
   return response.data.data;
 };
 
 export const deleteExperiment = async (
-  id: string | number
+  id: string | number,
 ): Promise<{ message: string }> => {
   const response = await api.delete<{ data: { message: string } }>(
-    endpoints.experiments.delete(id)
+    endpoints.experiments.delete(id),
   );
   // API might return wrapped response
   return response.data.data || response.data;
@@ -72,31 +69,31 @@ export const deleteExperiment = async (
 
 export const concludeExperiment = async (
   id: string | number,
-  data: ConcludeExperimentRequest
+  data: ConcludeExperimentRequest,
 ): Promise<ExperimentMutationResponse> => {
   const response = await api.post<ExperimentMutationApiResponse>(
     endpoints.experiments.declareWinner(id),
-    data
+    data,
   );
   // API returns experiment wrapped in { data: Experiment }
   return response.data.data;
 };
 
 export const cloneExperiment = async (
-  id: string | number
+  id: string | number,
 ): Promise<ExperimentMutationResponse> => {
   const response = await api.post<ExperimentMutationApiResponse>(
-    endpoints.experiments.clone(id)
+    endpoints.experiments.clone(id),
   );
   // API returns experiment wrapped in { data: Experiment }
   return response.data.data;
 };
 
 export const terminateExperiment = async (
-  id: string | number
+  id: string | number,
 ): Promise<ExperimentMutationResponse> => {
   const response = await api.post<ExperimentMutationApiResponse>(
-    endpoints.experiments.terminate(id)
+    endpoints.experiments.terminate(id),
   );
   // API returns experiment wrapped in { data: Experiment }
   return response.data.data;
@@ -105,13 +102,21 @@ export const terminateExperiment = async (
 // React Query mutation hooks
 export const useCreateExperiment = (
   options?: Omit<
-    UseMutationOptions<ExperimentMutationResponse, Error, CreateExperimentRequest>,
+    UseMutationOptions<
+      ExperimentMutationResponse,
+      Error,
+      CreateExperimentRequest
+    >,
     "mutationFn"
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
-  return useMutation<ExperimentMutationResponse, Error, CreateExperimentRequest>({
+  return useMutation<
+    ExperimentMutationResponse,
+    Error,
+    CreateExperimentRequest
+  >({
     mutationFn: createExperiment,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: experimentKeys.lists() });
@@ -128,7 +133,7 @@ export const useUpdateExperiment = (
       { id: string | number; data: UpdateExperimentRequest }
     >,
     "mutationFn"
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -152,7 +157,7 @@ export const useDeleteExperiment = (
   options?: Omit<
     UseMutationOptions<{ message: string }, Error, string | number>,
     "mutationFn"
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -173,7 +178,7 @@ export const useConcludeExperiment = (
       { id: string | number; data: ConcludeExperimentRequest }
     >,
     "mutationFn"
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -197,7 +202,7 @@ export const useCloneExperiment = (
   options?: Omit<
     UseMutationOptions<ExperimentMutationResponse, Error, string | number>,
     "mutationFn"
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -214,7 +219,7 @@ export const useTerminateExperiment = (
   options?: Omit<
     UseMutationOptions<ExperimentMutationResponse, Error, string | number>,
     "mutationFn"
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -229,4 +234,3 @@ export const useTerminateExperiment = (
     ...options,
   });
 };
-
