@@ -4,10 +4,10 @@ import { api } from "./apiClient";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-interface UseAPIOptions<_T = any> {
+interface UseAPIOptions<T = any> {
   method?: HttpMethod;
   url: string;
-  data?: any;
+  data?: T;
   config?: AxiosRequestConfig;
   immediate?: boolean; // Whether to execute immediately on mount
 }
