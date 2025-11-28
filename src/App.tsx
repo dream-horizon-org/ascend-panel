@@ -9,7 +9,6 @@ import {
   incrementByAmount,
 } from "./store/slices/counterSlice";
 import {
-  Container,
   Paper,
   Typography,
   TextField,

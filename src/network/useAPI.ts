@@ -4,7 +4,7 @@ import { api } from "./apiClient";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-interface UseAPIOptions<T = any> {
+interface UseAPIOptions<_T = any> {
   method?: HttpMethod;
   url: string;
   data?: any;
