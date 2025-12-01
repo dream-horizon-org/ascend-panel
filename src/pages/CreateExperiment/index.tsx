@@ -12,8 +12,8 @@ import AscendAutoCompleteControlled from "../../components/AscendAutoComplete/As
 
 // Form validation schema
 const experimentSchema = z.object({
-  experimentName: z.string().min(1, "Experiment name is required"),
-  experimentId: z.string().min(1, "Experiment ID is required"),
+  name: z.string().min(1, "Experiment name is required"),
+  id: z.string().min(1, "Experiment ID is required"),
   hypothesis: z
     .string()
     .min(1, "Hypothesis is required")
@@ -26,20 +26,22 @@ const experimentSchema = z.object({
     z.object({
       name: z.string().min(1, "Variant name is required"),
       trafficSplit: z.string(),
-      keyValues: z.array(
+      variables: z.array(
         z.object({
           key: z.string(),
-          type: z.string(),
+          data_type: z.string(),
           value: z.string(),
         }),
       ),
+      cohorts: z.array(z.string()).optional(),
     }),
   ),
   targeting: z
     .object({
       filters: z.array(
         z.object({
-          field: z.string(),
+          operand: z.string(),
+          operandDataType: z.string(),
           operator: z.string(),
           value: z.string(),
           condition: z.string(),
@@ -67,48 +69,52 @@ const CreateExperiment = () => {
   const [currentSection, setCurrentSection] =
     useState<string>("experiment-details");
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  const [requestBody, setRequestBody] = useState<any>(null);
 
-  const { control, handleSubmit, setValue } = useForm<ExperimentFormData>({
-    resolver: zodResolver(experimentSchema),
-    mode: "onSubmit", // Validate only on submit
-    defaultValues: {
-      experimentName: "",
-      experimentId: "",
-      hypothesis:
-        "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
-      description:
-        "The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.",
-      tags: [],
-      rateLimit: "100%",
-      maxUsers: "",
-      variants: [
-        {
-          name: "Control Group",
-          trafficSplit: "50",
-          keyValues: [{ key: "", type: "", value: "" }],
-        },
-        {
-          name: "Variant 1",
-          trafficSplit: "50",
-          keyValues: [{ key: "", type: "", value: "" }],
-        },
-      ],
-      targeting: {
-        filters: [
+  const { control, handleSubmit, setValue, getValues } =
+    useForm<ExperimentFormData>({
+      resolver: zodResolver(experimentSchema),
+      mode: "onSubmit", // Validate only on submit
+      defaultValues: {
+        name: "",
+        id: "",
+        hypothesis:
+          "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
+        description:
+          "The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.",
+        tags: [],
+        rateLimit: "100%",
+        maxUsers: "",
+        variants: [
           {
-            field: "App Version",
-            operator: "Is not equal to",
-            value: "12.3",
-            condition: "IF",
+            name: "Control Group",
+            trafficSplit: "50",
+            variables: [{ key: "", data_type: "", value: "" }],
+            cohorts: [],
+          },
+          {
+            name: "Variant 1",
+            trafficSplit: "50",
+            variables: [{ key: "", data_type: "", value: "" }],
+            cohorts: [],
           },
         ],
-        cohorts: ["Tag1"],
-        isAssignCohortsDirectly: false,
+        targeting: {
+          filters: [
+            {
+              operand: "app_version",
+              operandDataType: "STRING",
+              operator: "!=",
+              value: "12.3",
+              condition: "IF",
+            },
+          ],
+          cohorts: ["Tag1"],
+          isAssignCohortsDirectly: false,
+        },
       },
-    },
-  });
+    });
 
-  // IntersectionObserver to track visible sections
   useEffect(() => {
     const observerOptions = {
       root: null,
@@ -151,11 +157,105 @@ const CreateExperiment = () => {
     }
   };
 
-  // Auto-generate experimentId from experimentName
-  const handleExperimentNameChange = (value: string) => {
+  // Auto-generate id from name
+  const handleNameChange = (value: string) => {
     // Generate ID: remove spaces, replace with underscore, convert to lowercase
     const generatedId = value.replace(/\s+/g, "_").toLowerCase();
-    setValue("experimentId", generatedId, { shouldValidate: false });
+    setValue("id", generatedId, { shouldValidate: false });
+  };
+
+  const transformToRequestBody = (data: ExperimentFormData) => {
+    // Check if cohorts are assigned directly to variants
+    const isAssignCohortsDirectly =
+      data.targeting?.isAssignCohortsDirectly || false;
+    const assignmentType = isAssignCohortsDirectly ? "STRATIFIED" : "COHORT";
+
+    const weights: Record<string, number | string[]> = {};
+    data.variants.forEach((variant, index) => {
+      const key = index === 0 ? "control" : `variant${index}`;
+      if (assignmentType === "STRATIFIED") {
+        // For STRATIFIED, use variant's cohorts array
+        weights[key] = variant.cohorts || [];
+      } else {
+        // For COHORT, use trafficSplit percentage
+        weights[key] = parseInt(variant.trafficSplit) || 0;
+      }
+    });
+
+    const variants: Record<string, any> = {};
+    data.variants.forEach((variant, index) => {
+      const key = index === 0 ? "control" : `variant${index}`;
+
+      const variables = variant.variables
+        .filter((v) => v.key && v.data_type)
+        .map((v) => ({
+          key: v.key,
+          value: v.value,
+          data_type: v.data_type,
+        }));
+
+      variants[key] = {
+        displayName: variant.name,
+        variables: variables,
+      };
+    });
+
+    // Transform filters to rule_attributes - direct 1:1 mapping
+    const rule_attributes =
+      data.targeting?.filters && data.targeting.filters.length > 0
+        ? [
+            {
+              name: "Targeting Rule",
+              conditions: data.targeting.filters.map(
+                ({ operand, operandDataType, operator, value }) => ({
+                  operand,
+                  operandDataType,
+                  operator,
+                  value,
+                }),
+              ),
+            },
+          ]
+        : [];
+
+    // Extract cohorts from targeting
+    const cohorts = data.targeting?.cohorts || [];
+
+    return {
+      name: data.name,
+      description: data.description || "",
+      hypothesis: data.hypothesis,
+      status: "LIVE",
+      type: "A_B",
+      guardrail_health_status: "PASSED",
+      cohorts: cohorts,
+      variant_weights: {
+        type: assignmentType,
+        weights: weights,
+      },
+      variants: variants,
+      distribution_strategy: "RANDOM",
+      assignment_domain: assignmentType,
+      rule_attributes: rule_attributes,
+      exposure: 100,
+      threshold: 50000,
+      start_time: Math.floor(Date.now() / 1000),
+      end_time: Math.floor(Date.now() / 1000) + 86400 * 30,
+      created_by: "user@example.com",
+      tags: data.tags || [],
+      owner: [],
+      metrics: {
+        primary: [],
+        secondary: [],
+      },
+    };
+  };
+
+  const handlePreviewRequestBody = () => {
+    const formData = getValues();
+    const apiRequestBody = transformToRequestBody(formData);
+    setRequestBody(apiRequestBody);
+    console.log("API Request Body:", apiRequestBody);
   };
 
   const handleBack = () => {
@@ -303,15 +403,15 @@ const CreateExperiment = () => {
             {/* Input Fields */}
             <Box sx={{ display: "flex", gap: 2 }}>
               <AscendTextFieldControlled
-                name="experimentName"
+                name="name"
                 control={control}
                 label="Experiment Name"
                 placeholder="Enter Experiment Name"
                 infoText="Provide a unique name for your experiment"
-                onChangeCustom={handleExperimentNameChange}
+                onChangeCustom={handleNameChange}
               />
               <AscendTextFieldControlled
-                name="experimentId"
+                name="id"
                 control={control}
                 label="Experiment ID"
                 placeholder="Enter experiment id"
@@ -475,8 +575,35 @@ const CreateExperiment = () => {
             </Box>
           </Box>
 
-          {/* Submit Button */}
-          <Box sx={{ mt: "2rem", display: "flex", justifyContent: "flex-end" }}>
+          {/* Action Buttons */}
+          <Box
+            sx={{
+              mt: "2rem",
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 2,
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handlePreviewRequestBody}
+              sx={{
+                borderColor: "#0060E5",
+                color: "#0060E5",
+                textTransform: "none",
+                fontFamily: "Inter",
+                fontWeight: 600,
+                fontSize: "0.875rem",
+                padding: "0.625rem 2rem",
+                borderRadius: "0.5rem",
+                "&:hover": {
+                  borderColor: "#0050C5",
+                  backgroundColor: "rgba(0, 96, 229, 0.05)",
+                },
+              }}
+            >
+              Preview Request Body
+            </Button>
             <Button
               variant="contained"
               onClick={handleSubmit(onSubmit)}
@@ -497,6 +624,46 @@ const CreateExperiment = () => {
               Create Experiment
             </Button>
           </Box>
+
+          {/* Display Request Body */}
+          {requestBody && (
+            <Box
+              sx={{
+                mt: "2rem",
+                padding: "1.5rem",
+                border: "1px solid #DADADD",
+                borderRadius: "0.5rem",
+                backgroundColor: "#F9F9F9",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "1rem",
+                  color: "#333333",
+                  mb: "1rem",
+                }}
+              >
+                API Request Body
+              </Typography>
+              <Box
+                component="pre"
+                sx={{
+                  backgroundColor: "white",
+                  padding: "1rem",
+                  borderRadius: "0.5rem",
+                  overflow: "auto",
+                  maxHeight: "600px",
+                  fontSize: "0.75rem",
+                  fontFamily: "monospace",
+                  border: "1px solid #E0E0E0",
+                }}
+              >
+                {JSON.stringify(requestBody, null, 2)}
+              </Box>
+            </Box>
+          )}
 
           {/* Display Submitted Data */}
           {submittedData && (
