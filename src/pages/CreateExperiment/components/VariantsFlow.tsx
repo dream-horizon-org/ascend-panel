@@ -78,7 +78,7 @@ const TrafficSplitNode = ({ data }: any) => {
 
 // Custom node for Variant
 const VariantNode = ({ data }: any) => {
-  const keyValues = data.keyValues || [{ key: "", type: "", value: "" }];
+  const variables = data.variables || [{ key: "", data_type: "", value: "" }];
   const [jsonModalOpen, setJsonModalOpen] = useState<number | null>(null);
   const [tempJsonValue, setTempJsonValue] = useState<string>("");
   const [isValidJson, setIsValidJson] = useState<boolean>(true);
@@ -112,7 +112,7 @@ const VariantNode = ({ data }: any) => {
 
   const handleSaveJson = (index: number) => {
     if (isValidJson) {
-      data.onKeyValueChange?.(index, "value", tempJsonValue);
+      data.onVariableChange?.(index, "value", tempJsonValue);
       setJsonModalOpen(null);
       setTempJsonValue("");
     }
@@ -169,23 +169,23 @@ const VariantNode = ({ data }: any) => {
         )}
       </Box>
 
-      {/* Multiple Key-Value Rows */}
-      {keyValues.map((kv: any, index: number) => (
+      {/* Multiple Variable Rows */}
+      {variables.map((variable: any, index: number) => (
         <Box
           key={index}
           sx={{
             display: "flex",
             gap: 1,
             alignItems: "center",
-            mb: index < keyValues.length - 1 ? 1 : 0,
+            mb: index < variables.length - 1 ? 1 : 0,
           }}
         >
           <TextField
             size="small"
             placeholder="Key"
-            value={kv.key || ""}
+            value={variable.key || ""}
             onChange={(e) =>
-              data.onKeyValueChange?.(index, "key", e.target.value)
+              data.onVariableChange?.(index, "key", e.target.value)
             }
             sx={{
               flex: 1,
@@ -194,89 +194,127 @@ const VariantNode = ({ data }: any) => {
           />
           <Select
             size="small"
-            value={kv.type || ""}
+            value={variable.data_type || ""}
             onChange={(e) =>
-              data.onKeyValueChange?.(index, "type", e.target.value)
+              data.onVariableChange?.(index, "data_type", e.target.value)
             }
             displayEmpty
             renderValue={(selected) => {
               if (!selected || selected === "") {
                 return <Box sx={{ color: "#999999" }}>Type</Box>;
               }
-              return selected.charAt(0).toUpperCase() + selected.slice(1);
+              // Display friendly names for API values
+              const displayNames: Record<string, string> = {
+                STRING: "String",
+                NUMBER: "Number",
+                BOOL: "Boolean",
+                OBJECT: "Json",
+              };
+              return displayNames[selected] || selected;
             }}
             sx={{ width: "120px", borderRadius: "0.25rem" }}
           >
-            <MenuItem value="string">String</MenuItem>
-            <MenuItem value="number">Number</MenuItem>
-            <MenuItem value="boolean">Boolean</MenuItem>
-            <MenuItem value="json">Json</MenuItem>
+            <MenuItem value="STRING">String</MenuItem>
+            <MenuItem value="NUMBER">Number</MenuItem>
+            <MenuItem value="BOOL">Boolean</MenuItem>
+            <MenuItem value="OBJECT">Json</MenuItem>
           </Select>
-          <TextField
-            size="small"
-            placeholder={kv.type === "json" ? "Add JSON" : "Value"}
-            value={
-              kv.type === "json" && kv.value
-                ? "{JSON code preview}"
-                : kv.value || ""
-            }
-            onChange={(e) =>
-              data.onKeyValueChange?.(index, "value", e.target.value)
-            }
-            onClick={
-              kv.type === "json"
-                ? () => handleOpenJsonModal(index, kv.value)
-                : undefined
-            }
-            InputProps={{
-              readOnly: kv.type === "json",
-              endAdornment:
-                kv.type === "json" && kv.value ? (
-                  <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleOpenJsonModal(index, kv.value)}
-                      sx={{ padding: "4px" }}
-                    >
-                      <EditIcon fontSize="small" sx={{ color: "#0060E5" }} />
-                    </IconButton>
-                  </InputAdornment>
-                ) : null,
-              sx: {
-                cursor: kv.type === "json" ? "pointer" : "text",
-              },
-            }}
-            sx={{
-              flex: 2,
-              "& .MuiOutlinedInput-root": { borderRadius: "0.25rem" },
-              ...(kv.type === "json" && {
-                "& .MuiInputBase-input::placeholder": {
-                  color: "#0060E5",
-                  opacity: 1,
+          {variable.data_type === "BOOL" ? (
+            <Select
+              size="small"
+              value={variable.value || ""}
+              onChange={(e) =>
+                data.onVariableChange?.(index, "value", e.target.value)
+              }
+              displayEmpty
+              renderValue={(selected) => {
+                if (!selected || selected === "") {
+                  return <Box sx={{ color: "#999999" }}>Select value</Box>;
+                }
+                return selected;
+              }}
+              sx={{ flex: 2, borderRadius: "0.25rem" }}
+            >
+              <MenuItem value="true">true</MenuItem>
+              <MenuItem value="false">false</MenuItem>
+            </Select>
+          ) : (
+            <TextField
+              size="small"
+              placeholder={variable.data_type === "OBJECT" ? "Add JSON" : "Value"}
+              type={variable.data_type === "NUMBER" ? "number" : "text"}
+              value={
+                variable.data_type === "OBJECT" && variable.value
+                  ? "{JSON code preview}"
+                  : variable.value || ""
+              }
+              onChange={(e) => {
+                const value = e.target.value;
+                // For NUMBER type, validate numeric input
+                if (variable.data_type === "NUMBER") {
+                  // Allow empty string, numbers, and decimal point
+                  if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
+                    data.onVariableChange?.(index, "value", value);
+                  }
+                } else {
+                  data.onVariableChange?.(index, "value", value);
+                }
+              }}
+              onClick={
+                variable.data_type === "OBJECT"
+                  ? () => handleOpenJsonModal(index, variable.value)
+                  : undefined
+              }
+              InputProps={{
+                readOnly: variable.data_type === "OBJECT",
+                endAdornment:
+                  variable.data_type === "OBJECT" && variable.value ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleOpenJsonModal(index, variable.value)}
+                        sx={{ padding: "4px" }}
+                      >
+                        <EditIcon fontSize="small" sx={{ color: "#0060E5" }} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                sx: {
+                  cursor: variable.data_type === "OBJECT" ? "pointer" : "text",
                 },
-              }),
-              ...(kv.type === "json" &&
-                kv.value && {
-                  "& .MuiInputBase-input": {
-                    color: "#828592",
+              }}
+              sx={{
+                flex: 2,
+                "& .MuiOutlinedInput-root": { borderRadius: "0.25rem" },
+                ...(variable.data_type === "OBJECT" && {
+                  "& .MuiInputBase-input::placeholder": {
+                    color: "#0060E5",
+                    opacity: 1,
                   },
                 }),
-            }}
-          />
+                ...(variable.data_type === "OBJECT" &&
+                  variable.value && {
+                    "& .MuiInputBase-input": {
+                      color: "#828592",
+                    },
+                  }),
+              }}
+            />
+          )}
 
           {/* Show delete button only if more than one item */}
-          {keyValues.length > 1 && (
+          {variables.length > 1 && (
             <IconButton
               size="small"
               sx={{ color: "#828592", width: 40, height: 40, flexShrink: 0 }}
-              onClick={() => data.onDeleteKeyValue?.(index)}
+              onClick={() => data.onDeleteVariable?.(index)}
             >
               <RemoveIcon fontSize="small" />
             </IconButton>
           )}
 
           {/* Placeholder to maintain alignment */}
-          {keyValues.length === 1 && (
+          {variables.length === 1 && (
             <Box sx={{ width: 40, height: 40, flexShrink: 0 }} />
           )}
 
@@ -286,7 +324,7 @@ const VariantNode = ({ data }: any) => {
               open={jsonModalOpen === index}
               onClose={handleCancelJson}
               config={{
-                title: `JSON for ${data.name || "Variant"} for ${kv.key || "key"}`,
+                title: `JSON for ${data.name || "Variant"} for ${variable.key || "key"}`,
                 width: 600,
                 maxHeight: "80vh",
                 content: (
@@ -334,7 +372,7 @@ const VariantNode = ({ data }: any) => {
       {/* Add Parameter Button */}
       <Button
         startIcon={<AddIcon />}
-        onClick={() => data.onAddKeyValue?.(keyValues.length - 1)}
+        onClick={() => data.onAddVariable?.(variables.length - 1)}
         sx={{
           textTransform: "none",
           color: "#333333",
@@ -412,7 +450,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     const config = variantFields.map((v: any) => ({
       name: v.name,
       trafficSplit: v.trafficSplit,
-      keyValues: v.keyValues,
+      variables: v.variables,
     }));
     return config;
   }, [variantFields]);
@@ -525,8 +563,8 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       const variantPositions: number[] = [];
 
       variantsConfig.forEach((config) => {
-        const keyValuesLength = config.keyValues?.length || 1;
-        const cardHeight = BASE_HEIGHT + keyValuesLength * ROW_HEIGHT;
+        const variablesLength = config.variables?.length || 1;
+        const cardHeight = BASE_HEIGHT + variablesLength * ROW_HEIGHT;
         variantPositions.push(currentY + cardHeight / 2);
         currentY += cardHeight + MIN_SPACING;
       });
@@ -546,8 +584,8 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       currentY = START_Y;
 
       variantsConfig.forEach((config, i) => {
-        const keyValuesLength = config.keyValues?.length || 1;
-        const cardHeight = BASE_HEIGHT + keyValuesLength * ROW_HEIGHT;
+        const variablesLength = config.variables?.length || 1;
+        const cardHeight = BASE_HEIGHT + variablesLength * ROW_HEIGHT;
 
         nodes.push({
           id: `split-${i + 1}`,
@@ -569,7 +607,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
           position: { x: START_X + COLUMN_GAP * 2, y: currentY },
           data: {
             name: config.name,
-            keyValues: config.keyValues || [{ key: "", type: "", value: "" }],
+            variables: config.variables || [{ key: "", data_type: "", value: "" }],
             canDelete: variantFields.length > 2,
             onNameChange: (value: string) => {
               const currentVariant: any = variantFields[i];
@@ -582,72 +620,72 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
                 setIsTrafficEdited(true); // Mark as edited since we're changing the distribution
               }
             },
-            onKeyValueChange: (index: number, field: string, value: string) => {
-              if (field === "key" || field === "type") {
-                // If changing key or type, sync across ALL variants
+            onVariableChange: (index: number, field: string, value: string) => {
+              if (field === "key" || field === "data_type") {
+                // If changing key or data_type, sync across ALL variants
                 variantFields.forEach((variant: any, variantIndex: number) => {
-                  const newKeyValues = [...(variant.keyValues || [])];
-                  if (newKeyValues[index]) {
-                    // If changing the type, reset the value field for all variants
-                    if (field === "type") {
-                      newKeyValues[index] = {
-                        ...newKeyValues[index],
+                  const newVariables = [...(variant.variables || [])];
+                  if (newVariables[index]) {
+                    // If changing the data_type, reset the value field for all variants
+                    if (field === "data_type") {
+                      newVariables[index] = {
+                        ...newVariables[index],
                         [field]: value,
                         value: "",
                       };
                     } else {
-                      newKeyValues[index] = {
-                        ...newKeyValues[index],
+                      newVariables[index] = {
+                        ...newVariables[index],
                         [field]: value,
                       };
                     }
                     updateVariant(variantIndex, {
                       ...variant,
-                      keyValues: newKeyValues,
+                      variables: newVariables,
                     });
                   }
                 });
               } else {
                 // If changing value, only update current variant
                 const currentVariant: any = variantFields[i];
-                const newKeyValues = [...(currentVariant.keyValues || [])];
-                newKeyValues[index] = {
-                  ...newKeyValues[index],
+                const newVariables = [...(currentVariant.variables || [])];
+                newVariables[index] = {
+                  ...newVariables[index],
                   [field]: value,
                 };
                 updateVariant(i, {
                   ...currentVariant,
-                  keyValues: newKeyValues,
+                  variables: newVariables,
                 });
               }
             },
-            onAddKeyValue: (afterIndex: number) => {
+            onAddVariable: (afterIndex: number) => {
               // Add parameter to ALL variants at the same position
               variantFields.forEach((variant: any, variantIndex: number) => {
-                const newKeyValues = [...(variant.keyValues || [])];
-                newKeyValues.splice(afterIndex + 1, 0, {
+                const newVariables = [...(variant.variables || [])];
+                newVariables.splice(afterIndex + 1, 0, {
                   key: "",
-                  type: "",
+                  data_type: "",
                   value: "",
                 });
                 updateVariant(variantIndex, {
                   ...variant,
-                  keyValues: newKeyValues,
+                  variables: newVariables,
                 });
               });
             },
-            onDeleteKeyValue: (index: number) => {
+            onDeleteVariable: (index: number) => {
               // Delete parameter from ALL variants at the same position
-              // Only allow delete if more than one key-value pair
+              // Only allow delete if more than one variable
               const currentVariant: any = variantFields[i];
-              if ((currentVariant.keyValues || []).length > 1) {
+              if ((currentVariant.variables || []).length > 1) {
                 variantFields.forEach((variant: any, variantIndex: number) => {
-                  const newKeyValues = [...(variant.keyValues || [])];
-                  if (newKeyValues.length > 1) {
-                    newKeyValues.splice(index, 1);
+                  const newVariables = [...(variant.variables || [])];
+                  if (newVariables.length > 1) {
+                    newVariables.splice(index, 1);
                     updateVariant(variantIndex, {
                       ...variant,
-                      keyValues: newKeyValues,
+                      variables: newVariables,
                     });
                   }
                 });
@@ -686,8 +724,8 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     return (
       200 +
       variantsConfig.reduce((sum: number, config: any) => {
-        const keyValuesLength = config.keyValues?.length || 1;
-        return sum + BASE_HEIGHT + keyValuesLength * ROW_HEIGHT + MIN_SPACING;
+        const variablesLength = config.variables?.length || 1;
+        return sum + BASE_HEIGHT + variablesLength * ROW_HEIGHT + MIN_SPACING;
       }, 0)
     );
   }, [variantsConfig]);
@@ -727,20 +765,20 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
             // So new variant number = current length (since Control is 0, next is Variant {length})
             const newVariantNumber = variantFields.length;
 
-            // Copy key/type structure from first variant, but with empty values
+            // Copy key/data_type structure from first variant, but with empty values
             const firstVariant: any = variantFields[0];
-            const keyValuesTemplate = (
-              firstVariant?.keyValues || [{ key: "", type: "", value: "" }]
-            ).map((kv: any) => ({
-              key: kv.key || "",
-              type: kv.type || "",
+            const variablesTemplate = (
+              firstVariant?.variables || [{ key: "", data_type: "", value: "" }]
+            ).map((v: any) => ({
+              key: v.key || "",
+              data_type: v.data_type || "",
               value: "",
             }));
 
             const newVariant = {
               name: `Variant ${newVariantNumber}`,
               trafficSplit: "0",
-              keyValues: keyValuesTemplate,
+              variables: variablesTemplate,
             };
 
             if (isTrafficEdited) {

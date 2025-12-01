@@ -12,8 +12,8 @@ import AscendAutoCompleteControlled from "../../components/AscendAutoComplete/As
 
 // Form validation schema
 const experimentSchema = z.object({
-  experimentName: z.string().min(1, "Experiment name is required"),
-  experimentId: z.string().min(1, "Experiment ID is required"),
+  name: z.string().min(1, "Experiment name is required"),
+  id: z.string().min(1, "Experiment ID is required"),
   hypothesis: z
     .string()
     .min(1, "Hypothesis is required")
@@ -26,10 +26,10 @@ const experimentSchema = z.object({
     z.object({
       name: z.string().min(1, "Variant name is required"),
       trafficSplit: z.string(),
-      keyValues: z.array(
+      variables: z.array(
         z.object({
           key: z.string(),
-          type: z.string(),
+          data_type: z.string(),
           value: z.string(),
         }),
       ),
@@ -44,13 +44,14 @@ const CreateExperiment = () => {
   const [submittedData, setSubmittedData] = useState<ExperimentFormData | null>(
     null,
   );
+  const [requestBody, setRequestBody] = useState<any>(null);
 
-  const { control, handleSubmit, setValue } = useForm<ExperimentFormData>({
+  const { control, handleSubmit, setValue, getValues } = useForm<ExperimentFormData>({
     resolver: zodResolver(experimentSchema),
     mode: "onSubmit", // Validate only on submit
     defaultValues: {
-      experimentName: "",
-      experimentId: "",
+      name: "",
+      id: "",
       hypothesis:
         "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
       description:
@@ -62,22 +63,87 @@ const CreateExperiment = () => {
         {
           name: "Control Group",
           trafficSplit: "50",
-          keyValues: [{ key: "", type: "", value: "" }],
+          variables: [{ key: "", data_type: "", value: "" }],
         },
         {
           name: "Variant 1",
           trafficSplit: "50",
-          keyValues: [{ key: "", type: "", value: "" }],
+          variables: [{ key: "", data_type: "", value: "" }],
         },
       ],
     },
   });
 
-  // Auto-generate experimentId from experimentName
-  const handleExperimentNameChange = (value: string) => {
+  // Auto-generate id from name
+  const handleNameChange = (value: string) => {
     // Generate ID: remove spaces, replace with underscore, convert to lowercase
     const generatedId = value.replace(/\s+/g, "_").toLowerCase();
-    setValue("experimentId", generatedId, { shouldValidate: false });
+    setValue("id", generatedId, { shouldValidate: false });
+  };
+
+
+  const transformToRequestBody = (data: ExperimentFormData) => {
+
+    const weights: Record<string, number> = {};
+    data.variants.forEach((variant, index) => {
+      const key = index === 0 ? "control" : `variant${index}`;
+      weights[key] = parseInt(variant.trafficSplit) || 0;
+    });
+
+
+    const variants: Record<string, any> = {};
+    data.variants.forEach((variant, index) => {
+      const key = index === 0 ? "control" : `variant${index}`;
+
+      const variables = variant.variables
+        .filter((v) => v.key && v.data_type)
+        .map((v) => ({
+          key: v.key,
+          value: v.value,
+          data_type: v.data_type,
+        }));
+
+      variants[key] = {
+        displayName: variant.name,
+        variables: variables,
+      };
+    });
+
+    return {
+      name: data.name,
+      description: data.description || "",
+      hypothesis: data.hypothesis,
+      status: "LIVE",
+      type: "A_B",
+      guardrail_health_status: "PASSED",
+      cohorts: [],
+      variant_weights: {
+        type: "COHORT",
+        weights: weights,
+      },
+      variants: variants,
+      distribution_strategy: "RANDOM",
+      assignment_domain: "COHORT",
+      rule_attributes: [],
+      exposure: 100,
+      threshold: 50000,
+      start_time: Math.floor(Date.now() / 1000),
+      end_time: Math.floor(Date.now() / 1000) + 86400 * 30,
+      created_by: "user@example.com",
+      tags: data.tags || [],
+      owner: [],
+      metrics: {
+        primary: [],
+        secondary: [],
+      },
+    };
+  };
+
+  const handlePreviewRequestBody = () => {
+    const formData = getValues();
+    const apiRequestBody = transformToRequestBody(formData);
+    setRequestBody(apiRequestBody);
+    console.log("API Request Body:", apiRequestBody);
   };
 
   const handleBack = () => {
@@ -157,15 +223,15 @@ const CreateExperiment = () => {
           {/* Input Fields */}
           <Box sx={{ display: "flex", gap: 2 }}>
             <AscendTextFieldControlled
-              name="experimentName"
+              name="name"
               control={control}
               label="Experiment Name"
               placeholder="Enter Experiment Name"
               infoText="Provide a unique name for your experiment"
-              onChangeCustom={handleExperimentNameChange}
+              onChangeCustom={handleNameChange}
             />
             <AscendTextFieldControlled
-              name="experimentId"
+              name="id"
               control={control}
               label="Experiment ID"
               placeholder="Enter experiment id"
@@ -325,8 +391,27 @@ const CreateExperiment = () => {
           </Box>
         </Box>
 
-        {/* Submit Button */}
-        <Box sx={{ mt: "2rem", display: "flex", justifyContent: "flex-end" }}>
+        <Box sx={{ mt: "2rem", display: "flex", justifyContent: "flex-end", gap: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={handlePreviewRequestBody}
+            sx={{
+              borderColor: "#0060E5",
+              color: "#0060E5",
+              textTransform: "none",
+              fontFamily: "Inter",
+              fontWeight: 600,
+              fontSize: "0.875rem",
+              padding: "0.625rem 2rem",
+              borderRadius: "0.5rem",
+              "&:hover": {
+                borderColor: "#0050C5",
+                backgroundColor: "rgba(0, 96, 229, 0.05)",
+              },
+            }}
+          >
+            Preview Request Body
+          </Button>
           <Button
             variant="contained"
             onClick={handleSubmit(onSubmit)}
@@ -347,6 +432,45 @@ const CreateExperiment = () => {
             Create Experiment
           </Button>
         </Box>
+
+        {requestBody && (
+          <Box
+            sx={{
+              mt: "2rem",
+              padding: "1.5rem",
+              border: "1px solid #DADADD",
+              borderRadius: "0.5rem",
+              backgroundColor: "#F9F9F9",
+            }}
+          >
+            <Typography
+              sx={{
+                fontFamily: "Inter",
+                fontWeight: 600,
+                fontSize: "1rem",
+                color: "#333333",
+                mb: "1rem",
+              }}
+            >
+              API Request Body
+            </Typography>
+            <Box
+              component="pre"
+              sx={{
+                backgroundColor: "white",
+                padding: "1rem",
+                borderRadius: "0.5rem",
+                overflow: "auto",
+                maxHeight: "600px",
+                fontSize: "0.75rem",
+                fontFamily: "monospace",
+                border: "1px solid #E0E0E0",
+              }}
+            >
+              {JSON.stringify(requestBody, null, 2)}
+            </Box>
+          </Box>
+        )}
 
         {/* Display Submitted Data */}
         {submittedData && (
