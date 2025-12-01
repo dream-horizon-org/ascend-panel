@@ -35,6 +35,20 @@ const experimentSchema = z.object({
       ),
     }),
   ),
+  targeting: z
+    .object({
+      filters: z.array(
+        z.object({
+          field: z.string(),
+          operator: z.string(),
+          value: z.string(),
+          condition: z.string(),
+        }),
+      ),
+      cohorts: z.array(z.string()),
+      isAssignCohortsDirectly: z.boolean(),
+    })
+    .optional(),
 });
 
 type ExperimentFormData = z.infer<typeof experimentSchema>;
@@ -71,6 +85,18 @@ const CreateExperiment = () => {
           variables: [{ key: "", data_type: "", value: "" }],
         },
       ],
+      targeting: {
+        filters: [
+          {
+            field: "App Version",
+            operator: "Is not equal to",
+            value: "12.3",
+            condition: "IF",
+          },
+        ],
+        cohorts: ["Tag1"],
+        isAssignCohortsDirectly: false,
+      },
     },
   });
 
