@@ -34,7 +34,6 @@ const TargetingNode = ({ data }: any) => {
         minWidth: "180px",
       }}
       onClick={() => {
-        console.log("Targeting node clicked", data);
         data.onClick?.();
       }}
     >
@@ -907,7 +906,6 @@ function CreateExperimentTargetingParentModal({
   };
 
   const handleRemoveFilter = (index: number) => {
-    console.log("handleRemoveFilter", index);
     removeFilter(index);
   };
 
@@ -1038,7 +1036,6 @@ function CreateExperimentTargetingParentModal({
             value={cohorts}
             fullWidth
             onChange={(value) => {
-              console.log("valuevaluevaluevalue", value);
               cohortsField.onChange(value);
             }}
           />
