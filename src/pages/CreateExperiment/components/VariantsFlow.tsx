@@ -8,14 +8,19 @@ import {
   IconButton,
   Button,
   InputAdornment,
+  Typography,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import RemoveIcon from "@mui/icons-material/Remove";
-import { Control, useFieldArray } from "react-hook-form";
+import { Remove as RemoveIcon } from "@mui/icons-material";
+import { Control, useFieldArray, useController } from "react-hook-form";
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import AscendModal from "../../../components/AscendModal/AscendModal";
+import CloseIcon from "@mui/icons-material/Close";
+import AscendDropdown from "../../../components/AscendDropdown/AscendDropdown";
 
 // Custom node for Targeting
 const TargetingNode = ({ data }: any) => {
@@ -27,6 +32,10 @@ const TargetingNode = ({ data }: any) => {
         padding: "1rem",
         backgroundColor: "white",
         minWidth: "180px",
+      }}
+      onClick={() => {
+        console.log("Targeting node clicked", data);
+        data.onClick?.();
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
@@ -396,7 +405,20 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
   const [isTrafficEdited, setIsTrafficEdited] = useState(false);
   // Track if we need to redistribute traffic after adding a variant
   const shouldRedistribute = useRef(false);
+  const [parentModalOpen, setParentModalOpen] = useState(false);
+  const [childModalOpen, setChildModalOpen] = useState(false);
 
+  const handleParentModalOpen = () => {
+    setParentModalOpen(true);
+  };
+
+  const handleChildModalOpen = () => {
+    setChildModalOpen(true);
+  };
+
+  const handleParentModalSave = () => {
+    setParentModalOpen(false);
+  };
   // Use field arrays for proper react-hook-form management
   const {
     fields: variantFields,
@@ -447,7 +469,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
   const adjustSplitCircular = useCallback(
     (editedIndex: number) => {
       const splits = variantFields.map((v: any) =>
-        parseInt(v.trafficSplit || "0", 10),
+        parseInt(v.trafficSplit || "0", 10)
       );
       const total = splits.reduce((a, b) => a + b, 0);
 
@@ -486,14 +508,14 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
         updateVariant(i, { ...variant, trafficSplit: v.toString() });
       });
     },
-    [variantFields, updateVariant],
+    [variantFields, updateVariant]
   );
 
   const handleTrafficBlur = useCallback(
     (index: number) => {
       adjustSplitCircular(index);
     },
-    [adjustSplitCircular],
+    [adjustSplitCircular]
   );
 
   // Function to handle traffic split change with circular redistribution
@@ -510,7 +532,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
   const nodes = useMemo(() => {
     const generateNodesWithHandlers = (
       variantsConfig: any[],
-      handleTrafficSplitChange: (index: number, value: string) => void,
+      handleTrafficSplitChange: (index: number, value: string) => void
     ) => {
       const COLUMN_GAP = 400;
       const MIN_SPACING = 80;
@@ -540,7 +562,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
         id: "targeting",
         type: "targeting",
         position: { x: START_X, y: targetingY + 20 },
-        data: { label: "Everyone" },
+        data: { label: "Everyone", onClick: handleParentModalOpen },
       });
 
       currentY = START_Y;
@@ -675,7 +697,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
 
   const edges = useMemo(
     () => generateEdges(variantsConfig.length),
-    [variantsConfig.length],
+    [variantsConfig.length]
   );
 
   // Calculate canvas height dynamically
@@ -692,8 +714,74 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     );
   }, [variantsConfig]);
 
+  const handleChildModalCancel = () => {
+    setChildModalOpen(false);
+  };
+
+  const handleChildModalExit = () => {
+    setChildModalOpen(false);
+    setParentModalOpen(false);
+  };
+
+  const handleParentModalClose = () => {
+    handleChildModalOpen();
+  };
+
   return (
     <Box>
+      <AscendModal
+        config={{
+          width: 600,
+          closeOnBackdropClick: false,
+          closeOnEscape: false,
+          showCloseButton: false,
+          nestedModal: {
+            width: 400,
+            showCloseButton: false,
+            children: (
+              <CreateExperimentTargetingChildModal
+                handleChildModalCancel={handleChildModalCancel}
+                handleChildModalExit={handleChildModalExit}
+              />
+            ),
+          },
+          actions: (
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                justifyContent: "flex-end",
+                width: "100%",
+              }}
+            >
+              <Button
+                onClick={handleParentModalClose}
+                variant="text"
+                color="primary"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleParentModalSave}
+                variant="contained"
+                color="primary"
+              >
+                Save
+              </Button>
+            </Box>
+          ),
+          children: (
+            <CreateExperimentTargetingParentModal
+              handleParentModalClose={handleParentModalClose}
+              control={control}
+            />
+          ),
+        }}
+        open={parentModalOpen}
+        onClose={handleParentModalClose}
+        nestedModalOpen={childModalOpen}
+        onNestedModalClose={handleChildModalCancel}
+      />
       <Box
         sx={{
           height: `${canvasHeight}px`,
@@ -761,6 +849,264 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
           }}
         >
           Add Variant
+        </Button>
+      </Box>
+    </Box>
+  );
+}
+
+function CreateExperimentTargetingParentModal({
+  handleParentModalClose,
+  control,
+}: {
+  handleParentModalClose: () => void;
+  control: Control<any>;
+}) {
+  // Use react-hook-form for isAssignCohortsDirectly
+  const { field: isAssignCohortsDirectlyField } = useController({
+    control,
+    name: "targeting.isAssignCohortsDirectly",
+    defaultValue: false,
+  });
+
+  // Use react-hook-form field array for filters
+  const {
+    fields: filterFields,
+    append: appendFilter,
+    remove: removeFilter,
+    update: updateFilter,
+  } = useFieldArray({
+    control,
+    name: "targeting.filters",
+  });
+
+  // Use react-hook-form for cohorts
+  const { field: cohortsField } = useController({
+    control,
+    name: "targeting.cohorts",
+    defaultValue: ["Tag1"],
+  });
+
+  const filters = filterFields as Array<{
+    id: string;
+    field: string;
+    operator: string;
+    value: string;
+    condition: string;
+  }>;
+  const cohorts = cohortsField.value;
+  const isAssignCohortsDirectly = isAssignCohortsDirectlyField.value;
+
+  const handleAddFilter = () => {
+    appendFilter({
+      field: "App Version",
+      operator: "Is not equal to",
+      value: "12.3",
+      condition: "AND",
+    });
+  };
+
+  const handleRemoveFilter = (index: number) => {
+    console.log("handleRemoveFilter", index);
+    removeFilter(index);
+  };
+
+  return (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      {/* Header with Title and Close Button */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Targeting
+        </Typography>
+        <IconButton
+          size="small"
+          onClick={handleParentModalClose}
+          sx={{ ml: "auto" }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </Box>
+
+      {/* Filters Section */}
+      <Box>
+        <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+          Filters
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ mb: 2, display: "block" }}
+        >
+          Users are filtered out irrespective of cohorts
+        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {filters.map((filter, index) => (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                flexWrap: "wrap",
+              }}
+              key={filter.id}
+            >
+              <Typography variant="body2" sx={{ minWidth: 40 }}>
+                {filter.condition}
+              </Typography>
+              <TextField
+                select
+                size="small"
+                sx={{ minWidth: 150 }}
+                value={filter.field}
+                onChange={(e) => {
+                  updateFilter(index, {
+                    ...filter,
+                    field: e.target.value,
+                  });
+                }}
+              >
+                <MenuItem value="Country">Country</MenuItem>
+                <MenuItem value="App Version">App Version</MenuItem>
+                <MenuItem value="Device">Device</MenuItem>
+              </TextField>
+              <TextField
+                select
+                size="small"
+                sx={{ minWidth: 150 }}
+                value={filter.operator}
+                onChange={(e) => {
+                  updateFilter(index, {
+                    ...filter,
+                    operator: e.target.value,
+                  });
+                }}
+              >
+                <MenuItem value="Is equal to">Is equal to</MenuItem>
+                <MenuItem value="Is not equal to">Is not equal to</MenuItem>
+                <MenuItem value="Contains">Contains</MenuItem>
+              </TextField>
+              <TextField
+                size="small"
+                sx={{ width: 100 }}
+                value={filter.value}
+                onChange={(e) => {
+                  updateFilter(index, {
+                    ...filter,
+                    value: e.target.value,
+                  });
+                }}
+              />
+              {index > 0 && (
+                <IconButton
+                  size="small"
+                  onClick={() => handleRemoveFilter(index)}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              )}
+
+              {index === filters.length - 1 && (
+                <IconButton
+                  onClick={handleAddFilter}
+                  size="small"
+                  color="primary"
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              )}
+            </Box>
+          ))}
+        </Box>
+      </Box>
+
+      <Box>
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+          Cohorts
+        </Typography>
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+          <AscendDropdown
+            placeholder="Select Cohorts"
+            variant="multi-chip"
+            options={["Tag1", "Tag2", "Tag3"]}
+            value={cohorts}
+            fullWidth
+            onChange={(value) => {
+              console.log("valuevaluevaluevalue", value);
+              cohortsField.onChange(value);
+            }}
+          />
+        </Box>
+        <FormControlLabel
+          control={<Checkbox />}
+          label="Assign cohorts directly to variants"
+          checked={isAssignCohortsDirectly}
+          onChange={(e) =>
+            isAssignCohortsDirectlyField.onChange(
+              (e.target as HTMLInputElement).checked
+            )
+          }
+        />
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", mt: 1 }}
+        >
+          Assigning cohorts will make it <strong>inaccurate and risky</strong>.
+          Make sure to verify each cohort.
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
+
+function CreateExperimentTargetingChildModal({
+  handleChildModalCancel,
+  handleChildModalExit,
+}: {
+  handleChildModalCancel: () => void;
+  handleChildModalExit: () => void;
+}) {
+  return (
+    <Box>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Close without saving?
+        </Typography>
+        <IconButton
+          size="small"
+          onClick={handleChildModalCancel}
+          sx={{ ml: "auto" }}
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Discarding this will remove all information saved
+      </Typography>
+      <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+        <Button onClick={handleChildModalCancel} variant="text" color="primary">
+          Cancel
+        </Button>
+        <Button
+          onClick={handleChildModalExit}
+          variant="contained"
+          color="primary"
+        >
+          Exit
         </Button>
       </Box>
     </Box>

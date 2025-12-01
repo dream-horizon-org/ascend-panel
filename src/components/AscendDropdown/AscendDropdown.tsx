@@ -98,6 +98,8 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
       if (controlledValue === undefined) {
         setInternalValue(newValue);
       }
+
+      console.log("newValuenewValuenewValue", newValue);
       onChange?.(newValue);
     };
 
