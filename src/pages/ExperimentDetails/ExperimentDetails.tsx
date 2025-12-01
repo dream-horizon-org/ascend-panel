@@ -8,8 +8,10 @@ import {
   TableRow,
   Paper,
   useTheme,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import {
   LineChart,
   Line,
@@ -23,34 +25,129 @@ import {
 import ExperimentDetailsHeader from "./ExperimentDetailsHeader";
 import { ChartDataPoint, Variant } from "./types";
 import Layout from "../../components/Layout/Layout";
+import { useExperiment } from "../../network/queries/experiments";
 
-// Mock data for the chart
-const chartData: ChartDataPoint[] = [
-  { date: "17 Nov", control: 5000, variant1: 10000 },
-  { date: "18 Nov", control: 15000, variant1: 25000 },
-  { date: "19 Nov", control: 30000, variant1: 50000 },
-  { date: "20 Nov", control: 50000, variant1: 80000 },
-  { date: "21 Nov", control: 70000, variant1: 100000 },
-  { date: "22 Nov", control: 95000, variant1: 115000 },
-  { date: "23 Nov", control: 130000, variant1: 130000 },
-];
+// Helper function to format date
+const formatDate = (dateString?: string): string => {
+  if (!dateString) return "N/A";
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return dateString;
+  }
+};
 
-// Variant data
-const variants: Variant[] = [
-  { name: "Control Group", color: "#1976d2", percentage: 24, userCount: 34656 },
-  { name: "Variant 1", color: "#d32f2f", percentage: 76, userCount: 84256 },
-];
+// Helper function to format number
+const formatNumber = (num?: number): string => {
+  if (num === undefined || num === null) return "N/A";
+  if (num >= 1000000) {
+    return `${(num / 1000000).toFixed(1)}M`;
+  }
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(0)}k`;
+  }
+  return num.toString();
+};
+
+// Helper function to calculate days between Unix timestamps
+const calculateDays = (startTime?: number, endTime?: number): number => {
+  if (!startTime) return 0;
+  try {
+    const start = startTime * 1000; // Convert to milliseconds
+    const end = endTime ? endTime * 1000 : Date.now();
+    const diffTime = Math.abs(end - start);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  } catch {
+    return 0;
+  }
+};
+
+// Helper function to map status to display format
+const mapStatus = (
+  status: string,
+): { label: string; color: "active" | "inactive" | "draft" } => {
+  const statusMap: Record<
+    string,
+    { label: string; color: "active" | "inactive" | "draft" }
+  > = {
+    LIVE: { label: "Active", color: "active" },
+    DRAFT: { label: "Draft", color: "draft" },
+    PAUSED: { label: "Paused", color: "inactive" },
+    CONCLUDED: { label: "Concluded", color: "inactive" },
+  };
+  return statusMap[status] || { label: status, color: "draft" };
+};
+
+// Helper function to convert variant weights to display format
+const convertVariantsToDisplay = (
+  variants: Record<string, any>,
+  variantWeights: any,
+  exposure: number,
+): Variant[] => {
+  const variantArray: Variant[] = [];
+  const colors = ["#1976d2", "#d32f2f", "#388e3c", "#f57c00", "#7b1fa2"];
+  let colorIndex = 0;
+
+  Object.entries(variants).forEach(([key, variant]) => {
+    const weight = variantWeights?.weights?.[key] || 0;
+    const percentage = Math.round(weight * 100);
+    // Calculate user count from exposure and weight
+    const userCount = Math.round(exposure * weight);
+
+    variantArray.push({
+      name: variant.display_name || key,
+      color: colors[colorIndex % colors.length],
+      percentage,
+      userCount,
+    });
+    colorIndex++;
+  });
+
+  return variantArray;
+};
 
 export default function ExperimentDetails() {
   const navigate = useNavigate();
   const theme = useTheme();
+  const { id } = useParams<{ id: string }>();
+
+  // Fetch experiment data
+  const { data: experiment, isLoading, error } = useExperiment(id || null);
+
+  // Mock data for the chart (TODO: Replace with real API data when available)
+  const chartData: ChartDataPoint[] = [
+    { date: "17 Nov", control: 5000, variant1: 10000 },
+    { date: "18 Nov", control: 15000, variant1: 25000 },
+    { date: "19 Nov", control: 30000, variant1: 50000 },
+    { date: "20 Nov", control: 50000, variant1: 80000 },
+    { date: "21 Nov", control: 70000, variant1: 100000 },
+    { date: "22 Nov", control: 95000, variant1: 115000 },
+    { date: "23 Nov", control: 130000, variant1: 130000 },
+  ];
+
+  // Convert API variants to display format
+  const variants: Variant[] = experiment
+    ? convertVariantsToDisplay(
+        experiment.variants,
+        experiment.variantWeights,
+        experiment.exposure || 0,
+      )
+    : [];
 
   const handleBack = () => {
     navigate(-1);
   };
 
   const handleCopyId = () => {
-    console.log("Experiment ID copied to clipboard");
+    if (experiment?.experimentId) {
+      navigator.clipboard.writeText(experiment.experimentId);
+      console.log("Experiment ID copied to clipboard");
+    }
   };
 
   const handleMenuClick = () => {
@@ -73,13 +170,62 @@ export default function ExperimentDetails() {
     console.log(`Declare Winner: ${winner}`);
   };
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Layout>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "100vh",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      </Layout>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <Layout>
+        <Box sx={{ p: 3 }}>
+          <Alert severity="error">
+            Failed to load experiment: {error.message}
+          </Alert>
+        </Box>
+      </Layout>
+    );
+  }
+
+  // Show not found state
+  if (!experiment) {
+    return (
+      <Layout>
+        <Box sx={{ p: 3 }}>
+          <Alert severity="warning">Experiment not found</Alert>
+        </Box>
+      </Layout>
+    );
+  }
+
+  // Calculate derived values
+  const currentUsers = experiment.exposure || 0;
+  const targetUsers = experiment.threshold || 0;
+  const duration = calculateDays(experiment.startTime, experiment.endTime);
+  const lastModified = formatDate(experiment.updatedAt);
+  const statusInfo = mapStatus(experiment.status);
+
   return (
     <Layout>
       <Box>
         <ExperimentDetailsHeader
-          title="IPL 2024 Experiment"
-          status={{ label: "Active", color: "active" }}
-          experimentId="#IPL-2024-Experiment"
+          title={experiment.name}
+          status={statusInfo}
+          experimentId={`#${experiment.experimentId}`}
           onBack={handleBack}
           onCopyId={handleCopyId}
           onMenuClick={handleMenuClick}
@@ -126,7 +272,7 @@ export default function ExperimentDetails() {
                   color: theme.palette.text.primary,
                 }}
               >
-                30k / 5.2M
+                {formatNumber(currentUsers)} / {formatNumber(targetUsers)}
               </Typography>
             </Paper>
 
@@ -159,7 +305,7 @@ export default function ExperimentDetails() {
                   color: theme.palette.text.primary,
                 }}
               >
-                23 Days
+                {duration} {duration === 1 ? "Day" : "Days"}
               </Typography>
             </Paper>
 
@@ -192,7 +338,7 @@ export default function ExperimentDetails() {
                   color: theme.palette.text.primary,
                 }}
               >
-                12 October, 2025
+                {lastModified}
               </Typography>
             </Paper>
           </Box>
