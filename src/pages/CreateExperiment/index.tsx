@@ -61,46 +61,47 @@ const CreateExperiment = () => {
   );
   const [requestBody, setRequestBody] = useState<any>(null);
 
-  const { control, handleSubmit, setValue, getValues } = useForm<ExperimentFormData>({
-    resolver: zodResolver(experimentSchema),
-    mode: "onSubmit", // Validate only on submit
-    defaultValues: {
-      name: "",
-      id: "",
-      hypothesis:
-        "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
-      description:
-        "The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.",
-      tags: [],
-      rateLimit: "100%",
-      maxUsers: "",
-      variants: [
-        {
-          name: "Control Group",
-          trafficSplit: "50",
-          variables: [{ key: "", data_type: "", value: "" }],
-        },
-        {
-          name: "Variant 1",
-          trafficSplit: "50",
-          variables: [{ key: "", data_type: "", value: "" }],
-        },
-      ],
-      targeting: {
-        filters: [
+  const { control, handleSubmit, setValue, getValues } =
+    useForm<ExperimentFormData>({
+      resolver: zodResolver(experimentSchema),
+      mode: "onSubmit", // Validate only on submit
+      defaultValues: {
+        name: "",
+        id: "",
+        hypothesis:
+          "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
+        description:
+          "The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.",
+        tags: [],
+        rateLimit: "100%",
+        maxUsers: "",
+        variants: [
           {
-            operand: "app_version",
-            operandDataType: "STRING",
-            operator: "!=",
-            value: "12.3",
-            condition: "IF",
+            name: "Control Group",
+            trafficSplit: "50",
+            variables: [{ key: "", data_type: "", value: "" }],
+          },
+          {
+            name: "Variant 1",
+            trafficSplit: "50",
+            variables: [{ key: "", data_type: "", value: "" }],
           },
         ],
-        cohorts: ["Tag1"],
-        isAssignCohortsDirectly: false,
+        targeting: {
+          filters: [
+            {
+              operand: "app_version",
+              operandDataType: "STRING",
+              operator: "!=",
+              value: "12.3",
+              condition: "IF",
+            },
+          ],
+          cohorts: ["Tag1"],
+          isAssignCohortsDirectly: false,
+        },
       },
-    },
-  });
+    });
 
   // Auto-generate id from name
   const handleNameChange = (value: string) => {
@@ -109,15 +110,12 @@ const CreateExperiment = () => {
     setValue("id", generatedId, { shouldValidate: false });
   };
 
-
   const transformToRequestBody = (data: ExperimentFormData) => {
-
     const weights: Record<string, number> = {};
     data.variants.forEach((variant, index) => {
       const key = index === 0 ? "control" : `variant${index}`;
       weights[key] = parseInt(variant.trafficSplit) || 0;
     });
-
 
     const variants: Record<string, any> = {};
     data.variants.forEach((variant, index) => {
@@ -138,17 +136,22 @@ const CreateExperiment = () => {
     });
 
     // Transform filters to rule_attributes - direct 1:1 mapping
-    const rule_attributes = data.targeting?.filters && data.targeting.filters.length > 0
-      ? [{
-          name: "Targeting Rule",
-          conditions: data.targeting.filters.map(({ operand, operandDataType, operator, value }) => ({
-            operand,
-            operandDataType,
-            operator,
-            value,
-          })),
-        }]
-      : [];
+    const rule_attributes =
+      data.targeting?.filters && data.targeting.filters.length > 0
+        ? [
+            {
+              name: "Targeting Rule",
+              conditions: data.targeting.filters.map(
+                ({ operand, operandDataType, operator, value }) => ({
+                  operand,
+                  operandDataType,
+                  operator,
+                  value,
+                }),
+              ),
+            },
+          ]
+        : [];
 
     // Extract cohorts from targeting
     const cohorts = data.targeting?.cohorts || [];
@@ -435,7 +438,14 @@ const CreateExperiment = () => {
           </Box>
         </Box>
 
-        <Box sx={{ mt: "2rem", display: "flex", justifyContent: "flex-end", gap: 2 }}>
+        <Box
+          sx={{
+            mt: "2rem",
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 2,
+          }}
+        >
           <Button
             variant="outlined"
             onClick={handlePreviewRequestBody}

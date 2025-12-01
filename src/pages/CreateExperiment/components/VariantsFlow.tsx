@@ -17,7 +17,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Remove as RemoveIcon } from "@mui/icons-material";
-import { Control, useFieldArray, useController, Controller } from "react-hook-form";
+import {
+  Control,
+  useFieldArray,
+  useController,
+  Controller,
+} from "react-hook-form";
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import AscendModal from "../../../components/AscendModal/AscendModal";
 import CloseIcon from "@mui/icons-material/Close";
@@ -250,7 +255,9 @@ const VariantNode = ({ data }: any) => {
           ) : (
             <TextField
               size="small"
-              placeholder={variable.data_type === "OBJECT" ? "Add JSON" : "Value"}
+              placeholder={
+                variable.data_type === "OBJECT" ? "Add JSON" : "Value"
+              }
               type={variable.data_type === "NUMBER" ? "number" : "text"}
               value={
                 variable.data_type === "OBJECT" && variable.value
@@ -281,7 +288,9 @@ const VariantNode = ({ data }: any) => {
                     <InputAdornment position="end">
                       <IconButton
                         size="small"
-                        onClick={() => handleOpenJsonModal(index, variable.value)}
+                        onClick={() =>
+                          handleOpenJsonModal(index, variable.value)
+                        }
                         sx={{ padding: "4px" }}
                       >
                         <EditIcon fontSize="small" sx={{ color: "#0060E5" }} />
@@ -507,7 +516,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
   const adjustSplitCircular = useCallback(
     (editedIndex: number) => {
       const splits = variantFields.map((v: any) =>
-        parseInt(v.trafficSplit || "0", 10)
+        parseInt(v.trafficSplit || "0", 10),
       );
       const total = splits.reduce((a, b) => a + b, 0);
 
@@ -546,14 +555,14 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
         updateVariant(i, { ...variant, trafficSplit: v.toString() });
       });
     },
-    [variantFields, updateVariant]
+    [variantFields, updateVariant],
   );
 
   const handleTrafficBlur = useCallback(
     (index: number) => {
       adjustSplitCircular(index);
     },
-    [adjustSplitCircular]
+    [adjustSplitCircular],
   );
 
   // Function to handle traffic split change with circular redistribution
@@ -570,7 +579,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
   const nodes = useMemo(() => {
     const generateNodesWithHandlers = (
       variantsConfig: any[],
-      handleTrafficSplitChange: (index: number, value: string) => void
+      handleTrafficSplitChange: (index: number, value: string) => void,
     ) => {
       const COLUMN_GAP = 400;
       const MIN_SPACING = 80;
@@ -629,7 +638,9 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
           position: { x: START_X + COLUMN_GAP * 2, y: currentY },
           data: {
             name: config.name,
-            variables: config.variables || [{ key: "", data_type: "", value: "" }],
+            variables: config.variables || [
+              { key: "", data_type: "", value: "" },
+            ],
             canDelete: variantFields.length > 2,
             onNameChange: (value: string) => {
               const currentVariant: any = variantFields[i];
@@ -735,7 +746,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
 
   const edges = useMemo(
     () => generateEdges(variantsConfig.length),
-    [variantsConfig.length]
+    [variantsConfig.length],
   );
 
   // Calculate canvas height dynamically
@@ -1088,10 +1099,12 @@ function CreateExperimentTargetingParentModal({
                   };
 
                   const options = getOperatorOptions();
-                  const validValues = options.map(opt => opt.value);
-                  
+                  const validValues = options.map((opt) => opt.value);
+
                   // Ensure current value is valid for the available options
-                  const currentValue = validValues.includes(field.value) ? field.value : "=";
+                  const currentValue = validValues.includes(field.value)
+                    ? field.value
+                    : "=";
 
                   return (
                     <TextField
@@ -1101,7 +1114,7 @@ function CreateExperimentTargetingParentModal({
                       {...field}
                       value={currentValue}
                     >
-                      {options.map(opt => (
+                      {options.map((opt) => (
                         <MenuItem key={opt.value} value={opt.value}>
                           {opt.label}
                         </MenuItem>
@@ -1153,11 +1166,7 @@ function CreateExperimentTargetingParentModal({
 
                   // Default to string input
                   return (
-                    <TextField
-                      size="small"
-                      sx={{ width: 100 }}
-                      {...field}
-                    />
+                    <TextField size="small" sx={{ width: 100 }} {...field} />
                   );
                 }}
               />
@@ -1214,7 +1223,7 @@ function CreateExperimentTargetingParentModal({
             checked={isAssignCohortsDirectly}
             onChange={(e) =>
               isAssignCohortsDirectlyField.onChange(
-                (e.target as HTMLInputElement).checked
+                (e.target as HTMLInputElement).checked,
               )
             }
           />
@@ -1223,8 +1232,8 @@ function CreateExperimentTargetingParentModal({
             color="text.secondary"
             sx={{ display: "block", mt: 1 }}
           >
-            Assigning cohorts will make it <strong>inaccurate and risky</strong>.
-            Make sure to verify each cohort.
+            Assigning cohorts will make it <strong>inaccurate and risky</strong>
+            . Make sure to verify each cohort.
           </Typography>
         </Box>
       </Box>
