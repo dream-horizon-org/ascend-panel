@@ -35,7 +35,7 @@ interface AscendDropdownProps {
 const MENU_PROPS = {
   PaperProps: {
     style: {
-      padding:"0px 10px",
+      padding: "0px 10px",
       maxHeight: 250,
     },
   },
@@ -231,7 +231,7 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
           </MenuItem>
         )}
         {options.map((option) => (
-          <MenuItem key={option} value={option} sx={{borderRadius: "8px"}}>
+          <MenuItem key={option} value={option} sx={{ borderRadius: "8px" }}>
             {(variant === "multi-checkbox" || variant === "multi-chip") && (
               <Checkbox
                 checked={Array.isArray(value) && value.includes(option)}
