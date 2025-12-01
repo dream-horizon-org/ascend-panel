@@ -15,8 +15,14 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Remove as RemoveIcon } from "@mui/icons-material";
-import { Control, useFieldArray, useController } from "react-hook-form";
+import {
+  Control,
+  useFieldArray,
+  useController,
+  Controller,
+} from "react-hook-form";
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import AscendModal from "../../../components/AscendModal/AscendModal";
 import CloseIcon from "@mui/icons-material/Close";
@@ -86,7 +92,7 @@ const TrafficSplitNode = ({ data }: any) => {
 
 // Custom node for Variant
 const VariantNode = ({ data }: any) => {
-  const keyValues = data.keyValues || [{ key: "", type: "", value: "" }];
+  const variables = data.variables || [{ key: "", data_type: "", value: "" }];
   const [jsonModalOpen, setJsonModalOpen] = useState<number | null>(null);
   const [tempJsonValue, setTempJsonValue] = useState<string>("");
   const [isValidJson, setIsValidJson] = useState<boolean>(true);
@@ -120,7 +126,7 @@ const VariantNode = ({ data }: any) => {
 
   const handleSaveJson = (index: number) => {
     if (isValidJson) {
-      data.onKeyValueChange?.(index, "value", tempJsonValue);
+      data.onVariableChange?.(index, "value", tempJsonValue);
       setJsonModalOpen(null);
       setTempJsonValue("");
     }
@@ -177,23 +183,23 @@ const VariantNode = ({ data }: any) => {
         )}
       </Box>
 
-      {/* Multiple Key-Value Rows */}
-      {keyValues.map((kv: any, index: number) => (
+      {/* Multiple Variable Rows */}
+      {variables.map((variable: any, index: number) => (
         <Box
           key={index}
           sx={{
             display: "flex",
             gap: 1,
             alignItems: "center",
-            mb: index < keyValues.length - 1 ? 1 : 0,
+            mb: index < variables.length - 1 ? 1 : 0,
           }}
         >
           <TextField
             size="small"
             placeholder="Key"
-            value={kv.key || ""}
+            value={variable.key || ""}
             onChange={(e) =>
-              data.onKeyValueChange?.(index, "key", e.target.value)
+              data.onVariableChange?.(index, "key", e.target.value)
             }
             sx={{
               flex: 1,
@@ -202,89 +208,131 @@ const VariantNode = ({ data }: any) => {
           />
           <Select
             size="small"
-            value={kv.type || ""}
+            value={variable.data_type || ""}
             onChange={(e) =>
-              data.onKeyValueChange?.(index, "type", e.target.value)
+              data.onVariableChange?.(index, "data_type", e.target.value)
             }
             displayEmpty
             renderValue={(selected) => {
               if (!selected || selected === "") {
                 return <Box sx={{ color: "#999999" }}>Type</Box>;
               }
-              return selected.charAt(0).toUpperCase() + selected.slice(1);
+              // Display friendly names for API values
+              const displayNames: Record<string, string> = {
+                STRING: "String",
+                NUMBER: "Number",
+                BOOL: "Boolean",
+                OBJECT: "Json",
+              };
+              return displayNames[selected] || selected;
             }}
             sx={{ width: "120px", borderRadius: "0.25rem" }}
           >
-            <MenuItem value="string">String</MenuItem>
-            <MenuItem value="number">Number</MenuItem>
-            <MenuItem value="boolean">Boolean</MenuItem>
-            <MenuItem value="json">Json</MenuItem>
+            <MenuItem value="STRING">String</MenuItem>
+            <MenuItem value="NUMBER">Number</MenuItem>
+            <MenuItem value="BOOL">Boolean</MenuItem>
+            <MenuItem value="OBJECT">Json</MenuItem>
           </Select>
-          <TextField
-            size="small"
-            placeholder={kv.type === "json" ? "Add JSON" : "Value"}
-            value={
-              kv.type === "json" && kv.value
-                ? "{JSON code preview}"
-                : kv.value || ""
-            }
-            onChange={(e) =>
-              data.onKeyValueChange?.(index, "value", e.target.value)
-            }
-            onClick={
-              kv.type === "json"
-                ? () => handleOpenJsonModal(index, kv.value)
-                : undefined
-            }
-            InputProps={{
-              readOnly: kv.type === "json",
-              endAdornment:
-                kv.type === "json" && kv.value ? (
-                  <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleOpenJsonModal(index, kv.value)}
-                      sx={{ padding: "4px" }}
-                    >
-                      <EditIcon fontSize="small" sx={{ color: "#0060E5" }} />
-                    </IconButton>
-                  </InputAdornment>
-                ) : null,
-              sx: {
-                cursor: kv.type === "json" ? "pointer" : "text",
-              },
-            }}
-            sx={{
-              flex: 2,
-              "& .MuiOutlinedInput-root": { borderRadius: "0.25rem" },
-              ...(kv.type === "json" && {
-                "& .MuiInputBase-input::placeholder": {
-                  color: "#0060E5",
-                  opacity: 1,
+          {variable.data_type === "BOOL" ? (
+            <Select
+              size="small"
+              value={variable.value || ""}
+              onChange={(e) =>
+                data.onVariableChange?.(index, "value", e.target.value)
+              }
+              displayEmpty
+              renderValue={(selected) => {
+                if (!selected || selected === "") {
+                  return <Box sx={{ color: "#999999" }}>Select value</Box>;
+                }
+                return selected;
+              }}
+              sx={{ flex: 2, borderRadius: "0.25rem" }}
+            >
+              <MenuItem value="true">true</MenuItem>
+              <MenuItem value="false">false</MenuItem>
+            </Select>
+          ) : (
+            <TextField
+              size="small"
+              placeholder={
+                variable.data_type === "OBJECT" ? "Add JSON" : "Value"
+              }
+              type={variable.data_type === "NUMBER" ? "number" : "text"}
+              value={
+                variable.data_type === "OBJECT" && variable.value
+                  ? "{JSON code preview}"
+                  : variable.value || ""
+              }
+              onChange={(e) => {
+                const value = e.target.value;
+                // For NUMBER type, validate numeric input
+                if (variable.data_type === "NUMBER") {
+                  // Allow empty string, numbers, and decimal point
+                  if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
+                    data.onVariableChange?.(index, "value", value);
+                  }
+                } else {
+                  data.onVariableChange?.(index, "value", value);
+                }
+              }}
+              onClick={
+                variable.data_type === "OBJECT"
+                  ? () => handleOpenJsonModal(index, variable.value)
+                  : undefined
+              }
+              InputProps={{
+                readOnly: variable.data_type === "OBJECT",
+                endAdornment:
+                  variable.data_type === "OBJECT" && variable.value ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          handleOpenJsonModal(index, variable.value)
+                        }
+                        sx={{ padding: "4px" }}
+                      >
+                        <EditIcon fontSize="small" sx={{ color: "#0060E5" }} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                sx: {
+                  cursor: variable.data_type === "OBJECT" ? "pointer" : "text",
                 },
-              }),
-              ...(kv.type === "json" &&
-                kv.value && {
-                  "& .MuiInputBase-input": {
-                    color: "#828592",
+              }}
+              sx={{
+                flex: 2,
+                "& .MuiOutlinedInput-root": { borderRadius: "0.25rem" },
+                ...(variable.data_type === "OBJECT" && {
+                  "& .MuiInputBase-input::placeholder": {
+                    color: "#0060E5",
+                    opacity: 1,
                   },
                 }),
-            }}
-          />
+                ...(variable.data_type === "OBJECT" &&
+                  variable.value && {
+                    "& .MuiInputBase-input": {
+                      color: "#828592",
+                    },
+                  }),
+              }}
+            />
+          )}
 
           {/* Show delete button only if more than one item */}
-          {keyValues.length > 1 && (
+          {variables.length > 1 && (
             <IconButton
               size="small"
               sx={{ color: "#828592", width: 40, height: 40, flexShrink: 0 }}
-              onClick={() => data.onDeleteKeyValue?.(index)}
+              onClick={() => data.onDeleteVariable?.(index)}
             >
               <RemoveIcon fontSize="small" />
             </IconButton>
           )}
 
           {/* Placeholder to maintain alignment */}
-          {keyValues.length === 1 && (
+          {variables.length === 1 && (
             <Box sx={{ width: 40, height: 40, flexShrink: 0 }} />
           )}
 
@@ -294,7 +342,7 @@ const VariantNode = ({ data }: any) => {
               open={jsonModalOpen === index}
               onClose={handleCancelJson}
               config={{
-                title: `JSON for ${data.name || "Variant"} for ${kv.key || "key"}`,
+                title: `JSON for ${data.name || "Variant"} for ${variable.key || "key"}`,
                 width: 600,
                 maxHeight: "80vh",
                 content: (
@@ -342,7 +390,7 @@ const VariantNode = ({ data }: any) => {
       {/* Add Parameter Button */}
       <Button
         startIcon={<AddIcon />}
-        onClick={() => data.onAddKeyValue?.(keyValues.length - 1)}
+        onClick={() => data.onAddVariable?.(variables.length - 1)}
         sx={{
           textTransform: "none",
           color: "#333333",
@@ -433,7 +481,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     const config = variantFields.map((v: any) => ({
       name: v.name,
       trafficSplit: v.trafficSplit,
-      keyValues: v.keyValues,
+      variables: v.variables,
     }));
     return config;
   }, [variantFields]);
@@ -468,7 +516,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
   const adjustSplitCircular = useCallback(
     (editedIndex: number) => {
       const splits = variantFields.map((v: any) =>
-        parseInt(v.trafficSplit || "0", 10)
+        parseInt(v.trafficSplit || "0", 10),
       );
       const total = splits.reduce((a, b) => a + b, 0);
 
@@ -507,14 +555,14 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
         updateVariant(i, { ...variant, trafficSplit: v.toString() });
       });
     },
-    [variantFields, updateVariant]
+    [variantFields, updateVariant],
   );
 
   const handleTrafficBlur = useCallback(
     (index: number) => {
       adjustSplitCircular(index);
     },
-    [adjustSplitCircular]
+    [adjustSplitCircular],
   );
 
   // Function to handle traffic split change with circular redistribution
@@ -531,7 +579,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
   const nodes = useMemo(() => {
     const generateNodesWithHandlers = (
       variantsConfig: any[],
-      handleTrafficSplitChange: (index: number, value: string) => void
+      handleTrafficSplitChange: (index: number, value: string) => void,
     ) => {
       const COLUMN_GAP = 300;
       const MIN_SPACING = 80;
@@ -546,8 +594,8 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       const variantPositions: number[] = [];
 
       variantsConfig.forEach((config) => {
-        const keyValuesLength = config.keyValues?.length || 1;
-        const cardHeight = BASE_HEIGHT + keyValuesLength * ROW_HEIGHT;
+        const variablesLength = config.variables?.length || 1;
+        const cardHeight = BASE_HEIGHT + variablesLength * ROW_HEIGHT;
         variantPositions.push(currentY + cardHeight / 2);
         currentY += cardHeight + MIN_SPACING;
       });
@@ -567,8 +615,8 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       currentY = START_Y;
 
       variantsConfig.forEach((config, i) => {
-        const keyValuesLength = config.keyValues?.length || 1;
-        const cardHeight = BASE_HEIGHT + keyValuesLength * ROW_HEIGHT;
+        const variablesLength = config.variables?.length || 1;
+        const cardHeight = BASE_HEIGHT + variablesLength * ROW_HEIGHT;
 
         nodes.push({
           id: `split-${i + 1}`,
@@ -590,7 +638,9 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
           position: { x: START_X + COLUMN_GAP * 2, y: currentY },
           data: {
             name: config.name,
-            keyValues: config.keyValues || [{ key: "", type: "", value: "" }],
+            variables: config.variables || [
+              { key: "", data_type: "", value: "" },
+            ],
             canDelete: variantFields.length > 2,
             onNameChange: (value: string) => {
               const currentVariant: any = variantFields[i];
@@ -603,72 +653,72 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
                 setIsTrafficEdited(true); // Mark as edited since we're changing the distribution
               }
             },
-            onKeyValueChange: (index: number, field: string, value: string) => {
-              if (field === "key" || field === "type") {
-                // If changing key or type, sync across ALL variants
+            onVariableChange: (index: number, field: string, value: string) => {
+              if (field === "key" || field === "data_type") {
+                // If changing key or data_type, sync across ALL variants
                 variantFields.forEach((variant: any, variantIndex: number) => {
-                  const newKeyValues = [...(variant.keyValues || [])];
-                  if (newKeyValues[index]) {
-                    // If changing the type, reset the value field for all variants
-                    if (field === "type") {
-                      newKeyValues[index] = {
-                        ...newKeyValues[index],
+                  const newVariables = [...(variant.variables || [])];
+                  if (newVariables[index]) {
+                    // If changing the data_type, reset the value field for all variants
+                    if (field === "data_type") {
+                      newVariables[index] = {
+                        ...newVariables[index],
                         [field]: value,
                         value: "",
                       };
                     } else {
-                      newKeyValues[index] = {
-                        ...newKeyValues[index],
+                      newVariables[index] = {
+                        ...newVariables[index],
                         [field]: value,
                       };
                     }
                     updateVariant(variantIndex, {
                       ...variant,
-                      keyValues: newKeyValues,
+                      variables: newVariables,
                     });
                   }
                 });
               } else {
                 // If changing value, only update current variant
                 const currentVariant: any = variantFields[i];
-                const newKeyValues = [...(currentVariant.keyValues || [])];
-                newKeyValues[index] = {
-                  ...newKeyValues[index],
+                const newVariables = [...(currentVariant.variables || [])];
+                newVariables[index] = {
+                  ...newVariables[index],
                   [field]: value,
                 };
                 updateVariant(i, {
                   ...currentVariant,
-                  keyValues: newKeyValues,
+                  variables: newVariables,
                 });
               }
             },
-            onAddKeyValue: (afterIndex: number) => {
+            onAddVariable: (afterIndex: number) => {
               // Add parameter to ALL variants at the same position
               variantFields.forEach((variant: any, variantIndex: number) => {
-                const newKeyValues = [...(variant.keyValues || [])];
-                newKeyValues.splice(afterIndex + 1, 0, {
+                const newVariables = [...(variant.variables || [])];
+                newVariables.splice(afterIndex + 1, 0, {
                   key: "",
-                  type: "",
+                  data_type: "",
                   value: "",
                 });
                 updateVariant(variantIndex, {
                   ...variant,
-                  keyValues: newKeyValues,
+                  variables: newVariables,
                 });
               });
             },
-            onDeleteKeyValue: (index: number) => {
+            onDeleteVariable: (index: number) => {
               // Delete parameter from ALL variants at the same position
-              // Only allow delete if more than one key-value pair
+              // Only allow delete if more than one variable
               const currentVariant: any = variantFields[i];
-              if ((currentVariant.keyValues || []).length > 1) {
+              if ((currentVariant.variables || []).length > 1) {
                 variantFields.forEach((variant: any, variantIndex: number) => {
-                  const newKeyValues = [...(variant.keyValues || [])];
-                  if (newKeyValues.length > 1) {
-                    newKeyValues.splice(index, 1);
+                  const newVariables = [...(variant.variables || [])];
+                  if (newVariables.length > 1) {
+                    newVariables.splice(index, 1);
                     updateVariant(variantIndex, {
                       ...variant,
-                      keyValues: newKeyValues,
+                      variables: newVariables,
                     });
                   }
                 });
@@ -696,7 +746,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
 
   const edges = useMemo(
     () => generateEdges(variantsConfig.length),
-    [variantsConfig.length]
+    [variantsConfig.length],
   );
 
   // Calculate canvas height dynamically
@@ -707,8 +757,8 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     return (
       200 +
       variantsConfig.reduce((sum: number, config: any) => {
-        const keyValuesLength = config.keyValues?.length || 1;
-        return sum + BASE_HEIGHT + keyValuesLength * ROW_HEIGHT + MIN_SPACING;
+        const variablesLength = config.variables?.length || 1;
+        return sum + BASE_HEIGHT + variablesLength * ROW_HEIGHT + MIN_SPACING;
       }, 0)
     );
   }, [variantsConfig]);
@@ -814,20 +864,21 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
             // So new variant number = current length (since Control is 0, next is Variant {length})
             const newVariantNumber = variantFields.length;
 
-            // Copy key/type structure from first variant, but with empty values
+            // Copy key/data_type structure from first variant, but with empty values
             const firstVariant: any = variantFields[0];
-            const keyValuesTemplate = (
-              firstVariant?.keyValues || [{ key: "", type: "", value: "" }]
-            ).map((kv: any) => ({
-              key: kv.key || "",
-              type: kv.type || "",
+            const variablesTemplate = (
+              firstVariant?.variables || [{ key: "", data_type: "", value: "" }]
+            ).map((v: any) => ({
+              key: v.key || "",
+              data_type: v.data_type || "",
               value: "",
             }));
 
             const newVariant = {
               name: `Variant ${newVariantNumber}`,
               trafficSplit: "0",
-              keyValues: keyValuesTemplate,
+              variables: variablesTemplate,
+              cohorts: [],
             };
 
             if (isTrafficEdited) {
@@ -886,9 +937,16 @@ function CreateExperimentTargetingParentModal({
     defaultValue: ["Tag1"],
   });
 
+  // Use react-hook-form field array for variants
+  const { fields: variantFields } = useFieldArray({
+    control,
+    name: "variants",
+  });
+
   const filters = filterFields as Array<{
     id: string;
-    field: string;
+    operand: string;
+    operandDataType: string;
     operator: string;
     value: string;
     condition: string;
@@ -896,10 +954,28 @@ function CreateExperimentTargetingParentModal({
   const cohorts = cohortsField.value;
   const isAssignCohortsDirectly = isAssignCohortsDirectlyField.value;
 
+  // Helper to get data type based on operand
+  const getDataTypeForOperand = (operand: string): string => {
+    const dataTypeMap: Record<string, string> = {
+      country: "STRING",
+      app_version: "STRING",
+      device: "STRING",
+      platform: "STRING",
+      os_version: "STRING",
+      user_id: "STRING",
+      age: "NUMBER",
+      score: "NUMBER",
+      is_premium: "BOOL",
+      is_active: "BOOL",
+    };
+    return dataTypeMap[operand] || "STRING";
+  };
+
   const handleAddFilter = () => {
     appendFilter({
-      field: "App Version",
-      operator: "Is not equal to",
+      operand: "app_version",
+      operandDataType: "STRING",
+      operator: "!=",
       value: "12.3",
       condition: "AND",
     });
@@ -958,47 +1034,147 @@ function CreateExperimentTargetingParentModal({
               <Typography variant="body2" sx={{ minWidth: 40 }}>
                 {filter.condition}
               </Typography>
-              <TextField
-                select
-                size="small"
-                sx={{ minWidth: 150 }}
-                value={filter.field}
-                onChange={(e) => {
-                  updateFilter(index, {
-                    ...filter,
-                    field: e.target.value,
-                  });
+              <Controller
+                name={`targeting.filters.${index}.operand`}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    select
+                    size="small"
+                    sx={{ minWidth: 150 }}
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      // Auto-update operandDataType, clear value and operator when operand changes
+                      const currentFilter = filters[index];
+                      const newDataType = getDataTypeForOperand(e.target.value);
+                      updateFilter(index, {
+                        ...currentFilter,
+                        operand: e.target.value,
+                        operandDataType: newDataType,
+                        operator: "=", // Reset to default operator
+                        value: "", // Clear value since data type changed
+                      });
+                    }}
+                  >
+                    <MenuItem value="country">Country</MenuItem>
+                    <MenuItem value="app_version">App Version</MenuItem>
+                    <MenuItem value="device">Device</MenuItem>
+                    <MenuItem value="platform">Platform</MenuItem>
+                    <MenuItem value="os_version">OS Version</MenuItem>
+                    <MenuItem value="user_id">User ID</MenuItem>
+                    <MenuItem value="age">Age</MenuItem>
+                    <MenuItem value="score">Score</MenuItem>
+                    <MenuItem value="is_premium">Is Premium</MenuItem>
+                    <MenuItem value="is_active">Is Active</MenuItem>
+                  </TextField>
+                )}
+              />
+              <Controller
+                name={`targeting.filters.${index}.operator`}
+                control={control}
+                render={({ field }) => {
+                  const currentFilter = filters[index];
+                  const dataType = currentFilter?.operandDataType;
+
+                  // Different operators based on data type
+                  const getOperatorOptions = () => {
+                    if (dataType === "BOOL") {
+                      return [
+                        { value: "=", label: "Is equal to" },
+                        { value: "!=", label: "Is not equal to" },
+                      ];
+                    }
+
+                    if (dataType === "NUMBER" || dataType === "DECIMAL") {
+                      return [
+                        { value: "=", label: "Is equal to" },
+                        { value: "!=", label: "Is not equal to" },
+                        { value: ">", label: "Greater than" },
+                        { value: "<", label: "Less than" },
+                        { value: ">=", label: "Greater than or equal to" },
+                        { value: "<=", label: "Less than or equal to" },
+                      ];
+                    }
+
+                    // STRING and default
+                    return [
+                      { value: "=", label: "Is equal to" },
+                      { value: "!=", label: "Is not equal to" },
+                      { value: "CONTAINS", label: "Contains" },
+                    ];
+                  };
+
+                  const options = getOperatorOptions();
+                  const validValues = options.map((opt) => opt.value);
+
+                  // Ensure current value is valid for the available options
+                  const currentValue = validValues.includes(field.value)
+                    ? field.value
+                    : "=";
+
+                  return (
+                    <TextField
+                      select
+                      size="small"
+                      sx={{ minWidth: 150 }}
+                      {...field}
+                      value={currentValue}
+                    >
+                      {options.map((opt) => (
+                        <MenuItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  );
                 }}
-              >
-                <MenuItem value="Country">Country</MenuItem>
-                <MenuItem value="App Version">App Version</MenuItem>
-                <MenuItem value="Device">Device</MenuItem>
-              </TextField>
-              <TextField
-                select
-                size="small"
-                sx={{ minWidth: 150 }}
-                value={filter.operator}
-                onChange={(e) => {
-                  updateFilter(index, {
-                    ...filter,
-                    operator: e.target.value,
-                  });
-                }}
-              >
-                <MenuItem value="Is equal to">Is equal to</MenuItem>
-                <MenuItem value="Is not equal to">Is not equal to</MenuItem>
-                <MenuItem value="Contains">Contains</MenuItem>
-              </TextField>
-              <TextField
-                size="small"
-                sx={{ width: 100 }}
-                value={filter.value}
-                onChange={(e) => {
-                  updateFilter(index, {
-                    ...filter,
-                    value: e.target.value,
-                  });
+              />
+              <Controller
+                name={`targeting.filters.${index}.value`}
+                control={control}
+                render={({ field }) => {
+                  const currentFilter = filters[index];
+                  const dataType = currentFilter?.operandDataType;
+
+                  // For BOOLEAN type, use a dropdown
+                  if (dataType === "BOOL") {
+                    return (
+                      <TextField
+                        select
+                        size="small"
+                        sx={{ width: 100 }}
+                        {...field}
+                      >
+                        <MenuItem value="true">true</MenuItem>
+                        <MenuItem value="false">false</MenuItem>
+                      </TextField>
+                    );
+                  }
+
+                  // For NUMBER type, use number input
+                  if (dataType === "NUMBER" || dataType === "DECIMAL") {
+                    return (
+                      <TextField
+                        size="small"
+                        type="number"
+                        sx={{ width: 100 }}
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Allow empty string, numbers, and decimal point
+                          if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
+                            field.onChange(value);
+                          }
+                        }}
+                      />
+                    );
+                  }
+
+                  // Default to string input
+                  return (
+                    <TextField size="small" sx={{ width: 100 }} {...field} />
+                  );
                 }}
               />
               {index > 0 && (
@@ -1006,7 +1182,7 @@ function CreateExperimentTargetingParentModal({
                   size="small"
                   onClick={() => handleRemoveFilter(index)}
                 >
-                  <CloseIcon fontSize="small" />
+                  <DeleteOutlineIcon fontSize="small" />
                 </IconButton>
               )}
 
@@ -1028,36 +1204,87 @@ function CreateExperimentTargetingParentModal({
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
           Cohorts
         </Typography>
-        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
-          <AscendDropdown
-            placeholder="Select Cohorts"
-            variant="multi-chip"
-            options={["Tag1", "Tag2", "Tag3"]}
-            value={cohorts}
-            fullWidth
-            onChange={(value) => {
-              cohortsField.onChange(value);
-            }}
-          />
-        </Box>
-        <FormControlLabel
-          control={<Checkbox />}
-          label="Assign cohorts directly to variants"
-          checked={isAssignCohortsDirectly}
-          onChange={(e) =>
-            isAssignCohortsDirectlyField.onChange(
-              (e.target as HTMLInputElement).checked
-            )
-          }
-        />
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ display: "block", mt: 1 }}
+        {!isAssignCohortsDirectly ? (
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+            <AscendDropdown
+              placeholder="Select Cohorts"
+              variant="multi-chip"
+              options={["Tag1", "Tag2", "Tag3"]}
+              value={cohorts}
+              fullWidth
+              size="lg"
+              onChange={(value) => {
+                cohortsField.onChange(value);
+              }}
+            />
+          </Box>
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}>
+            {variantFields.map((variant: any, index: number) => (
+              <Box
+                key={variant.id}
+                sx={{ display: "flex", alignItems: "center", gap: 2 }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: "#333333",
+                    minWidth: "120px",
+                    flexShrink: 0,
+                  }}
+                >
+                  {variant.name}
+                </Typography>
+                <Box sx={{ flex: 1 }}>
+                  <Controller
+                    name={`variants.${index}.cohorts`}
+                    control={control}
+                    render={({ field }) => (
+                      <AscendDropdown
+                        placeholder="Select Cohorts"
+                        variant="multi-chip"
+                        options={["Tag1", "Tag2", "Tag3"]}
+                        value={field.value || []}
+                        fullWidth
+                        size="lg"
+                        onChange={(value) => {
+                          field.onChange(value);
+                        }}
+                      />
+                    )}
+                  />
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        )}
+        <Box
+          sx={{
+            backgroundColor: "#EBF5FF",
+            padding: "8px",
+            borderRadius: "4px",
+          }}
         >
-          Assigning cohorts will make it <strong>inaccurate and risky</strong>.
-          Make sure to verify each cohort.
-        </Typography>
+          <FormControlLabel
+            control={<Checkbox />}
+            label="Assign cohorts directly to variants"
+            checked={isAssignCohortsDirectly}
+            onChange={(e) =>
+              isAssignCohortsDirectlyField.onChange(
+                (e.target as HTMLInputElement).checked,
+              )
+            }
+          />
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: "block", mt: 1 }}
+          >
+            Assigning cohorts will make it <strong>inaccurate and risky</strong>
+            . Make sure to verify each cohort.
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );
