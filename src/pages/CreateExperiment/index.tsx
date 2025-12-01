@@ -190,7 +190,6 @@ const CreateExperiment = () => {
                 sx={{
                   display: "flex",
                   alignItems: "stretch",
-                  gap: "0.5rem",
                 }}
               >
                 {/* Left Border Indicator */}
