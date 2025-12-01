@@ -29,11 +29,13 @@ interface AscendDropdownProps {
   fullWidth?: boolean;
   disabled?: boolean;
   showCount?: boolean;
+  iconComponent?: React.ElementType;
 }
 
 const MENU_PROPS = {
   PaperProps: {
     style: {
+      padding:"0px 10px",
       maxHeight: 250,
     },
   },
@@ -178,8 +180,6 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
           "& .MuiSelect-select": {
             display: "flex",
             alignItems: "center",
-            paddingTop: 0,
-            paddingBottom: 0,
             height: "100%",
             color:
               variant === "multi-checkbox" &&
@@ -231,7 +231,7 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
           </MenuItem>
         )}
         {options.map((option) => (
-          <MenuItem key={option} value={option}>
+          <MenuItem key={option} value={option} sx={{borderRadius: "8px"}}>
             {(variant === "multi-checkbox" || variant === "multi-chip") && (
               <Checkbox
                 checked={Array.isArray(value) && value.includes(option)}

@@ -35,6 +35,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             left: 0,
             display: "flex",
             justifyContent: "center",
+            backgroundColor: theme.palette.background.paper,
           }}
         >
           <SideNavTabs />
@@ -47,6 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             marginLeft: theme.customSpacing.sidebarWidth,
             overflowY: "auto",
             height: `calc(100vh - ${theme.customSpacing.appBarHeight})`,
+            backgroundColor: theme.palette.background.paper,
           }}
         >
           {children}
