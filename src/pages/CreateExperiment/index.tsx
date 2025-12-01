@@ -50,7 +50,8 @@ const CreateExperiment = () => {
   const [submittedData, setSubmittedData] = useState<ExperimentFormData | null>(
     null,
   );
-  const [currentSection, setCurrentSection] = useState<string>("experiment-details");
+  const [currentSection, setCurrentSection] =
+    useState<string>("experiment-details");
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
   const { control, handleSubmit, setValue } = useForm<ExperimentFormData>({
@@ -97,7 +98,10 @@ const CreateExperiment = () => {
       });
     };
 
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    const observer = new IntersectionObserver(
+      observerCallback,
+      observerOptions,
+    );
 
     // Observe all sections
     sections.forEach(({ id }) => {
@@ -224,7 +228,8 @@ const CreateExperiment = () => {
                       fontFamily: "Inter",
                       fontWeight: 600,
                       fontSize: "0.75rem", // 12px
-                      color: currentSection === section.id ? "#0060E5" : "#595959",
+                      color:
+                        currentSection === section.id ? "#0060E5" : "#595959",
                       transition: "color 0.2s ease",
                     }}
                   >
@@ -238,274 +243,274 @@ const CreateExperiment = () => {
 
         {/* Page content */}
         <Box sx={{ flex: 1, padding: 3 }}>
-        <Box
-          id="experiment-details"
-          sx={{
-            padding: "1.5rem", // 24px
-            border: "1px solid",
-            borderColor: "#DADADD",
-            borderRadius: "0.5rem", // 8px
-            scrollMarginTop: "2rem", // Offset for smooth scrolling
-          }}
-        >
-          {/* Section Header */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <Typography
-              sx={{
-                fontFamily: "Inter",
-                fontWeight: 600,
-                fontSize: "1rem", // 16px
-                color: "#333333",
-              }}
-            >
-              Experiment Details
-            </Typography>
-            <InfoOutlinedIcon
-              sx={{
-                width: "1rem", // 8px
-                height: "1rem", // 8px
-                color: "#DADADA",
-              }}
-            />
-          </Box>
-
-          {/* Input Fields */}
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <AscendTextFieldControlled
-              name="experimentName"
-              control={control}
-              label="Experiment Name"
-              placeholder="Enter Experiment Name"
-              infoText="Provide a unique name for your experiment"
-              onChangeCustom={handleExperimentNameChange}
-            />
-            <AscendTextFieldControlled
-              name="experimentId"
-              control={control}
-              label="Experiment ID"
-              placeholder="Enter experiment id"
-              infoText="Unique identifier for the experiment"
-            />
-          </Box>
-
-          {/* Hypothesis Field */}
-          <Box sx={{ mt: "1.5rem" }}>
-            <AscendTextFieldControlled
-              name="hypothesis"
-              control={control}
-              label="Hypothesis"
-              placeholder="Enter hypothesis"
-              infoText="Describe the hypothesis for this experiment"
-            />
-          </Box>
-
-          {/* Description Field */}
-          <Box sx={{ mt: "1.5rem" }}>
-            <AscendTextFieldControlled
-              name="description"
-              control={control}
-              label="Description (optional)"
-              placeholder="Enter description"
-              height="120px"
-            />
-          </Box>
-
-          {/* Tags Field */}
-          <Box sx={{ mt: "1.5rem" }}>
-            <AscendAutoCompleteControlled
-              name="tags"
-              control={control}
-              label="Tags (optional)"
-              placeholder="Select tags"
-              options={[
-                "Performance",
-                "UI/UX",
-                "Backend",
-                "Frontend",
-                "A/B Test",
-                "Feature Flag",
-              ]}
-              multiple
-              filterSelectedOptions
-              chipStyles={{
-                backgroundColor: "#E1E3EA",
-                border: "none",
-                borderRadius: 0,
-                height: "24px",
-                fontSize: "0.75rem",
-                "& .MuiChip-label": {
-                  padding: "0 8px",
-                },
-                "& .MuiChip-deleteIcon": {
-                  color: "#666666",
-                  fontSize: "0.875rem",
-                  margin: "0 4px 0 -4px",
-                  "&:hover": {
-                    color: "#333333",
-                  },
-                },
-              }}
-            />
-          </Box>
-        </Box>
-
-        {/* Variants and Targeting Section */}
-        <Box
-          id="variants-targeting"
-          sx={{
-            padding: "1.5rem", // 24px
-            border: "1px solid",
-            borderColor: "#DADADD",
-            borderRadius: "0.5rem", // 8px
-            mt: "1.5rem", // 24px gap from previous box
-            scrollMarginTop: "2rem", // Offset for smooth scrolling
-          }}
-        >
-          {/* Section Header */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <Typography
-              sx={{
-                fontFamily: "Inter",
-                fontWeight: 600,
-                fontSize: "1rem", // 16px
-                color: "#333333",
-              }}
-            >
-              Variants and Targeting
-            </Typography>
-            <InfoOutlinedIcon
-              sx={{
-                width: "1rem",
-                height: "1rem",
-                color: "#DADADA",
-              }}
-            />
-          </Box>
-
-          {/* Variants Flow */}
-          <VariantsFlow control={control} />
-        </Box>
-
-        {/* Advance Configuration Section */}
-        <Box
-          id="advanced-configuration"
-          sx={{
-            padding: "1.5rem", // 24px
-            border: "1px solid",
-            borderColor: "#DADADD",
-            borderRadius: "0.5rem", // 8px
-            mt: "1.5rem", // 24px gap from previous box
-            scrollMarginTop: "2rem", // Offset for smooth scrolling
-          }}
-        >
-          {/* Section Header */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <Typography
-              sx={{
-                fontFamily: "Inter",
-                fontWeight: 600,
-                fontSize: "1rem", // 16px
-                color: "#333333",
-              }}
-            >
-              Advance Configuration
-            </Typography>
-            <InfoOutlinedIcon
-              sx={{
-                width: "1rem",
-                height: "1rem",
-                color: "#DADADA",
-              }}
-            />
-          </Box>
-
-          {/* Rate Limiting Field */}
-          <Box>
-            <AscendTextFieldControlled
-              name="rateLimit"
-              control={control}
-              label="Rate Limiting (optional)"
-              placeholder="Enter rate"
-              infoText="Set the maximum rate limit for this experiment"
-              width="10%"
-            />
-          </Box>
-
-          {/* Maximum Users Field */}
-          <Box sx={{ mt: "1.5rem" }}>
-            <AscendTextFieldControlled
-              name="maxUsers"
-              control={control}
-              label="Maximum Users (optional)"
-              placeholder="######"
-              infoText="Set the maximum number of users for this experiment"
-              width="10%"
-            />
-          </Box>
-        </Box>
-
-        {/* Submit Button */}
-        <Box sx={{ mt: "2rem", display: "flex", justifyContent: "flex-end" }}>
-          <Button
-            variant="contained"
-            onClick={handleSubmit(onSubmit)}
-            sx={{
-              backgroundColor: "#0060E5",
-              color: "white",
-              textTransform: "none",
-              fontFamily: "Inter",
-              fontWeight: 600,
-              fontSize: "0.875rem",
-              padding: "0.625rem 2rem",
-              borderRadius: "0.5rem",
-              "&:hover": {
-                backgroundColor: "#0050C5",
-              },
-            }}
-          >
-            Create Experiment
-          </Button>
-        </Box>
-
-        {/* Display Submitted Data */}
-        {submittedData && (
           <Box
+            id="experiment-details"
             sx={{
-              mt: "2rem",
-              padding: "1.5rem",
-              border: "1px solid #DADADD",
-              borderRadius: "0.5rem",
-              backgroundColor: "#F9F9F9",
+              padding: "1.5rem", // 24px
+              border: "1px solid",
+              borderColor: "#DADADD",
+              borderRadius: "0.5rem", // 8px
+              scrollMarginTop: "2rem", // Offset for smooth scrolling
             }}
           >
-            <Typography
-              sx={{
-                fontFamily: "Inter",
-                fontWeight: 600,
-                fontSize: "1rem",
-                color: "#333333",
-                mb: "1rem",
-              }}
-            >
-              Submitted Form Data
-            </Typography>
-            <Box
-              component="pre"
-              sx={{
-                backgroundColor: "white",
-                padding: "1rem",
-                borderRadius: "0.5rem",
-                overflow: "auto",
-                maxHeight: "400px",
-                fontSize: "0.75rem",
-                fontFamily: "monospace",
-                border: "1px solid #E0E0E0",
-              }}
-            >
-              {JSON.stringify(submittedData, null, 2)}
+            {/* Section Header */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+              <Typography
+                sx={{
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "1rem", // 16px
+                  color: "#333333",
+                }}
+              >
+                Experiment Details
+              </Typography>
+              <InfoOutlinedIcon
+                sx={{
+                  width: "1rem", // 8px
+                  height: "1rem", // 8px
+                  color: "#DADADA",
+                }}
+              />
+            </Box>
+
+            {/* Input Fields */}
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <AscendTextFieldControlled
+                name="experimentName"
+                control={control}
+                label="Experiment Name"
+                placeholder="Enter Experiment Name"
+                infoText="Provide a unique name for your experiment"
+                onChangeCustom={handleExperimentNameChange}
+              />
+              <AscendTextFieldControlled
+                name="experimentId"
+                control={control}
+                label="Experiment ID"
+                placeholder="Enter experiment id"
+                infoText="Unique identifier for the experiment"
+              />
+            </Box>
+
+            {/* Hypothesis Field */}
+            <Box sx={{ mt: "1.5rem" }}>
+              <AscendTextFieldControlled
+                name="hypothesis"
+                control={control}
+                label="Hypothesis"
+                placeholder="Enter hypothesis"
+                infoText="Describe the hypothesis for this experiment"
+              />
+            </Box>
+
+            {/* Description Field */}
+            <Box sx={{ mt: "1.5rem" }}>
+              <AscendTextFieldControlled
+                name="description"
+                control={control}
+                label="Description (optional)"
+                placeholder="Enter description"
+                height="120px"
+              />
+            </Box>
+
+            {/* Tags Field */}
+            <Box sx={{ mt: "1.5rem" }}>
+              <AscendAutoCompleteControlled
+                name="tags"
+                control={control}
+                label="Tags (optional)"
+                placeholder="Select tags"
+                options={[
+                  "Performance",
+                  "UI/UX",
+                  "Backend",
+                  "Frontend",
+                  "A/B Test",
+                  "Feature Flag",
+                ]}
+                multiple
+                filterSelectedOptions
+                chipStyles={{
+                  backgroundColor: "#E1E3EA",
+                  border: "none",
+                  borderRadius: 0,
+                  height: "24px",
+                  fontSize: "0.75rem",
+                  "& .MuiChip-label": {
+                    padding: "0 8px",
+                  },
+                  "& .MuiChip-deleteIcon": {
+                    color: "#666666",
+                    fontSize: "0.875rem",
+                    margin: "0 4px 0 -4px",
+                    "&:hover": {
+                      color: "#333333",
+                    },
+                  },
+                }}
+              />
             </Box>
           </Box>
-        )}
+
+          {/* Variants and Targeting Section */}
+          <Box
+            id="variants-targeting"
+            sx={{
+              padding: "1.5rem", // 24px
+              border: "1px solid",
+              borderColor: "#DADADD",
+              borderRadius: "0.5rem", // 8px
+              mt: "1.5rem", // 24px gap from previous box
+              scrollMarginTop: "2rem", // Offset for smooth scrolling
+            }}
+          >
+            {/* Section Header */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+              <Typography
+                sx={{
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "1rem", // 16px
+                  color: "#333333",
+                }}
+              >
+                Variants and Targeting
+              </Typography>
+              <InfoOutlinedIcon
+                sx={{
+                  width: "1rem",
+                  height: "1rem",
+                  color: "#DADADA",
+                }}
+              />
+            </Box>
+
+            {/* Variants Flow */}
+            <VariantsFlow control={control} />
+          </Box>
+
+          {/* Advance Configuration Section */}
+          <Box
+            id="advanced-configuration"
+            sx={{
+              padding: "1.5rem", // 24px
+              border: "1px solid",
+              borderColor: "#DADADD",
+              borderRadius: "0.5rem", // 8px
+              mt: "1.5rem", // 24px gap from previous box
+              scrollMarginTop: "2rem", // Offset for smooth scrolling
+            }}
+          >
+            {/* Section Header */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+              <Typography
+                sx={{
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "1rem", // 16px
+                  color: "#333333",
+                }}
+              >
+                Advance Configuration
+              </Typography>
+              <InfoOutlinedIcon
+                sx={{
+                  width: "1rem",
+                  height: "1rem",
+                  color: "#DADADA",
+                }}
+              />
+            </Box>
+
+            {/* Rate Limiting Field */}
+            <Box>
+              <AscendTextFieldControlled
+                name="rateLimit"
+                control={control}
+                label="Rate Limiting (optional)"
+                placeholder="Enter rate"
+                infoText="Set the maximum rate limit for this experiment"
+                width="10%"
+              />
+            </Box>
+
+            {/* Maximum Users Field */}
+            <Box sx={{ mt: "1.5rem" }}>
+              <AscendTextFieldControlled
+                name="maxUsers"
+                control={control}
+                label="Maximum Users (optional)"
+                placeholder="######"
+                infoText="Set the maximum number of users for this experiment"
+                width="10%"
+              />
+            </Box>
+          </Box>
+
+          {/* Submit Button */}
+          <Box sx={{ mt: "2rem", display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="contained"
+              onClick={handleSubmit(onSubmit)}
+              sx={{
+                backgroundColor: "#0060E5",
+                color: "white",
+                textTransform: "none",
+                fontFamily: "Inter",
+                fontWeight: 600,
+                fontSize: "0.875rem",
+                padding: "0.625rem 2rem",
+                borderRadius: "0.5rem",
+                "&:hover": {
+                  backgroundColor: "#0050C5",
+                },
+              }}
+            >
+              Create Experiment
+            </Button>
+          </Box>
+
+          {/* Display Submitted Data */}
+          {submittedData && (
+            <Box
+              sx={{
+                mt: "2rem",
+                padding: "1.5rem",
+                border: "1px solid #DADADD",
+                borderRadius: "0.5rem",
+                backgroundColor: "#F9F9F9",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "1rem",
+                  color: "#333333",
+                  mb: "1rem",
+                }}
+              >
+                Submitted Form Data
+              </Typography>
+              <Box
+                component="pre"
+                sx={{
+                  backgroundColor: "white",
+                  padding: "1rem",
+                  borderRadius: "0.5rem",
+                  overflow: "auto",
+                  maxHeight: "400px",
+                  fontSize: "0.75rem",
+                  fontFamily: "monospace",
+                  border: "1px solid #E0E0E0",
+                }}
+              >
+                {JSON.stringify(submittedData, null, 2)}
+              </Box>
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>
