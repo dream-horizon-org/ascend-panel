@@ -62,7 +62,7 @@ const CreateExperiment = () => {
         {
           name: "Control Group",
           trafficSplit: "50",
-          keyValues: [{ key: "", type: "", value: "blue" }],
+          keyValues: [{ key: "", type: "", value: "" }],
         },
         {
           name: "Variant 1",
