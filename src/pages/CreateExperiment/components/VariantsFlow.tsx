@@ -583,42 +583,73 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
               }
             },
             onKeyValueChange: (index: number, field: string, value: string) => {
-              const currentVariant: any = variantFields[i];
-              const newKeyValues = [...(currentVariant.keyValues || [])];
-              // If changing the type, reset the value field
-              if (field === "type") {
-                newKeyValues[index] = {
-                  ...newKeyValues[index],
-                  [field]: value,
-                  value: "",
-                };
+              if (field === "key" || field === "type") {
+                // If changing key or type, sync across ALL variants
+                variantFields.forEach((variant: any, variantIndex: number) => {
+                  const newKeyValues = [...(variant.keyValues || [])];
+                  if (newKeyValues[index]) {
+                    // If changing the type, reset the value field for all variants
+                    if (field === "type") {
+                      newKeyValues[index] = {
+                        ...newKeyValues[index],
+                        [field]: value,
+                        value: "",
+                      };
+                    } else {
+                      newKeyValues[index] = {
+                        ...newKeyValues[index],
+                        [field]: value,
+                      };
+                    }
+                    updateVariant(variantIndex, {
+                      ...variant,
+                      keyValues: newKeyValues,
+                    });
+                  }
+                });
               } else {
+                // If changing value, only update current variant
+                const currentVariant: any = variantFields[i];
+                const newKeyValues = [...(currentVariant.keyValues || [])];
                 newKeyValues[index] = {
                   ...newKeyValues[index],
                   [field]: value,
                 };
-              }
-              updateVariant(i, { ...currentVariant, keyValues: newKeyValues });
-            },
-            onAddKeyValue: (afterIndex: number) => {
-              const currentVariant: any = variantFields[i];
-              const newKeyValues = [...(currentVariant.keyValues || [])];
-              newKeyValues.splice(afterIndex + 1, 0, {
-                key: "",
-                type: "",
-                value: "",
-              });
-              updateVariant(i, { ...currentVariant, keyValues: newKeyValues });
-            },
-            onDeleteKeyValue: (index: number) => {
-              const currentVariant: any = variantFields[i];
-              const newKeyValues = [...(currentVariant.keyValues || [])];
-              // Only allow delete if more than one key-value pair
-              if (newKeyValues.length > 1) {
-                newKeyValues.splice(index, 1);
                 updateVariant(i, {
                   ...currentVariant,
                   keyValues: newKeyValues,
+                });
+              }
+            },
+            onAddKeyValue: (afterIndex: number) => {
+              // Add parameter to ALL variants at the same position
+              variantFields.forEach((variant: any, variantIndex: number) => {
+                const newKeyValues = [...(variant.keyValues || [])];
+                newKeyValues.splice(afterIndex + 1, 0, {
+                  key: "",
+                  type: "",
+                  value: "",
+                });
+                updateVariant(variantIndex, {
+                  ...variant,
+                  keyValues: newKeyValues,
+                });
+              });
+            },
+            onDeleteKeyValue: (index: number) => {
+              // Delete parameter from ALL variants at the same position
+              // Only allow delete if more than one key-value pair
+              const currentVariant: any = variantFields[i];
+              if ((currentVariant.keyValues || []).length > 1) {
+                variantFields.forEach((variant: any, variantIndex: number) => {
+                  const newKeyValues = [...(variant.keyValues || [])];
+                  if (newKeyValues.length > 1) {
+                    newKeyValues.splice(index, 1);
+                    updateVariant(variantIndex, {
+                      ...variant,
+                      keyValues: newKeyValues,
+                    });
+                  }
                 });
               }
             },
@@ -696,10 +727,20 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
             // So new variant number = current length (since Control is 0, next is Variant {length})
             const newVariantNumber = variantFields.length;
 
+            // Copy key/type structure from first variant, but with empty values
+            const firstVariant: any = variantFields[0];
+            const keyValuesTemplate = (
+              firstVariant?.keyValues || [{ key: "", type: "", value: "" }]
+            ).map((kv: any) => ({
+              key: kv.key || "",
+              type: kv.type || "",
+              value: "",
+            }));
+
             const newVariant = {
               name: `Variant ${newVariantNumber}`,
               trafficSplit: "0",
-              keyValues: [{ key: "", type: "", value: "" }],
+              keyValues: keyValuesTemplate,
             };
 
             if (isTrafficEdited) {
