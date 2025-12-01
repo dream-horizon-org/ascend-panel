@@ -15,8 +15,9 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Remove as RemoveIcon } from "@mui/icons-material";
-import { Control, useFieldArray, useController } from "react-hook-form";
+import { Control, useFieldArray, useController, Controller } from "react-hook-form";
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import AscendModal from "../../../components/AscendModal/AscendModal";
 import CloseIcon from "@mui/icons-material/Close";
@@ -911,7 +912,6 @@ function CreateExperimentTargetingParentModal({
     fields: filterFields,
     append: appendFilter,
     remove: removeFilter,
-    update: updateFilter,
   } = useFieldArray({
     control,
     name: "targeting.filters",
@@ -996,55 +996,55 @@ function CreateExperimentTargetingParentModal({
               <Typography variant="body2" sx={{ minWidth: 40 }}>
                 {filter.condition}
               </Typography>
-              <TextField
-                select
-                size="small"
-                sx={{ minWidth: 150 }}
-                value={filter.field}
-                onChange={(e) => {
-                  updateFilter(index, {
-                    ...filter,
-                    field: e.target.value,
-                  });
-                }}
-              >
-                <MenuItem value="Country">Country</MenuItem>
-                <MenuItem value="App Version">App Version</MenuItem>
-                <MenuItem value="Device">Device</MenuItem>
-              </TextField>
-              <TextField
-                select
-                size="small"
-                sx={{ minWidth: 150 }}
-                value={filter.operator}
-                onChange={(e) => {
-                  updateFilter(index, {
-                    ...filter,
-                    operator: e.target.value,
-                  });
-                }}
-              >
-                <MenuItem value="Is equal to">Is equal to</MenuItem>
-                <MenuItem value="Is not equal to">Is not equal to</MenuItem>
-                <MenuItem value="Contains">Contains</MenuItem>
-              </TextField>
-              <TextField
-                size="small"
-                sx={{ width: 100 }}
-                value={filter.value}
-                onChange={(e) => {
-                  updateFilter(index, {
-                    ...filter,
-                    value: e.target.value,
-                  });
-                }}
+              <Controller
+                name={`targeting.filters.${index}.field`}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    select
+                    size="small"
+                    sx={{ minWidth: 150 }}
+                    {...field}
+                  >
+                    <MenuItem value="Country">Country</MenuItem>
+                    <MenuItem value="App Version">App Version</MenuItem>
+                    <MenuItem value="Device">Device</MenuItem>
+                  </TextField>
+                )}
+              />
+              <Controller
+                name={`targeting.filters.${index}.operator`}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    select
+                    size="small"
+                    sx={{ minWidth: 150 }}
+                    {...field}
+                  >
+                    <MenuItem value="Is equal to">Is equal to</MenuItem>
+                    <MenuItem value="Is not equal to">Is not equal to</MenuItem>
+                    <MenuItem value="Contains">Contains</MenuItem>
+                  </TextField>
+                )}
+              />
+              <Controller
+                name={`targeting.filters.${index}.value`}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    size="small"
+                    sx={{ width: 100 }}
+                    {...field}
+                  />
+                )}
               />
               {index > 0 && (
                 <IconButton
                   size="small"
                   onClick={() => handleRemoveFilter(index)}
                 >
-                  <CloseIcon fontSize="small" />
+                  <DeleteOutlineIcon fontSize="small" />
                 </IconButton>
               )}
 
@@ -1073,29 +1073,38 @@ function CreateExperimentTargetingParentModal({
             options={["Tag1", "Tag2", "Tag3"]}
             value={cohorts}
             fullWidth
+            size="lg"
             onChange={(value) => {
               cohortsField.onChange(value);
             }}
           />
         </Box>
-        <FormControlLabel
-          control={<Checkbox />}
-          label="Assign cohorts directly to variants"
-          checked={isAssignCohortsDirectly}
-          onChange={(e) =>
-            isAssignCohortsDirectlyField.onChange(
-              (e.target as HTMLInputElement).checked
-            )
-          }
-        />
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ display: "block", mt: 1 }}
+        <Box
+          sx={{
+            backgroundColor: "#EBF5FF",
+            padding: "8px",
+            borderRadius: "4px",
+          }}
         >
-          Assigning cohorts will make it <strong>inaccurate and risky</strong>.
-          Make sure to verify each cohort.
-        </Typography>
+          <FormControlLabel
+            control={<Checkbox />}
+            label="Assign cohorts directly to variants"
+            checked={isAssignCohortsDirectly}
+            onChange={(e) =>
+              isAssignCohortsDirectlyField.onChange(
+                (e.target as HTMLInputElement).checked
+              )
+            }
+          />
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: "block", mt: 1 }}
+          >
+            Assigning cohorts will make it <strong>inaccurate and risky</strong>.
+            Make sure to verify each cohort.
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );
