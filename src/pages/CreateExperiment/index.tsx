@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import AscendTextFieldControlled from "../../components/AscendTextField/AscendTextFieldControlled";
 import VariantsFlow from "./components/VariantsFlow";
 import AscendAutoCompleteControlled from "../../components/AscendAutoComplete/AscendAutoCompleteControlled";
@@ -39,11 +39,19 @@ const experimentSchema = z.object({
 
 type ExperimentFormData = z.infer<typeof experimentSchema>;
 
+const sections = [
+  { id: "experiment-details", label: "Experiment Details" },
+  { id: "variants-targeting", label: "Variants & Targeting" },
+  { id: "advanced-configuration", label: "Advanced Configuration" },
+];
+
 const CreateExperiment = () => {
   const navigate = useNavigate();
   const [submittedData, setSubmittedData] = useState<ExperimentFormData | null>(
     null,
   );
+  const [currentSection, setCurrentSection] = useState<string>("experiment-details");
+  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
   const { control, handleSubmit, setValue } = useForm<ExperimentFormData>({
     resolver: zodResolver(experimentSchema),
@@ -72,6 +80,46 @@ const CreateExperiment = () => {
       ],
     },
   });
+
+  // IntersectionObserver to track visible sections
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: "-20% 0px -70% 0px", // Trigger when section is in the upper portion of viewport
+      threshold: 0,
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setCurrentSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    // Observe all sections
+    sections.forEach(({ id }) => {
+      const element = document.getElementById(id);
+      if (element) {
+        sectionRefs.current[id] = element;
+        observer.observe(element);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  // Handle sidebar item click - smooth scroll to section
+  const handleSidebarClick = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   // Auto-generate experimentId from experimentName
   const handleExperimentNameChange = (value: string) => {
@@ -123,14 +171,82 @@ const CreateExperiment = () => {
         </Typography>
       </Box>
 
-      {/* Page content */}
-      <Box sx={{ padding: 3 }}>
+      {/* Main content with sidebar */}
+      <Box sx={{ display: "flex", position: "relative" }}>
+        {/* Sidebar */}
         <Box
+          sx={{
+            width: "240px",
+            position: "sticky",
+            top: 0,
+            height: "100vh",
+            padding: "2rem 1rem",
+          }}
+        >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            {sections.map((section) => (
+              <Box
+                key={section.id}
+                sx={{
+                  display: "flex",
+                  alignItems: "stretch",
+                  gap: "0.5rem",
+                }}
+              >
+                {/* Left Border Indicator */}
+                <Box
+                  sx={{
+                    width: "0.5rem",
+                    backgroundColor:
+                      currentSection === section.id ? "#0060E5" : "transparent",
+                    borderRadius: "10px",
+                    transition: "all 0.2s ease",
+                  }}
+                />
+                {/* Content Container */}
+                <Box
+                  onClick={() => handleSidebarClick(section.id)}
+                  sx={{
+                    flex: 1,
+                    padding: "0.625rem 1rem",
+                    cursor: "pointer",
+                    borderRadius: "0.25rem",
+                    transition: "all 0.2s ease",
+                    backgroundColor:
+                      currentSection === section.id ? "#EBF3FE" : "transparent",
+                    "&:hover": {
+                      backgroundColor:
+                        currentSection === section.id ? "#EBF3FE" : "#F5F5F5",
+                    },
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontFamily: "Inter",
+                      fontWeight: 600,
+                      fontSize: "0.75rem", // 12px
+                      color: currentSection === section.id ? "#0060E5" : "#595959",
+                      transition: "color 0.2s ease",
+                    }}
+                  >
+                    {section.label}
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Page content */}
+        <Box sx={{ flex: 1, padding: 3 }}>
+        <Box
+          id="experiment-details"
           sx={{
             padding: "1.5rem", // 24px
             border: "1px solid",
             borderColor: "#DADADD",
             borderRadius: "0.5rem", // 8px
+            scrollMarginTop: "2rem", // Offset for smooth scrolling
           }}
         >
           {/* Section Header */}
@@ -236,12 +352,14 @@ const CreateExperiment = () => {
 
         {/* Variants and Targeting Section */}
         <Box
+          id="variants-targeting"
           sx={{
             padding: "1.5rem", // 24px
             border: "1px solid",
             borderColor: "#DADADD",
             borderRadius: "0.5rem", // 8px
             mt: "1.5rem", // 24px gap from previous box
+            scrollMarginTop: "2rem", // Offset for smooth scrolling
           }}
         >
           {/* Section Header */}
@@ -271,12 +389,14 @@ const CreateExperiment = () => {
 
         {/* Advance Configuration Section */}
         <Box
+          id="advanced-configuration"
           sx={{
             padding: "1.5rem", // 24px
             border: "1px solid",
             borderColor: "#DADADD",
             borderRadius: "0.5rem", // 8px
             mt: "1.5rem", // 24px gap from previous box
+            scrollMarginTop: "2rem", // Offset for smooth scrolling
           }}
         >
           {/* Section Header */}
@@ -387,6 +507,7 @@ const CreateExperiment = () => {
             </Box>
           </Box>
         )}
+        </Box>
       </Box>
     </Box>
   );

@@ -512,7 +512,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       variantsConfig: any[],
       handleTrafficSplitChange: (index: number, value: string) => void,
     ) => {
-      const COLUMN_GAP = 400;
+      const COLUMN_GAP = 300;
       const MIN_SPACING = 80;
       const START_X = 5;
       const START_Y = 0;
