@@ -878,6 +878,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
               name: `Variant ${newVariantNumber}`,
               trafficSplit: "0",
               variables: variablesTemplate,
+              cohorts: [],
             };
 
             if (isTrafficEdited) {
@@ -934,6 +935,12 @@ function CreateExperimentTargetingParentModal({
     control,
     name: "targeting.cohorts",
     defaultValue: ["Tag1"],
+  });
+
+  // Use react-hook-form field array for variants
+  const { fields: variantFields } = useFieldArray({
+    control,
+    name: "variants",
   });
 
   const filters = filterFields as Array<{
@@ -1197,19 +1204,61 @@ function CreateExperimentTargetingParentModal({
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
           Cohorts
         </Typography>
-        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
-          <AscendDropdown
-            placeholder="Select Cohorts"
-            variant="multi-chip"
-            options={["Tag1", "Tag2", "Tag3"]}
-            value={cohorts}
-            fullWidth
-            size="lg"
-            onChange={(value) => {
-              cohortsField.onChange(value);
-            }}
-          />
-        </Box>
+        {!isAssignCohortsDirectly ? (
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+            <AscendDropdown
+              placeholder="Select Cohorts"
+              variant="multi-chip"
+              options={["Tag1", "Tag2", "Tag3"]}
+              value={cohorts}
+              fullWidth
+              size="lg"
+              onChange={(value) => {
+                cohortsField.onChange(value);
+              }}
+            />
+          </Box>
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}>
+            {variantFields.map((variant: any, index: number) => (
+              <Box
+                key={variant.id}
+                sx={{ display: "flex", alignItems: "center", gap: 2 }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: "#333333",
+                    minWidth: "120px",
+                    flexShrink: 0,
+                  }}
+                >
+                  {variant.name}
+                </Typography>
+                <Box sx={{ flex: 1 }}>
+                  <Controller
+                    name={`variants.${index}.cohorts`}
+                    control={control}
+                    render={({ field }) => (
+                      <AscendDropdown
+                        placeholder="Select Cohorts"
+                        variant="multi-chip"
+                        options={["Tag1", "Tag2", "Tag3"]}
+                        value={field.value || []}
+                        fullWidth
+                        size="lg"
+                        onChange={(value) => {
+                          field.onChange(value);
+                        }}
+                      />
+                    )}
+                  />
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        )}
         <Box
           sx={{
             backgroundColor: "#EBF5FF",

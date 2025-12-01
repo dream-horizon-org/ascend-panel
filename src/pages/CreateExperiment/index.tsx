@@ -33,6 +33,7 @@ const experimentSchema = z.object({
           value: z.string(),
         }),
       ),
+      cohorts: z.array(z.string()).optional(),
     }),
   ),
   targeting: z
@@ -80,11 +81,13 @@ const CreateExperiment = () => {
             name: "Control Group",
             trafficSplit: "50",
             variables: [{ key: "", data_type: "", value: "" }],
+            cohorts: [],
           },
           {
             name: "Variant 1",
             trafficSplit: "50",
             variables: [{ key: "", data_type: "", value: "" }],
+            cohorts: [],
           },
         ],
         targeting: {
@@ -111,10 +114,21 @@ const CreateExperiment = () => {
   };
 
   const transformToRequestBody = (data: ExperimentFormData) => {
-    const weights: Record<string, number> = {};
+    // Check if cohorts are assigned directly to variants
+    const isAssignCohortsDirectly =
+      data.targeting?.isAssignCohortsDirectly || false;
+    const assignmentType = isAssignCohortsDirectly ? "STRATIFIED" : "COHORT";
+
+    const weights: Record<string, number | string[]> = {};
     data.variants.forEach((variant, index) => {
       const key = index === 0 ? "control" : `variant${index}`;
-      weights[key] = parseInt(variant.trafficSplit) || 0;
+      if (assignmentType === "STRATIFIED") {
+        // For STRATIFIED, use variant's cohorts array
+        weights[key] = variant.cohorts || [];
+      } else {
+        // For COHORT, use trafficSplit percentage
+        weights[key] = parseInt(variant.trafficSplit) || 0;
+      }
     });
 
     const variants: Record<string, any> = {};
@@ -165,12 +179,12 @@ const CreateExperiment = () => {
       guardrail_health_status: "PASSED",
       cohorts: cohorts,
       variant_weights: {
-        type: "COHORT",
+        type: assignmentType,
         weights: weights,
       },
       variants: variants,
       distribution_strategy: "RANDOM",
-      assignment_domain: "COHORT",
+      assignment_domain: assignmentType,
       rule_attributes: rule_attributes,
       exposure: 100,
       threshold: 50000,
