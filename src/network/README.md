@@ -158,11 +158,11 @@ async function fetchData() {
 Query keys are organized hierarchically for easy invalidation:
 
 ```tsx
-experimentKeys.all              // ["experiments"]
-experimentKeys.lists()          // ["experiments", "list"]
-experimentKeys.list(filters)    // ["experiments", "list", filters]
-experimentKeys.details()        // ["experiments", "detail"]
-experimentKeys.detail(id)       // ["experiments", "detail", id]
+experimentKeys.all; // ["experiments"]
+experimentKeys.lists(); // ["experiments", "list"]
+experimentKeys.list(filters); // ["experiments", "list", filters]
+experimentKeys.details(); // ["experiments", "detail"]
+experimentKeys.detail(id); // ["experiments", "detail", id]
 ```
 
 This allows you to invalidate all experiment queries or just specific ones:
@@ -190,6 +190,7 @@ queryClient.invalidateQueries({ queryKey: experimentKeys.lists() });
 The API client automatically adds the auth token from `localStorage.getItem("authToken")` to all requests. On 401 errors, it automatically removes the token.
 
 To set the token:
+
 ```tsx
 localStorage.setItem("authToken", "your-token-here");
 ```
@@ -209,4 +210,3 @@ const { mutate } = useUpdateExperiment({
   },
 });
 ```
-

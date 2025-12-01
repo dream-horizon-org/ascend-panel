@@ -468,7 +468,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
   const adjustSplitCircular = useCallback(
     (editedIndex: number) => {
       const splits = variantFields.map((v: any) =>
-        parseInt(v.trafficSplit || "0", 10)
+        parseInt(v.trafficSplit || "0", 10),
       );
       const total = splits.reduce((a, b) => a + b, 0);
 
@@ -507,14 +507,14 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
         updateVariant(i, { ...variant, trafficSplit: v.toString() });
       });
     },
-    [variantFields, updateVariant]
+    [variantFields, updateVariant],
   );
 
   const handleTrafficBlur = useCallback(
     (index: number) => {
       adjustSplitCircular(index);
     },
-    [adjustSplitCircular]
+    [adjustSplitCircular],
   );
 
   // Function to handle traffic split change with circular redistribution
@@ -531,7 +531,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
   const nodes = useMemo(() => {
     const generateNodesWithHandlers = (
       variantsConfig: any[],
-      handleTrafficSplitChange: (index: number, value: string) => void
+      handleTrafficSplitChange: (index: number, value: string) => void,
     ) => {
       const COLUMN_GAP = 300;
       const MIN_SPACING = 80;
@@ -696,7 +696,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
 
   const edges = useMemo(
     () => generateEdges(variantsConfig.length),
-    [variantsConfig.length]
+    [variantsConfig.length],
   );
 
   // Calculate canvas height dynamically
@@ -1046,7 +1046,7 @@ function CreateExperimentTargetingParentModal({
           checked={isAssignCohortsDirectly}
           onChange={(e) =>
             isAssignCohortsDirectlyField.onChange(
-              (e.target as HTMLInputElement).checked
+              (e.target as HTMLInputElement).checked,
             )
           }
         />
