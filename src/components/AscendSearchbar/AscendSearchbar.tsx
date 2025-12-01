@@ -10,6 +10,7 @@ type AscendSearchbarProps = TextFieldProps & {
   showIcon?: boolean;
   size?: "small" | "medium" | "large";
   fullWidth?: boolean;
+  variant?: "standard" | "outlined" | "filled";
 };
 
 const AscendSearchbar: FC<AscendSearchbarProps> = ({
@@ -19,6 +20,7 @@ const AscendSearchbar: FC<AscendSearchbarProps> = ({
   showIcon = true,
   size = "small",
   fullWidth = true,
+  variant = "outlined",
   InputProps,
   ...props
 }) => {
@@ -29,6 +31,7 @@ const AscendSearchbar: FC<AscendSearchbarProps> = ({
     <TextField
       size={size}
       fullWidth={fullWidth}
+      variant={variant}
       placeholder={placeholder}
       className={className}
       InputProps={{
