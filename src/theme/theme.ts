@@ -63,6 +63,41 @@ type CustomComponents = {
       lg: string;
     };
   };
+  table: {
+    rowHeight: string;
+    cellPadding: string;
+    fontSize: string;
+    borderColor: string;
+    borderRadius: string;
+  };
+  status: {
+    live: {
+      background: string;
+    };
+    draft: {
+      background: string;
+    };
+    completed: {
+      background: string;
+    };
+    paused: {
+      background: string;
+    };
+    archived: {
+      background: string;
+    };
+  };
+  chip: {
+    height: string;
+    borderRadius: string;
+    background: string;
+    text: string;
+    fontSize: string;
+  };
+  actions: {
+    delete: string;
+    shadow: string;
+  };
 };
 
 declare module "@mui/material/styles" {
@@ -185,6 +220,41 @@ export const theme = createTheme({
         md: "12px",
         lg: "999px",
       },
+    },
+    table: {
+      rowHeight: "48px",
+      cellPadding: "0 16px",
+      fontSize: "14px",
+      borderColor: "#DADADD",
+      borderRadius: "1px",
+    },
+    status: {
+      live: {
+        background: "#C8E6C9",
+      },
+      draft: {
+        background: "#E0E0E0",
+      },
+      completed: {
+        background: "#E1BEE7",
+      },
+      paused: {
+        background: "#FFE0B2",
+      },
+      archived: {
+        background: "#FFCDD2",
+      },
+    },
+    chip: {
+      height: "32px",
+      borderRadius: "4px",
+      background: "#E1E3EA",
+      text: "#33343E",
+      fontSize: "11px",
+    },
+    actions: {
+      delete: "#C62828",
+      shadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
     },
   },
 });
