@@ -912,6 +912,7 @@ function CreateExperimentTargetingParentModal({
     fields: filterFields,
     append: appendFilter,
     remove: removeFilter,
+    update: updateFilter,
   } = useFieldArray({
     control,
     name: "targeting.filters",
@@ -926,7 +927,8 @@ function CreateExperimentTargetingParentModal({
 
   const filters = filterFields as Array<{
     id: string;
-    field: string;
+    operand: string;
+    operandDataType: string;
     operator: string;
     value: string;
     condition: string;
@@ -934,10 +936,28 @@ function CreateExperimentTargetingParentModal({
   const cohorts = cohortsField.value;
   const isAssignCohortsDirectly = isAssignCohortsDirectlyField.value;
 
+  // Helper to get data type based on operand
+  const getDataTypeForOperand = (operand: string): string => {
+    const dataTypeMap: Record<string, string> = {
+      country: "STRING",
+      app_version: "STRING",
+      device: "STRING",
+      platform: "STRING",
+      os_version: "STRING",
+      user_id: "STRING",
+      age: "NUMBER",
+      score: "NUMBER",
+      is_premium: "BOOL",
+      is_active: "BOOL",
+    };
+    return dataTypeMap[operand] || "STRING";
+  };
+
   const handleAddFilter = () => {
     appendFilter({
-      field: "App Version",
-      operator: "Is not equal to",
+      operand: "app_version",
+      operandDataType: "STRING",
+      operator: "!=",
       value: "12.3",
       condition: "AND",
     });
@@ -997,7 +1017,7 @@ function CreateExperimentTargetingParentModal({
                 {filter.condition}
               </Typography>
               <Controller
-                name={`targeting.filters.${index}.field`}
+                name={`targeting.filters.${index}.operand`}
                 control={control}
                 render={({ field }) => (
                   <TextField
@@ -1005,39 +1025,141 @@ function CreateExperimentTargetingParentModal({
                     size="small"
                     sx={{ minWidth: 150 }}
                     {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      // Auto-update operandDataType, clear value and operator when operand changes
+                      const currentFilter = filters[index];
+                      const newDataType = getDataTypeForOperand(e.target.value);
+                      updateFilter(index, {
+                        ...currentFilter,
+                        operand: e.target.value,
+                        operandDataType: newDataType,
+                        operator: "=", // Reset to default operator
+                        value: "", // Clear value since data type changed
+                      });
+                    }}
                   >
-                    <MenuItem value="Country">Country</MenuItem>
-                    <MenuItem value="App Version">App Version</MenuItem>
-                    <MenuItem value="Device">Device</MenuItem>
+                    <MenuItem value="country">Country</MenuItem>
+                    <MenuItem value="app_version">App Version</MenuItem>
+                    <MenuItem value="device">Device</MenuItem>
+                    <MenuItem value="platform">Platform</MenuItem>
+                    <MenuItem value="os_version">OS Version</MenuItem>
+                    <MenuItem value="user_id">User ID</MenuItem>
+                    <MenuItem value="age">Age</MenuItem>
+                    <MenuItem value="score">Score</MenuItem>
+                    <MenuItem value="is_premium">Is Premium</MenuItem>
+                    <MenuItem value="is_active">Is Active</MenuItem>
                   </TextField>
                 )}
               />
               <Controller
                 name={`targeting.filters.${index}.operator`}
                 control={control}
-                render={({ field }) => (
-                  <TextField
-                    select
-                    size="small"
-                    sx={{ minWidth: 150 }}
-                    {...field}
-                  >
-                    <MenuItem value="Is equal to">Is equal to</MenuItem>
-                    <MenuItem value="Is not equal to">Is not equal to</MenuItem>
-                    <MenuItem value="Contains">Contains</MenuItem>
-                  </TextField>
-                )}
+                render={({ field }) => {
+                  const currentFilter = filters[index];
+                  const dataType = currentFilter?.operandDataType;
+
+                  // Different operators based on data type
+                  const getOperatorOptions = () => {
+                    if (dataType === "BOOL") {
+                      return [
+                        { value: "=", label: "Is equal to" },
+                        { value: "!=", label: "Is not equal to" },
+                      ];
+                    }
+
+                    if (dataType === "NUMBER" || dataType === "DECIMAL") {
+                      return [
+                        { value: "=", label: "Is equal to" },
+                        { value: "!=", label: "Is not equal to" },
+                        { value: ">", label: "Greater than" },
+                        { value: "<", label: "Less than" },
+                        { value: ">=", label: "Greater than or equal to" },
+                        { value: "<=", label: "Less than or equal to" },
+                      ];
+                    }
+
+                    // STRING and default
+                    return [
+                      { value: "=", label: "Is equal to" },
+                      { value: "!=", label: "Is not equal to" },
+                      { value: "CONTAINS", label: "Contains" },
+                    ];
+                  };
+
+                  const options = getOperatorOptions();
+                  const validValues = options.map(opt => opt.value);
+                  
+                  // Ensure current value is valid for the available options
+                  const currentValue = validValues.includes(field.value) ? field.value : "=";
+
+                  return (
+                    <TextField
+                      select
+                      size="small"
+                      sx={{ minWidth: 150 }}
+                      {...field}
+                      value={currentValue}
+                    >
+                      {options.map(opt => (
+                        <MenuItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  );
+                }}
               />
               <Controller
                 name={`targeting.filters.${index}.value`}
                 control={control}
-                render={({ field }) => (
-                  <TextField
-                    size="small"
-                    sx={{ width: 100 }}
-                    {...field}
-                  />
-                )}
+                render={({ field }) => {
+                  const currentFilter = filters[index];
+                  const dataType = currentFilter?.operandDataType;
+
+                  // For BOOLEAN type, use a dropdown
+                  if (dataType === "BOOL") {
+                    return (
+                      <TextField
+                        select
+                        size="small"
+                        sx={{ width: 100 }}
+                        {...field}
+                      >
+                        <MenuItem value="true">true</MenuItem>
+                        <MenuItem value="false">false</MenuItem>
+                      </TextField>
+                    );
+                  }
+
+                  // For NUMBER type, use number input
+                  if (dataType === "NUMBER" || dataType === "DECIMAL") {
+                    return (
+                      <TextField
+                        size="small"
+                        type="number"
+                        sx={{ width: 100 }}
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Allow empty string, numbers, and decimal point
+                          if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
+                            field.onChange(value);
+                          }
+                        }}
+                      />
+                    );
+                  }
+
+                  // Default to string input
+                  return (
+                    <TextField
+                      size="small"
+                      sx={{ width: 100 }}
+                      {...field}
+                    />
+                  );
+                }}
               />
               {index > 0 && (
                 <IconButton

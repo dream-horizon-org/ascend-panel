@@ -39,7 +39,8 @@ const experimentSchema = z.object({
     .object({
       filters: z.array(
         z.object({
-          field: z.string(),
+          operand: z.string(),
+          operandDataType: z.string(),
           operator: z.string(),
           value: z.string(),
           condition: z.string(),
@@ -88,8 +89,9 @@ const CreateExperiment = () => {
       targeting: {
         filters: [
           {
-            field: "App Version",
-            operator: "Is not equal to",
+            operand: "app_version",
+            operandDataType: "STRING",
+            operator: "!=",
             value: "12.3",
             condition: "IF",
           },
@@ -135,6 +137,22 @@ const CreateExperiment = () => {
       };
     });
 
+    // Transform filters to rule_attributes - direct 1:1 mapping
+    const rule_attributes = data.targeting?.filters && data.targeting.filters.length > 0
+      ? [{
+          name: "Targeting Rule",
+          conditions: data.targeting.filters.map(({ operand, operandDataType, operator, value }) => ({
+            operand,
+            operandDataType,
+            operator,
+            value,
+          })),
+        }]
+      : [];
+
+    // Extract cohorts from targeting
+    const cohorts = data.targeting?.cohorts || [];
+
     return {
       name: data.name,
       description: data.description || "",
@@ -142,7 +160,7 @@ const CreateExperiment = () => {
       status: "LIVE",
       type: "A_B",
       guardrail_health_status: "PASSED",
-      cohorts: [],
+      cohorts: cohorts,
       variant_weights: {
         type: "COHORT",
         weights: weights,
@@ -150,7 +168,7 @@ const CreateExperiment = () => {
       variants: variants,
       distribution_strategy: "RANDOM",
       assignment_domain: "COHORT",
-      rule_attributes: [],
+      rule_attributes: rule_attributes,
       exposure: 100,
       threshold: 50000,
       start_time: Math.floor(Date.now() / 1000),
