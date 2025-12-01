@@ -601,7 +601,10 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
                         [field]: value,
                       };
                     }
-                    updateVariant(variantIndex, { ...variant, keyValues: newKeyValues });
+                    updateVariant(variantIndex, {
+                      ...variant,
+                      keyValues: newKeyValues,
+                    });
                   }
                 });
               } else {
@@ -612,7 +615,10 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
                   ...newKeyValues[index],
                   [field]: value,
                 };
-                updateVariant(i, { ...currentVariant, keyValues: newKeyValues });
+                updateVariant(i, {
+                  ...currentVariant,
+                  keyValues: newKeyValues,
+                });
               }
             },
             onAddKeyValue: (afterIndex: number) => {
@@ -624,7 +630,10 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
                   type: "",
                   value: "",
                 });
-                updateVariant(variantIndex, { ...variant, keyValues: newKeyValues });
+                updateVariant(variantIndex, {
+                  ...variant,
+                  keyValues: newKeyValues,
+                });
               });
             },
             onDeleteKeyValue: (index: number) => {
@@ -720,7 +729,9 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
 
             // Copy key/type structure from first variant, but with empty values
             const firstVariant: any = variantFields[0];
-            const keyValuesTemplate = (firstVariant?.keyValues || [{ key: "", type: "", value: "" }]).map((kv: any) => ({
+            const keyValuesTemplate = (
+              firstVariant?.keyValues || [{ key: "", type: "", value: "" }]
+            ).map((kv: any) => ({
               key: kv.key || "",
               type: kv.type || "",
               value: "",
