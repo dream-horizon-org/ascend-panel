@@ -984,16 +984,18 @@ function CreateExperimentTargetingParentModal({
   // Helper to get data type based on operand
   const getDataTypeForOperand = (operand: string): string => {
     const dataTypeMap: Record<string, string> = {
-      country: "STRING",
-      app_version: "SEMVER_STRING",
-      device: "STRING",
-      platform: "STRING",
-      os_version: "SEMVER_STRING",
       user_id: "STRING",
-      age: "NUMBER",
-      score: "DECIMAL",
-      is_premium: "BOOL",
-      is_active: "BOOL",
+      guest_id: "STRING",
+      model: "STRING",
+      device: "STRING",
+      app_name: "STRING",
+      platform: "STRING",
+      os_version: "STRING",
+      app_version: "SEMVER_STRING",
+      build_number: "NUMBER",
+      current_location_city: "STRING",
+      current_location_state: "STRING",
+      current_location_country: "STRING",
     };
     return dataTypeMap[operand] || "STRING";
   };
@@ -1084,16 +1086,24 @@ function CreateExperimentTargetingParentModal({
                       });
                     }}
                   >
-                    <MenuItem value="country">Country</MenuItem>
-                    <MenuItem value="app_version">App Version</MenuItem>
+                    <MenuItem value="user_id">User ID</MenuItem>
+                    <MenuItem value="guest_id">Guest ID</MenuItem>
+                    <MenuItem value="model">Model</MenuItem>
                     <MenuItem value="device">Device</MenuItem>
+                    <MenuItem value="app_name">App Name</MenuItem>
                     <MenuItem value="platform">Platform</MenuItem>
                     <MenuItem value="os_version">OS Version</MenuItem>
-                    <MenuItem value="user_id">User ID</MenuItem>
-                    <MenuItem value="age">Age</MenuItem>
-                    <MenuItem value="score">Score</MenuItem>
-                    <MenuItem value="is_premium">Is Premium</MenuItem>
-                    <MenuItem value="is_active">Is Active</MenuItem>
+                    <MenuItem value="app_version">App Version</MenuItem>
+                    <MenuItem value="build_number">Build Number</MenuItem>
+                    <MenuItem value="current_location_city">
+                      Current Location City
+                    </MenuItem>
+                    <MenuItem value="current_location_state">
+                      Current Location State
+                    </MenuItem>
+                    <MenuItem value="current_location_country">
+                      Current Location Country
+                    </MenuItem>
                   </TextField>
                 )}
               />
