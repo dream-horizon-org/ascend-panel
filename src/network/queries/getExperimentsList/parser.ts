@@ -1,57 +1,57 @@
 import type { Experiment } from "../getExperimentDetails/types";
 import type {
-  RawExperiment,
-  RawPagination,
+  ApiExperiment,
+  ApiPagination,
   Pagination,
-  RawExperimentsApiResponse,
+  ExperimentsApiResponse,
   ExperimentsResponse,
 } from "./types";
 
 // Transform functions (snake_case to camelCase)
-export const transformExperiment = (raw: RawExperiment): Experiment => ({
-  experimentId: raw.experiment_id,
-  projectKey: raw.project_key,
-  name: raw.name,
-  key: raw.experiment_key,
-  description: raw.description,
-  hypothesis: raw.hypothesis,
-  status: raw.status,
-  type: raw.type,
-  guardrailHealthStatus: raw.guardrail_health_status,
-  cohorts: raw.cohorts,
-  variantWeights: raw.variant_weights,
-  variants: raw.variants,
-  ruleAttributes: raw.rule_attributes,
-  distributionStrategy: raw.distribution_strategy,
-  assignmentDomain: raw.assignment_domain,
-  overrides: raw.overrides,
-  winningVariant: raw.winning_variant
-    ? { p_value: 0, variant: raw.winning_variant.variant_name || "" }
+export const transformExperiment = (api: ApiExperiment): Experiment => ({
+  experimentId: api.experiment_id,
+  projectKey: api.project_key,
+  name: api.name,
+  key: api.experiment_key,
+  description: api.description,
+  hypothesis: api.hypothesis,
+  status: api.status,
+  type: api.type,
+  guardrailHealthStatus: api.guardrail_health_status,
+  cohorts: api.cohorts,
+  variantWeights: api.variant_weights,
+  variants: api.variants,
+  ruleAttributes: api.rule_attributes,
+  distributionStrategy: api.distribution_strategy,
+  assignmentDomain: api.assignment_domain,
+  overrides: api.overrides,
+  winningVariant: api.winning_variant
+    ? { p_value: 0, variant: api.winning_variant.variant_name || "" }
     : undefined,
-  exposure: raw.exposure,
-  threshold: raw.threshold,
-  startTime: raw.start_time,
-  endTime: raw.end_time,
-  createdBy: raw.created_by,
-  createdAt: raw.created_at,
-  updatedAt: raw.updated_at,
-  tags: raw.tags ?? [],
-  owners: raw.owners ?? [],
+  exposure: api.exposure,
+  threshold: api.threshold,
+  startTime: api.start_time,
+  endTime: api.end_time,
+  createdBy: api.created_by,
+  createdAt: api.created_at,
+  updatedAt: api.updated_at,
+  tags: api.tags ?? [],
+  owners: api.owners ?? [],
 });
 
-export const transformPagination = (raw: RawPagination): Pagination => ({
-  currentPage: raw.current_page,
-  pageSize: raw.page_size,
-  totalCount: raw.total_count,
-  hasNext: raw.has_next,
+export const transformPagination = (api: ApiPagination): Pagination => ({
+  currentPage: api.current_page,
+  pageSize: api.page_size,
+  totalCount: api.total_count,
+  hasNext: api.has_next,
 });
 
 export const parseExperimentsResponse = (
-  response: RawExperimentsApiResponse,
+  response: ExperimentsApiResponse,
 ): ExperimentsResponse => {
-  const rawData = response.data;
+  const data = response.data;
   return {
-    experiments: rawData.experiments.map(transformExperiment),
-    pagination: transformPagination(rawData.pagination),
+    experiments: data.experiments.map(transformExperiment),
+    pagination: transformPagination(data.pagination),
   };
 };

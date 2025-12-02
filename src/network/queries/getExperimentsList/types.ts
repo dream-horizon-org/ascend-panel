@@ -30,8 +30,8 @@ export interface ExperimentsResponse {
   pagination: Pagination;
 }
 
-// Raw API response types (snake_case - as received from API)
-export interface RawExperiment {
+// API response types (snake_case - as received from API)
+export interface ApiExperiment {
   experiment_id: string;
   project_key: string;
   name: string;
@@ -60,16 +60,16 @@ export interface RawExperiment {
   owners?: string[];
 }
 
-export interface RawPagination {
+export interface ApiPagination {
   current_page: number;
   page_size: number;
   total_count: number;
   has_next: boolean;
 }
 
-export interface RawExperimentsApiResponse {
+export interface ExperimentsApiResponse {
   data: {
-    experiments: RawExperiment[];
-    pagination: RawPagination;
+    experiments: ApiExperiment[];
+    pagination: ApiPagination;
   };
 }

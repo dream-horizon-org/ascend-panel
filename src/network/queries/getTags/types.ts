@@ -1,5 +1,5 @@
-// Raw API response types (snake_case - as received from API)
-export interface RawTagsApiResponse {
+// API response types (snake_case - as received from API)
+export interface TagsApiResponse {
   data: {
     tags: string[];
   };

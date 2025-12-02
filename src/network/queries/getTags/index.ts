@@ -2,14 +2,12 @@ import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { api } from "../../apiClient";
 import { endpoints } from "../../endpoints";
 import { experimentKeys } from "../sharedKeys";
-import type { RawTagsApiResponse, TagsResponse } from "./types";
+import type { TagsApiResponse, TagsResponse } from "./types";
 import { parseTagsResponse } from "./parser";
 
 // Fetch tags function
 export const fetchTags = async (): Promise<TagsResponse> => {
-  const response = await api.get<RawTagsApiResponse>(
-    endpoints.experiments.tags,
-  );
+  const response = await api.get<TagsApiResponse>(endpoints.experiments.tags);
   return parseTagsResponse(response.data);
 };
 
@@ -26,4 +24,4 @@ export const useTags = (
 };
 
 // Export types
-export type { RawTagsApiResponse, TagsResponse } from "./types";
+export type { TagsApiResponse, TagsResponse } from "./types";

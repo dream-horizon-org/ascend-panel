@@ -5,7 +5,7 @@ import { experimentKeys } from "../sharedKeys";
 import type {
   ExperimentsResponse,
   ExperimentFilters,
-  RawExperimentsApiResponse,
+  ExperimentsApiResponse,
 } from "./types";
 import { parseExperimentsResponse } from "./parser";
 
@@ -13,7 +13,7 @@ import { parseExperimentsResponse } from "./parser";
 export const fetchExperiments = async (
   params?: ExperimentFilters,
 ): Promise<ExperimentsResponse> => {
-  const response = await api.get<RawExperimentsApiResponse>(
+  const response = await api.get<ExperimentsApiResponse>(
     endpoints.experiments.list,
     {
       params,

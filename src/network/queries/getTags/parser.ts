@@ -1,11 +1,9 @@
-import type { RawTagsApiResponse, TagsResponse } from "./types";
+import type { TagsApiResponse, TagsResponse } from "./types";
 
 /**
- * Parse the raw API response for tags
+ * Parse the API response for tags
  * Extracts the tags array from the nested API response
  */
-export const parseTagsResponse = (
-  response: RawTagsApiResponse,
-): TagsResponse => {
+export const parseTagsResponse = (response: TagsApiResponse): TagsResponse => {
   return response.data.tags;
 };
