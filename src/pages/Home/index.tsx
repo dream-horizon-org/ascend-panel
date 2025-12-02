@@ -298,77 +298,76 @@ const TableHeader = () => (
   </TableRow>
 );
 
-const createRowContent =
-  (theme: any) => (_index: number, row: Experiment) => (
-    <React.Fragment>
-      {COLUMNS.map((column) => {
-        if (column.dataKey === "experimentId")
-          return (
-            <CellWithTooltip
-              key={column.dataKey}
-              text={row.experimentId}
-              width={column.width}
-            />
-          );
-        if (column.dataKey === "name")
-          return (
-            <CellWithTooltip
-              key={column.dataKey}
-              text={row.name}
-              width={column.width}
-            />
-          );
-        if (column.dataKey === "status") {
-          return (
-            <TableCell key={column.dataKey} sx={{ width: column.width }}>
-              <StatusChip status={row.status} theme={theme} />
-            </TableCell>
-          );
-        }
-        if (column.dataKey === "tags") {
-          return (
-            <TableCell
-              key={column.dataKey}
-              sx={{ width: column.width, overflow: "hidden" }}
-            >
-              <TagsCell tags={row.tags} theme={theme} />
-            </TableCell>
-          );
-        }
-        if (column.dataKey === "actions") {
-          return (
-            <TableCell
-              key={column.dataKey}
-              align="center"
-              sx={{ width: column.width }}
-            >
-              <RowActionsMenu row={row} />
-            </TableCell>
-          );
-        }
-        if (column.dataKey === "updatedAt") {
-          const formattedDate = new Date(row.updatedAt).toLocaleDateString(
-            "en-US",
-            {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-            },
-          );
-          return (
-            <TableCell key={column.dataKey} sx={{ width: column.width }}>
-              {formattedDate}
-            </TableCell>
-          );
-        }
+const createRowContent = (theme: any) => (_index: number, row: Experiment) => (
+  <React.Fragment>
+    {COLUMNS.map((column) => {
+      if (column.dataKey === "experimentId")
+        return (
+          <CellWithTooltip
+            key={column.dataKey}
+            text={row.experimentId}
+            width={column.width}
+          />
+        );
+      if (column.dataKey === "name")
+        return (
+          <CellWithTooltip
+            key={column.dataKey}
+            text={row.name}
+            width={column.width}
+          />
+        );
+      if (column.dataKey === "status") {
         return (
           <TableCell key={column.dataKey} sx={{ width: column.width }}>
-            {String(row[column.dataKey as keyof Experiment] ?? "")}
+            <StatusChip status={row.status} theme={theme} />
           </TableCell>
         );
-      })}
-    </React.Fragment>
-  );
+      }
+      if (column.dataKey === "tags") {
+        return (
+          <TableCell
+            key={column.dataKey}
+            sx={{ width: column.width, overflow: "hidden" }}
+          >
+            <TagsCell tags={row.tags} theme={theme} />
+          </TableCell>
+        );
+      }
+      if (column.dataKey === "actions") {
+        return (
+          <TableCell
+            key={column.dataKey}
+            align="center"
+            sx={{ width: column.width }}
+          >
+            <RowActionsMenu row={row} />
+          </TableCell>
+        );
+      }
+      if (column.dataKey === "updatedAt") {
+        const formattedDate = new Date(row.updatedAt).toLocaleDateString(
+          "en-US",
+          {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          },
+        );
+        return (
+          <TableCell key={column.dataKey} sx={{ width: column.width }}>
+            {formattedDate}
+          </TableCell>
+        );
+      }
+      return (
+        <TableCell key={column.dataKey} sx={{ width: column.width }}>
+          {String(row[column.dataKey as keyof Experiment] ?? "")}
+        </TableCell>
+      );
+    })}
+  </React.Fragment>
+);
 
 const Home: React.FC = () => {
   const theme = useTheme();

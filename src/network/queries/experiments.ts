@@ -229,9 +229,7 @@ export const fetchTags = async (): Promise<string[]> => {
 };
 
 // React Query hooks
-export const useExperiments = (
-  params?: ExperimentFilters,
-) => {
+export const useExperiments = (params?: ExperimentFilters) => {
   return useQuery<ExperimentsResponse, Error>({
     queryKey: experimentKeys.list(params),
     queryFn: () => fetchExperiments(params),
