@@ -8,13 +8,15 @@ export type ExperimentDetailsHeaderProps = {
   title: string;
   status?: StatusBadgeProps;
   experimentId?: string;
+  experimentStatus?: string; // Raw status string (e.g., "TERMINATED", "CONCLUDED", "LIVE")
+  variants?: Record<string, { display_name: string; variables: any[] }>; // Variants from experiment
   onBack?: () => void;
   onCopyId?: () => void;
   onMenuClick?: () => void;
   onConcludeClick?: () => void;
   onCloneExperiment?: () => void;
   onTerminateExperiment?: () => void;
-  onDeclareWinner?: (winner: "Control Group" | "Variant 1") => void;
+  onDeclareWinner?: (variantKey: string) => void;
   className?: string;
 };
 

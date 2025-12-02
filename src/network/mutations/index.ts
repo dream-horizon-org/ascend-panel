@@ -24,6 +24,7 @@ export {
 } from "./concludeExperiment";
 export type {
   ConcludeExperimentRequest,
+  ConcludeExperimentWinningVariant,
   ConcludeExperimentResponse,
 } from "./concludeExperiment";
 

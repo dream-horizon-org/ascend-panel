@@ -43,5 +43,6 @@ export const useConcludeExperiment = () => {
 // Export types
 export type {
   ConcludeExperimentRequest,
+  ConcludeExperimentWinningVariant,
   ConcludeExperimentResponse,
 } from "./types";

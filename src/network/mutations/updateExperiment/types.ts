@@ -62,4 +62,4 @@ export interface UpdateExperimentRequest {
 }
 
 // Response type - reuse Experiment from queries
-export { Experiment as UpdateExperimentResponse } from "../../queries/getExperimentDetails/types";
+export type { Experiment as UpdateExperimentResponse } from "../../queries/getExperimentDetails/types";
