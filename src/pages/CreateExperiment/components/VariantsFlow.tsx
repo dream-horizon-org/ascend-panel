@@ -421,7 +421,6 @@ const generateEdges = (variants: number, isAssignCohortsDirectly: boolean) => {
     const variantId = i === 0 ? "control" : `variant-${i}`;
 
     if (isAssignCohortsDirectly) {
-
       edges.push({
         id: `e-targeting-${variantId}`,
         source: "targeting",
@@ -458,13 +457,11 @@ interface VariantsFlowProps {
 }
 
 export default function VariantsFlow({ control }: VariantsFlowProps) {
-
   const [isTrafficEdited, setIsTrafficEdited] = useState(false);
 
   const shouldRedistribute = useRef(false);
   const [parentModalOpen, setParentModalOpen] = useState(false);
   const [childModalOpen, setChildModalOpen] = useState(false);
-
 
   const { field: isAssignCohortsDirectlyField } = useController({
     control,
@@ -624,7 +621,6 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       const targetingY =
         (firstVariantCenter + lastVariantCenter) / 2 - TARGETING_HEIGHT / 2;
 
-
       nodes.push({
         id: "targeting",
         type: "targeting",
@@ -637,7 +633,6 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       variantsConfig.forEach((config, i) => {
         const variablesLength = config.variables?.length || 1;
         const cardHeight = BASE_HEIGHT + variablesLength * ROW_HEIGHT;
-
 
         if (!isAssignCohortsDirectly) {
           nodes.push({
@@ -758,7 +753,11 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       return nodes;
     };
 
-    return generateNodesWithHandlers(variantsConfig, handleTrafficSplitChange, isAssignCohortsDirectly);
+    return generateNodesWithHandlers(
+      variantsConfig,
+      handleTrafficSplitChange,
+      isAssignCohortsDirectly,
+    );
   }, [
     variantsConfig,
     variantFields,
