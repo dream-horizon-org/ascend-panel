@@ -9,7 +9,6 @@ import { useNavigate, useParams } from "react-router";
 
 import ExperimentDetailsHeader from "./ExperimentDetailsHeader";
 import { ChartDataPoint, Variant } from "./types";
-import Layout from "../../components/Layout/Layout";
 import { useExperiment } from "../../network/queries/experiments";
 import {
   convertVariantsToDisplay,
@@ -81,18 +80,16 @@ export default function ExperimentDetails() {
 
   if (isLoading) {
     return (
-      <Layout>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "100vh",
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      </Layout>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
@@ -111,8 +108,7 @@ export default function ExperimentDetails() {
   const statusInfo = mapStatus(experiment.status);
 
   return (
-    <Layout>
-      <Box>
+    <Box>
         <ExperimentDetailsHeader
           title={experiment.name}
           status={statusInfo}
@@ -246,6 +242,5 @@ export default function ExperimentDetails() {
           </Paper>
         </Box>
       </Box>
-    </Layout>
   );
 }

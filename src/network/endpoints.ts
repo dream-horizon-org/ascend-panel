@@ -15,7 +15,9 @@ export const endpoints = {
     create: `${API_BASE}/experiments`,
     update: (id: string | number) => `${API_BASE}/experiments/${id}`,
     clone: (id: string | number) => `${API_BASE}/experiments/${id}/clone`,
-    terminate: (id: string | number) => `${API_BASE}/experiments/${id}`,
+    terminate: (id: string | number) =>
+      `${API_BASE}/experiments/${id}`,
+    tags: `${API_BASE}/experiments/tags`,
   },
 } as const;
 
