@@ -219,19 +219,25 @@ const VariantNode = ({ data }: any) => {
               }
               // Display friendly names for API values
               const displayNames: Record<string, string> = {
-                STRING: "String",
-                NUMBER: "Number",
                 BOOL: "Boolean",
-                OBJECT: "Json",
+                NUMBER: "Number",
+                DECIMAL: "Decimal",
+                STRING: "String",
+                SEMVER_STRING: "Semver",
+                OBJECT: "Object",
+                LIST: "List",
               };
               return displayNames[selected] || selected;
             }}
             sx={{ width: "120px", borderRadius: "0.25rem" }}
           >
-            <MenuItem value="STRING">String</MenuItem>
-            <MenuItem value="NUMBER">Number</MenuItem>
             <MenuItem value="BOOL">Boolean</MenuItem>
-            <MenuItem value="OBJECT">Json</MenuItem>
+            <MenuItem value="NUMBER">Number</MenuItem>
+            <MenuItem value="DECIMAL">Decimal</MenuItem>
+            <MenuItem value="STRING">String</MenuItem>
+            <MenuItem value="SEMVER_STRING">Semver</MenuItem>
+            <MenuItem value="OBJECT">Object</MenuItem>
+            <MenuItem value="LIST">List</MenuItem>
           </Select>
           {variable.data_type === "BOOL" ? (
             <Select
@@ -256,19 +262,30 @@ const VariantNode = ({ data }: any) => {
             <TextField
               size="small"
               placeholder={
-                variable.data_type === "OBJECT" ? "Add JSON" : "Value"
+                variable.data_type === "OBJECT" || variable.data_type === "LIST"
+                  ? "Add JSON"
+                  : "Value"
               }
-              type={variable.data_type === "NUMBER" ? "number" : "text"}
+              type="text"
               value={
-                variable.data_type === "OBJECT" && variable.value
-                  ? "{JSON code preview}"
+                (variable.data_type === "OBJECT" ||
+                  variable.data_type === "LIST") &&
+                variable.value
+                  ? variable.data_type === "LIST"
+                    ? "[JSON array preview]"
+                    : "{JSON object preview}"
                   : variable.value || ""
               }
               onChange={(e) => {
                 const value = e.target.value;
-                // For NUMBER type, validate numeric input
+                // For NUMBER type, validate integer input only
                 if (variable.data_type === "NUMBER") {
-                  // Allow empty string, numbers, and decimal point
+                  if (value === "" || /^-?\d*$/.test(value)) {
+                    data.onVariableChange?.(index, "value", value);
+                  }
+                }
+                // For DECIMAL type, allow float numbers
+                else if (variable.data_type === "DECIMAL") {
                   if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
                     data.onVariableChange?.(index, "value", value);
                   }
@@ -277,14 +294,18 @@ const VariantNode = ({ data }: any) => {
                 }
               }}
               onClick={
-                variable.data_type === "OBJECT"
+                variable.data_type === "OBJECT" || variable.data_type === "LIST"
                   ? () => handleOpenJsonModal(index, variable.value)
                   : undefined
               }
               InputProps={{
-                readOnly: variable.data_type === "OBJECT",
+                readOnly:
+                  variable.data_type === "OBJECT" ||
+                  variable.data_type === "LIST",
                 endAdornment:
-                  variable.data_type === "OBJECT" && variable.value ? (
+                  (variable.data_type === "OBJECT" ||
+                    variable.data_type === "LIST") &&
+                  variable.value ? (
                     <InputAdornment position="end">
                       <IconButton
                         size="small"
@@ -298,19 +319,25 @@ const VariantNode = ({ data }: any) => {
                     </InputAdornment>
                   ) : null,
                 sx: {
-                  cursor: variable.data_type === "OBJECT" ? "pointer" : "text",
+                  cursor:
+                    variable.data_type === "OBJECT" ||
+                    variable.data_type === "LIST"
+                      ? "pointer"
+                      : "text",
                 },
               }}
               sx={{
                 flex: 2,
                 "& .MuiOutlinedInput-root": { borderRadius: "0.25rem" },
-                ...(variable.data_type === "OBJECT" && {
+                ...((variable.data_type === "OBJECT" ||
+                  variable.data_type === "LIST") && {
                   "& .MuiInputBase-input::placeholder": {
                     color: "#0060E5",
                     opacity: 1,
                   },
                 }),
-                ...(variable.data_type === "OBJECT" &&
+                ...((variable.data_type === "OBJECT" ||
+                  variable.data_type === "LIST") &&
                   variable.value && {
                     "& .MuiInputBase-input": {
                       color: "#828592",
@@ -342,7 +369,7 @@ const VariantNode = ({ data }: any) => {
               open={jsonModalOpen === index}
               onClose={handleCancelJson}
               config={{
-                title: `JSON for ${data.name || "Variant"} for ${variable.key || "key"}`,
+                title: `${variable.data_type === "LIST" ? "JSON Array" : "JSON Object"} for ${data.name || "Variant"} - ${variable.key || "key"}`,
                 width: 600,
                 maxHeight: "80vh",
                 content: (
@@ -958,13 +985,13 @@ function CreateExperimentTargetingParentModal({
   const getDataTypeForOperand = (operand: string): string => {
     const dataTypeMap: Record<string, string> = {
       country: "STRING",
-      app_version: "STRING",
+      app_version: "SEMVER_STRING",
       device: "STRING",
       platform: "STRING",
-      os_version: "STRING",
+      os_version: "SEMVER_STRING",
       user_id: "STRING",
       age: "NUMBER",
-      score: "NUMBER",
+      score: "DECIMAL",
       is_premium: "BOOL",
       is_active: "BOOL",
     };
@@ -1086,7 +1113,11 @@ function CreateExperimentTargetingParentModal({
                       ];
                     }
 
-                    if (dataType === "NUMBER" || dataType === "DECIMAL") {
+                    if (
+                      dataType === "NUMBER" ||
+                      dataType === "DECIMAL" ||
+                      dataType === "SEMVER_STRING"
+                    ) {
                       return [
                         { value: "=", label: "Is equal to" },
                         { value: "!=", label: "Is not equal to" },
@@ -1152,12 +1183,31 @@ function CreateExperimentTargetingParentModal({
                     );
                   }
 
-                  // For NUMBER type, use number input
-                  if (dataType === "NUMBER" || dataType === "DECIMAL") {
+                  // For NUMBER type (integer only)
+                  if (dataType === "NUMBER") {
                     return (
                       <TextField
                         size="small"
-                        type="number"
+                        type="text"
+                        sx={{ width: 100 }}
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Allow empty string and integers only
+                          if (value === "" || /^-?\d*$/.test(value)) {
+                            field.onChange(value);
+                          }
+                        }}
+                      />
+                    );
+                  }
+
+                  // For DECIMAL type (float numbers)
+                  if (dataType === "DECIMAL") {
+                    return (
+                      <TextField
+                        size="small"
+                        type="text"
                         sx={{ width: 100 }}
                         {...field}
                         onChange={(e) => {
@@ -1171,7 +1221,7 @@ function CreateExperimentTargetingParentModal({
                     );
                   }
 
-                  // Default to string input
+                  // Default to string input (includes STRING and SEMVER_STRING)
                   return (
                     <TextField size="small" sx={{ width: 100 }} {...field} />
                   );
