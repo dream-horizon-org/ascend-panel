@@ -10,7 +10,7 @@ import { useNavigate, useParams } from "react-router";
 import ExperimentDetailsHeader from "./ExperimentDetailsHeader";
 import { ChartDataPoint, Variant } from "./types";
 import Layout from "../../components/Layout/Layout";
-import { useExperiment } from "../../network/queries/experiments";
+import { useExperiment } from "../../network/queries";
 import {
   convertVariantsToDisplay,
   formatDate,
