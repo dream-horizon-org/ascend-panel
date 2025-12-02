@@ -67,4 +67,3 @@ export interface ExperimentApiResponse {
 
 // API returns experiment wrapped in { data: Experiment }
 export type ExperimentResponse = Experiment;
-
