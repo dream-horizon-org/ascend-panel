@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { api } from "../apiClient";
 import { endpoints } from "../endpoints";
-import { experimentKeys, Experiment } from "../queries/experiments";
+import { experimentKeys, Experiment } from "../queries";
 
 // Types
 export interface CreateExperimentRequest {
