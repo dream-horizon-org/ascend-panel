@@ -11,6 +11,7 @@ import { theme } from "./theme/theme.ts";
 import { queryClient } from "./network/queryClient.ts";
 import { BrowserRouter, Route, Routes } from "react-router";
 import CreateExperiment from "./pages/CreateExperiment";
+import EditExperiment from "./pages/EditExperiment";
 import ExperimentDetails from "./pages/ExperimentDetails/ExperimentDetails.tsx";
 
 const rootElement = document.getElementById("root");
@@ -29,6 +30,7 @@ createRoot(rootElement).render(
             <Routes>
               <Route path="/" element={<App />} />
               <Route path="/create-experiment" element={<CreateExperiment />} />
+              <Route path="/edit-experiment/:id" element={<EditExperiment />} />
               <Route path="/experiment/:id" element={<ExperimentDetails />} />
             </Routes>
           </BrowserRouter>

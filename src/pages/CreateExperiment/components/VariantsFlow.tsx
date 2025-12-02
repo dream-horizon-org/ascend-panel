@@ -30,6 +30,7 @@ import AscendDropdown from "../../../components/AscendDropdown/AscendDropdown";
 
 // Custom node for Targeting
 const TargetingNode = ({ data }: any) => {
+  const isEditMode = data.isEditMode || false;
   return (
     <Box
       sx={{
@@ -38,6 +39,10 @@ const TargetingNode = ({ data }: any) => {
         padding: "1rem",
         backgroundColor: "white",
         minWidth: "180px",
+        ...(isEditMode && {
+          opacity: 0.6,
+        }),
+        cursor: "pointer",
       }}
       onClick={() => {
         data.onClick?.();
@@ -54,9 +59,11 @@ const TargetingNode = ({ data }: any) => {
         >
           Targeting
         </Box>
-        <EditIcon
-          sx={{ fontSize: "0.875rem", color: "#666666", cursor: "pointer" }}
-        />
+        {!isEditMode && (
+          <EditIcon
+            sx={{ fontSize: "0.875rem", color: "#666666", cursor: "pointer" }}
+          />
+        )}
       </Box>
       <Box sx={{ fontFamily: "Inter", fontSize: "0.875rem", color: "#666666" }}>
         {data.label}
@@ -68,6 +75,7 @@ const TargetingNode = ({ data }: any) => {
 
 // Custom node for Traffic Split
 const TrafficSplitNode = ({ data }: any) => {
+  const isEditMode = data.isEditMode || false;
   return (
     <Box sx={{ display: "flex", alignItems: "center" }}>
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
@@ -76,8 +84,17 @@ const TrafficSplitNode = ({ data }: any) => {
         size="small"
         type="text"
         value={data.percentage || ""}
-        onChange={(e) => data.onChange?.(e.target.value)}
-        onBlur={() => data.onBlur?.()}
+        onChange={(e) => {
+          if (!isEditMode) {
+            data.onChange?.(e.target.value);
+          }
+        }}
+        onBlur={() => {
+          if (!isEditMode) {
+            data.onBlur?.();
+          }
+        }}
+        disabled={isEditMode}
         placeholder="0"
         InputProps={{
           endAdornment: <InputAdornment position="end">%</InputAdornment>,
@@ -92,6 +109,7 @@ const TrafficSplitNode = ({ data }: any) => {
 
 // Custom node for Variant
 const VariantNode = ({ data }: any) => {
+  const isEditMode = data.isEditMode || false;
   const variables = data.variables || [{ key: "", data_type: "", value: "" }];
   const [jsonModalOpen, setJsonModalOpen] = useState<number | null>(null);
   const [tempJsonValue, setTempJsonValue] = useState<string>("");
@@ -164,13 +182,18 @@ const VariantNode = ({ data }: any) => {
           placeholder="Variant Name"
           size="small"
           value={data.name || ""}
-          onChange={(e) => data.onNameChange?.(e.target.value)}
+          onChange={(e) => {
+            if (!isEditMode) {
+              data.onNameChange?.(e.target.value);
+            }
+          }}
+          disabled={isEditMode}
           sx={{
             flex: 1,
             "& .MuiOutlinedInput-root": { borderRadius: "0.25rem" },
           }}
         />
-        {data.canDelete ? (
+        {data.canDelete && !isEditMode ? (
           <IconButton
             size="small"
             sx={{ color: "#828592", width: 40, height: 40, flexShrink: 0 }}
@@ -198,9 +221,12 @@ const VariantNode = ({ data }: any) => {
             size="small"
             placeholder="Key"
             value={variable.key || ""}
-            onChange={(e) =>
-              data.onVariableChange?.(index, "key", e.target.value)
-            }
+            onChange={(e) => {
+              if (!isEditMode) {
+                data.onVariableChange?.(index, "key", e.target.value);
+              }
+            }}
+            disabled={isEditMode}
             sx={{
               flex: 1,
               "& .MuiOutlinedInput-root": { borderRadius: "0.25rem" },
@@ -209,9 +235,12 @@ const VariantNode = ({ data }: any) => {
           <Select
             size="small"
             value={variable.data_type || ""}
-            onChange={(e) =>
-              data.onVariableChange?.(index, "data_type", e.target.value)
-            }
+            onChange={(e) => {
+              if (!isEditMode) {
+                data.onVariableChange?.(index, "data_type", e.target.value);
+              }
+            }}
+            disabled={isEditMode}
             displayEmpty
             renderValue={(selected) => {
               if (!selected || selected === "") {
@@ -243,9 +272,12 @@ const VariantNode = ({ data }: any) => {
             <Select
               size="small"
               value={variable.value || ""}
-              onChange={(e) =>
-                data.onVariableChange?.(index, "value", e.target.value)
-              }
+              onChange={(e) => {
+                if (!isEditMode) {
+                  data.onVariableChange?.(index, "value", e.target.value);
+                }
+              }}
+              disabled={isEditMode}
               displayEmpty
               renderValue={(selected) => {
                 if (!selected || selected === "") {
@@ -277,24 +309,27 @@ const VariantNode = ({ data }: any) => {
                   : variable.value || ""
               }
               onChange={(e) => {
-                const value = e.target.value;
-                // For NUMBER type, validate integer input only
-                if (variable.data_type === "NUMBER") {
-                  if (value === "" || /^-?\d*$/.test(value)) {
+                if (!isEditMode) {
+                  const value = e.target.value;
+                  // For NUMBER type, validate integer input only
+                  if (variable.data_type === "NUMBER") {
+                    if (value === "" || /^-?\d*$/.test(value)) {
+                      data.onVariableChange?.(index, "value", value);
+                    }
+                  }
+                  // For DECIMAL type, allow float numbers
+                  else if (variable.data_type === "DECIMAL") {
+                    if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
+                      data.onVariableChange?.(index, "value", value);
+                    }
+                  } else {
                     data.onVariableChange?.(index, "value", value);
                   }
-                }
-                // For DECIMAL type, allow float numbers
-                else if (variable.data_type === "DECIMAL") {
-                  if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
-                    data.onVariableChange?.(index, "value", value);
-                  }
-                } else {
-                  data.onVariableChange?.(index, "value", value);
                 }
               }}
+              disabled={isEditMode}
               onClick={
-                variable.data_type === "OBJECT" || variable.data_type === "LIST"
+                !isEditMode && (variable.data_type === "OBJECT" || variable.data_type === "LIST")
                   ? () => handleOpenJsonModal(index, variable.value)
                   : undefined
               }
@@ -348,7 +383,7 @@ const VariantNode = ({ data }: any) => {
           )}
 
           {/* Show delete button only if more than one item */}
-          {variables.length > 1 && (
+          {variables.length > 1 && !isEditMode && (
             <IconButton
               size="small"
               sx={{ color: "#828592", width: 40, height: 40, flexShrink: 0 }}
@@ -359,7 +394,7 @@ const VariantNode = ({ data }: any) => {
           )}
 
           {/* Placeholder to maintain alignment */}
-          {variables.length === 1 && (
+          {(variables.length === 1 || isEditMode) && (
             <Box sx={{ width: 40, height: 40, flexShrink: 0 }} />
           )}
 
@@ -415,22 +450,24 @@ const VariantNode = ({ data }: any) => {
       ))}
 
       {/* Add Parameter Button */}
-      <Button
-        startIcon={<AddIcon />}
-        onClick={() => data.onAddVariable?.(variables.length - 1)}
-        sx={{
-          textTransform: "none",
-          color: "#333333",
-          fontFamily: "Inter",
-          fontWeight: 500,
-          fontSize: "0.875rem",
-          mt: 1.5,
-          justifyContent: "flex-start",
-          paddingLeft: 0,
-        }}
-      >
-        Add Parameter
-      </Button>
+      {!isEditMode && (
+        <Button
+          startIcon={<AddIcon />}
+          onClick={() => data.onAddVariable?.(variables.length - 1)}
+          sx={{
+            textTransform: "none",
+            color: "#333333",
+            fontFamily: "Inter",
+            fontWeight: 500,
+            fontSize: "0.875rem",
+            mt: 1.5,
+            justifyContent: "flex-start",
+            paddingLeft: 0,
+          }}
+        >
+          Add Parameter
+        </Button>
+      )}
     </Box>
   );
 };
@@ -481,9 +518,10 @@ const generateEdges = (variants: number, isAssignCohortsDirectly: boolean) => {
 
 interface VariantsFlowProps {
   control: Control<any>;
+  isEditMode?: boolean;
 }
 
-export default function VariantsFlow({ control }: VariantsFlowProps) {
+export default function VariantsFlow({ control, isEditMode = false }: VariantsFlowProps) {
   const [isTrafficEdited, setIsTrafficEdited] = useState(false);
 
   const shouldRedistribute = useRef(false);
@@ -652,7 +690,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
         id: "targeting",
         type: "targeting",
         position: { x: START_X, y: targetingY + 20 },
-        data: { label: "Everyone", onClick: handleParentModalOpen },
+        data: { label: "Everyone", onClick: handleParentModalOpen, isEditMode },
       });
 
       currentY = START_Y;
@@ -673,6 +711,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
               percentage: config.trafficSplit || "",
               onChange: (value: string) => handleTrafficSplitChange(i, value),
               onBlur: () => handleTrafficBlur(i),
+              isEditMode,
             },
           });
         }
@@ -689,6 +728,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
               { key: "", data_type: "", value: "" },
             ],
             canDelete: variantFields.length > 2,
+            isEditMode,
             onNameChange: (value: string) => {
               const currentVariant: any = variantFields[i];
               updateVariant(i, { ...currentVariant, name: value });
@@ -825,7 +865,11 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
   };
 
   const handleParentModalClose = () => {
-    handleChildModalOpen();
+    if (isEditMode) {
+      setParentModalOpen(false);
+    } else {
+      handleChildModalOpen();
+    }
   };
 
   return (
@@ -833,10 +877,10 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       <AscendModal
         config={{
           width: 600,
-          closeOnBackdropClick: false,
-          closeOnEscape: false,
+          closeOnBackdropClick: isEditMode,
+          closeOnEscape: isEditMode,
           showCloseButton: false,
-          nestedModal: {
+          nestedModal: !isEditMode ? {
             width: 400,
             showCloseButton: false,
             children: (
@@ -845,8 +889,8 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
                 handleChildModalExit={handleChildModalExit}
               />
             ),
-          },
-          actions: (
+          } : undefined,
+          actions: !isEditMode ? (
             <Box
               sx={{
                 display: "flex",
@@ -870,11 +914,12 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
                 Save
               </Button>
             </Box>
-          ),
+          ) : undefined,
           children: (
             <CreateExperimentTargetingParentModal
               handleParentModalClose={handleParentModalClose}
               control={control}
+              isEditMode={isEditMode}
             />
           ),
         }}
@@ -908,51 +953,53 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
           maxZoom={1}
         ></ReactFlow>
       </Box>
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
-        <Button
-          startIcon={<AddIcon />}
-          onClick={() => {
-            // Calculate variant number: Control Group is index 0, Variant 1 is index 1, etc.
-            // So new variant number = current length (since Control is 0, next is Variant {length})
-            const newVariantNumber = variantFields.length;
+      {!isEditMode && (
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <Button
+            startIcon={<AddIcon />}
+            onClick={() => {
+              // Calculate variant number: Control Group is index 0, Variant 1 is index 1, etc.
+              // So new variant number = current length (since Control is 0, next is Variant {length})
+              const newVariantNumber = variantFields.length;  
 
-            // Copy key/data_type structure from first variant, but with empty values
-            const firstVariant: any = variantFields[0];
-            const variablesTemplate = (
-              firstVariant?.variables || [{ key: "", data_type: "", value: "" }]
-            ).map((v: any) => ({
-              key: v.key || "",
-              data_type: v.data_type || "",
-              value: "",
-            }));
+              // Copy key/data_type structure from first variant, but with empty values
+              const firstVariant: any = variantFields[0];
+              const variablesTemplate = (
+                firstVariant?.variables || [{ key: "", data_type: "", value: "" }]
+              ).map((v: any) => ({
+                key: v.key || "",
+                data_type: v.data_type || "",
+                value: "",
+              }));
 
-            const newVariant = {
-              name: `Variant ${newVariantNumber}`,
-              trafficSplit: "0",
-              variables: variablesTemplate,
-              cohorts: [],
-            };
+              const newVariant = {
+                name: `Variant ${newVariantNumber}`,
+                trafficSplit: "0",
+                variables: variablesTemplate,
+                cohorts: [],
+              };
 
-            if (isTrafficEdited) {
-              // If traffic has been edited, add new variant with 0%
-              appendVariant(newVariant);
-            } else {
-              // If not edited, add variant and set flag to redistribute
-              shouldRedistribute.current = true;
-              appendVariant(newVariant);
-            }
-          }}
-          sx={{
-            textTransform: "none",
-            color: "#333333",
-            fontFamily: "Inter",
-            fontWeight: 500,
-            fontSize: "0.875rem",
-          }}
-        >
-          Add Variant
-        </Button>
-      </Box>
+              if (isTrafficEdited) {
+                // If traffic has been edited, add new variant with 0%
+                appendVariant(newVariant);
+              } else {
+                // If not edited, add variant and set flag to redistribute
+                shouldRedistribute.current = true;
+                appendVariant(newVariant);
+              }
+            }}
+            sx={{
+              textTransform: "none",
+              color: "#333333",
+              fontFamily: "Inter",
+              fontWeight: 500,
+              fontSize: "0.875rem",
+            }}
+          >
+            Add Variant
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 }
@@ -960,9 +1007,11 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
 function CreateExperimentTargetingParentModal({
   handleParentModalClose,
   control,
+  isEditMode = false,
 }: {
   handleParentModalClose: () => void;
   control: Control<any>;
+  isEditMode?: boolean;
 }) {
   // Use react-hook-form for isAssignCohortsDirectly
   const { field: isAssignCohortsDirectlyField } = useController({
@@ -1096,19 +1145,22 @@ function CreateExperimentTargetingParentModal({
                     select
                     size="small"
                     sx={{ minWidth: 150 }}
+                    disabled={isEditMode}
                     {...field}
                     onChange={(e) => {
-                      field.onChange(e);
-                      // Auto-update operandDataType, clear value and operator when operand changes
-                      const currentFilter = filters[index];
-                      const newDataType = getDataTypeForOperand(e.target.value);
-                      updateFilter(index, {
-                        ...currentFilter,
-                        operand: e.target.value,
-                        operandDataType: newDataType,
-                        operator: "=", // Reset to default operator
-                        value: "", // Clear value since data type changed
-                      });
+                      if (!isEditMode) {
+                        field.onChange(e);
+                        // Auto-update operandDataType, clear value and operator when operand changes
+                        const currentFilter = filters[index];
+                        const newDataType = getDataTypeForOperand(e.target.value);
+                        updateFilter(index, {
+                          ...currentFilter,
+                          operand: e.target.value,
+                          operandDataType: newDataType,
+                          operator: "=", // Reset to default operator
+                          value: "", // Clear value since data type changed
+                        });
+                      }
                     }}
                   >
                     <MenuItem value="user_id">User ID</MenuItem>
@@ -1184,6 +1236,7 @@ function CreateExperimentTargetingParentModal({
                       select
                       size="small"
                       sx={{ minWidth: 150 }}
+                      disabled={isEditMode}
                       {...field}
                       value={currentValue}
                     >
@@ -1210,6 +1263,7 @@ function CreateExperimentTargetingParentModal({
                         select
                         size="small"
                         sx={{ width: 100 }}
+                        disabled={isEditMode}
                         {...field}
                       >
                         <MenuItem value="true">true</MenuItem>
@@ -1225,12 +1279,15 @@ function CreateExperimentTargetingParentModal({
                         size="small"
                         type="text"
                         sx={{ width: 100 }}
+                        disabled={isEditMode}
                         {...field}
                         onChange={(e) => {
-                          const value = e.target.value;
-                          // Allow empty string and integers only
-                          if (value === "" || /^-?\d*$/.test(value)) {
-                            field.onChange(value);
+                          if (!isEditMode) {
+                            const value = e.target.value;
+                            // Allow empty string and integers only
+                            if (value === "" || /^-?\d*$/.test(value)) {
+                              field.onChange(value);
+                            }
                           }
                         }}
                       />
@@ -1244,12 +1301,15 @@ function CreateExperimentTargetingParentModal({
                         size="small"
                         type="text"
                         sx={{ width: 100 }}
+                        disabled={isEditMode}
                         {...field}
                         onChange={(e) => {
-                          const value = e.target.value;
-                          // Allow empty string, numbers, and decimal point
-                          if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
-                            field.onChange(value);
+                          if (!isEditMode) {
+                            const value = e.target.value;
+                            // Allow empty string, numbers, and decimal point
+                            if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
+                              field.onChange(value);
+                            }
                           }
                         }}
                       />
@@ -1258,11 +1318,11 @@ function CreateExperimentTargetingParentModal({
 
                   // Default to string input (includes STRING and SEMVER_STRING)
                   return (
-                    <TextField size="small" sx={{ width: 100 }} {...field} />
+                    <TextField size="small" sx={{ width: 100 }} disabled={isEditMode} {...field} />
                   );
                 }}
               />
-              {index > 0 && (
+              {index > 0 && !isEditMode && (
                 <IconButton
                   size="small"
                   onClick={() => handleRemoveFilter(index)}
@@ -1271,7 +1331,7 @@ function CreateExperimentTargetingParentModal({
                 </IconButton>
               )}
 
-              {index === filters.length - 1 && (
+              {index === filters.length - 1 && !isEditMode && (
                 <IconButton
                   onClick={handleAddFilter}
                   size="small"
@@ -1298,8 +1358,11 @@ function CreateExperimentTargetingParentModal({
               value={cohorts}
               fullWidth
               size="lg"
+              disabled={isEditMode}
               onChange={(value) => {
-                cohortsField.onChange(value);
+                if (!isEditMode) {
+                  cohortsField.onChange(value);
+                }
               }}
             />
           </Box>
@@ -1333,8 +1396,11 @@ function CreateExperimentTargetingParentModal({
                         value={field.value || []}
                         fullWidth
                         size="lg"
+                        disabled={isEditMode}
                         onChange={(value) => {
-                          field.onChange(value);
+                          if (!isEditMode) {
+                            field.onChange(value);
+                          }
                         }}
                       />
                     )}
@@ -1352,14 +1418,16 @@ function CreateExperimentTargetingParentModal({
           }}
         >
           <FormControlLabel
-            control={<Checkbox />}
+            control={<Checkbox disabled={isEditMode} />}
             label="Assign cohorts directly to variants"
             checked={isAssignCohortsDirectly}
-            onChange={(e) =>
-              isAssignCohortsDirectlyField.onChange(
-                (e.target as HTMLInputElement).checked,
-              )
-            }
+            onChange={(e) => {
+              if (!isEditMode) {
+                isAssignCohortsDirectlyField.onChange(
+                  (e.target as HTMLInputElement).checked,
+                );
+              }
+            }}
           />
           <Typography
             variant="caption"
