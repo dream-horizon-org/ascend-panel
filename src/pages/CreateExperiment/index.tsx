@@ -27,8 +27,20 @@ const experimentSchema = z.object({
     .max(120, "Maximum 120 characters allowed"),
   description: z.string().max(300, "Maximum 300 characters allowed").optional(),
   tags: z.array(z.string()).optional(),
-  rateLimit: z.string().optional(),
-  maxUsers: z.string().optional(),
+  rateLimit: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || (Number(val) >= 0 && Number(val) <= 100),
+      "Rate limit must be between 0 and 100",
+    ),
+  maxUsers: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || Number(val) >= 0,
+      "Maximum users must be a positive number",
+    ),
   variants: z.array(
     z.object({
       name: z.string().min(1, "Variant name is required"),
@@ -84,11 +96,11 @@ const CreateExperiment = () => {
         name: "",
         id: "",
         hypothesis:
-          "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
+          "",
         description:
-          "The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.",
+          "",
         tags: [],
-        rateLimit: "100%",
+        rateLimit: "100",
         maxUsers: "",
         variants: [
           {
@@ -243,8 +255,8 @@ const CreateExperiment = () => {
       },
       variants: variants,
       rule_attributes: rule_attributes,
-      exposure: data.rateLimit ? parseInt(data.rateLimit) : 100,
-      threshold: data.maxUsers ? parseInt(data.maxUsers) : 50000,
+      exposure: data.rateLimit ? Number(data.rateLimit) : 0,
+      threshold: data.maxUsers ? Number(data.maxUsers) : 0,
       created_by: "user@example.com",
       tags: data.tags || [],
     };
@@ -554,7 +566,9 @@ const CreateExperiment = () => {
                 label="Rate Limiting (optional)"
                 placeholder="Enter rate"
                 infoText="Set the maximum rate limit for this experiment"
-                width="10%"
+                width="15%"
+                type="number"
+                inputProps={{ min: 0, max: 100 }}
               />
             </Box>
 
@@ -564,9 +578,11 @@ const CreateExperiment = () => {
                 name="maxUsers"
                 control={control}
                 label="Maximum Users (optional)"
-                placeholder="######"
+                placeholder="Enter maximum users"
                 infoText="Set the maximum number of users for this experiment"
-                width="10%"
+                width="15%"
+                type="number"
+                inputProps={{ min: 0 }}
               />
             </Box>
           </Box>
