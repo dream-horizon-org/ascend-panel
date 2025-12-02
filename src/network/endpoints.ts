@@ -14,13 +14,8 @@ export const endpoints = {
     detail: (id: string | number) => `${API_BASE}/experiments/${id}`,
     create: `${API_BASE}/experiments`,
     update: (id: string | number) => `${API_BASE}/experiments/${id}`,
-    delete: (id: string | number) => `${API_BASE}/experiments/${id}`,
-    conclude: (id: string | number) => `${API_BASE}/experiments/${id}/conclude`,
     clone: (id: string | number) => `${API_BASE}/experiments/${id}/clone`,
-    terminate: (id: string | number) =>
-      `${API_BASE}/experiments/${id}/terminate`,
-    declareWinner: (id: string | number) =>
-      `${API_BASE}/experiments/${id}/declare-winner`,
+    terminate: (id: string | number) => `${API_BASE}/experiments/${id}`,
   },
 } as const;
 

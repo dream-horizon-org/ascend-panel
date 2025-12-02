@@ -15,14 +15,74 @@ export interface CreateExperimentRequest {
   description?: string;
 }
 
+export interface UpdateExperimentMetrics {
+  primary?: string[];
+  secondary?: string[];
+}
+
+export interface UpdateExperimentVariantVariable {
+  data_type: string;
+  value: string;
+  key: string;
+}
+
+export interface UpdateExperimentVariant {
+  display_name: string;
+  variables: UpdateExperimentVariantVariable[];
+}
+
+export interface UpdateExperimentRuleCondition {
+  operand: string;
+  operandDataType: string;
+  operator: string;
+  value: string;
+}
+
+export interface UpdateExperimentRuleAttribute {
+  name: string;
+  conditions: UpdateExperimentRuleCondition[];
+}
+
+export interface UpdateExperimentVariantWeights {
+  type: string;
+}
+
+export interface UpdateExperimentWinningVariant {
+  variant_name: string;
+}
+
 export interface UpdateExperimentRequest {
   name?: string;
-  hypothesis?: string;
+  experiment_key?: string;
+  metrics?: UpdateExperimentMetrics;
+  tags?: string[];
+  owner?: string[];
   description?: string;
+  hypothesis?: string;
+  status?: string;
+  type?: string;
+  assignment_domain?: string;
+  distribution_strategy?: string;
+  guardrail_health_status?: string;
+  cohorts?: string[];
+  variant_weights?: UpdateExperimentVariantWeights;
+  variants?: Record<string, UpdateExperimentVariant>;
+  rule_attributes?: UpdateExperimentRuleAttribute[];
+  overrides?: string[];
+  winning_variant?: UpdateExperimentWinningVariant;
+  exposure?: number;
+  threshold?: number;
+  start_time?: number;
+  end_time?: number;
+  updated_by?: string;
 }
 
 export interface ConcludeExperimentRequest {
-  winner: "Control Group" | "Variant 1";
+  status: "CONCLUDED";
+}
+
+export interface TerminateExperimentRequest {
+  status: "TERMINATED";
 }
 
 // Response types
@@ -32,6 +92,19 @@ export interface ExperimentMutationApiResponse {
 }
 
 export type ExperimentMutationResponse = Experiment;
+
+// Terminate experiment response
+export interface TerminateExperimentApiResponse {
+  data: {
+    experiment_id: string;
+    status: boolean;
+  };
+}
+
+export interface TerminateExperimentResponse {
+  experiment_id: string;
+  status: boolean;
+}
 
 // Mutation functions
 export const createExperiment = async (
@@ -49,7 +122,7 @@ export const updateExperiment = async (
   id: string | number,
   data: UpdateExperimentRequest,
 ): Promise<ExperimentMutationResponse> => {
-  const response = await api.put<ExperimentMutationApiResponse>(
+  const response = await api.patch<ExperimentMutationApiResponse>(
     endpoints.experiments.update(id),
     data,
   );
@@ -61,8 +134,8 @@ export const concludeExperiment = async (
   id: string | number,
   data: ConcludeExperimentRequest,
 ): Promise<ExperimentMutationResponse> => {
-  const response = await api.post<ExperimentMutationApiResponse>(
-    endpoints.experiments.declareWinner(id),
+  const response = await api.patch<ExperimentMutationApiResponse>(
+    endpoints.experiments.update(id),
     data,
   );
   // API returns experiment wrapped in { data: Experiment }
@@ -71,11 +144,13 @@ export const concludeExperiment = async (
 
 export const terminateExperiment = async (
   id: string | number,
-): Promise<ExperimentMutationResponse> => {
-  const response = await api.post<ExperimentMutationApiResponse>(
+  data: TerminateExperimentRequest,
+): Promise<TerminateExperimentResponse> => {
+  const response = await api.patch<TerminateExperimentApiResponse>(
     endpoints.experiments.terminate(id),
+    data,
   );
-  // API returns experiment wrapped in { data: Experiment }
+  // API returns { data: { experiment_id: string, status: boolean } }
   return response.data.data;
 };
 
@@ -163,17 +238,25 @@ export const useConcludeExperiment = (
 
 export const useTerminateExperiment = (
   options?: Omit<
-    UseMutationOptions<ExperimentMutationResponse, Error, string | number>,
+    UseMutationOptions<
+      TerminateExperimentResponse,
+      Error,
+      { id: string | number; data: TerminateExperimentRequest }
+    >,
     "mutationFn"
   >,
 ) => {
   const queryClient = useQueryClient();
 
-  return useMutation<ExperimentMutationResponse, Error, string | number>({
-    mutationFn: terminateExperiment,
+  return useMutation<
+    TerminateExperimentResponse,
+    Error,
+    { id: string | number; data: TerminateExperimentRequest }
+  >({
+    mutationFn: ({ id, data }) => terminateExperiment(id, data),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: experimentKeys.detail(variables),
+        queryKey: experimentKeys.detail(variables.id),
       });
       queryClient.invalidateQueries({ queryKey: experimentKeys.lists() });
     },
