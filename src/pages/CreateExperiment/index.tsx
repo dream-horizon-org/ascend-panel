@@ -1,14 +1,24 @@
-import { Box, IconButton, Typography, Button } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Typography,
+  Button,
+  CircularProgress,
+} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import AscendTextFieldControlled from "../../components/AscendTextField/AscendTextFieldControlled";
 import VariantsFlow from "./components/VariantsFlow";
 import AscendAutoCompleteControlled from "../../components/AscendAutoComplete/AscendAutoCompleteControlled";
+import {
+  useCreateExperiment,
+  transformToRequestBody,
+} from "../../network/mutations/createExperiment";
 
 // Form validation schema
 const experimentSchema = z.object({
@@ -20,8 +30,20 @@ const experimentSchema = z.object({
     .max(120, "Maximum 120 characters allowed"),
   description: z.string().max(300, "Maximum 300 characters allowed").optional(),
   tags: z.array(z.string()).optional(),
-  rateLimit: z.string().optional(),
-  maxUsers: z.string().optional(),
+  rateLimit: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || (Number(val) >= 0 && Number(val) <= 100),
+      "Rate limit must be between 0 and 100",
+    ),
+  maxUsers: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || Number(val) >= 0,
+      "Maximum users must be a positive number",
+    ),
   variants: z.array(
     z.object({
       name: z.string().min(1, "Variant name is required"),
@@ -63,27 +85,25 @@ const sections = [
 
 const CreateExperiment = () => {
   const navigate = useNavigate();
-  const [submittedData, setSubmittedData] = useState<ExperimentFormData | null>(
-    null,
-  );
   const [currentSection, setCurrentSection] =
     useState<string>("experiment-details");
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
-  const [requestBody, setRequestBody] = useState<any>(null);
 
-  const { control, handleSubmit, setValue, getValues } =
-    useForm<ExperimentFormData>({
+  // Create experiment mutation
+  const createExperimentMutation = useCreateExperiment();
+
+  const { control, handleSubmit, setValue } = useForm<ExperimentFormData>({
       resolver: zodResolver(experimentSchema),
       mode: "onSubmit", // Validate only on submit
       defaultValues: {
         name: "",
         id: "",
         hypothesis:
-          "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
+          "",
         description:
-          "The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.",
+          "",
         tags: [],
-        rateLimit: "100%",
+        rateLimit: "100",
         maxUsers: "",
         variants: [
           {
@@ -164,107 +184,17 @@ const CreateExperiment = () => {
     setValue("id", generatedId, { shouldValidate: false });
   };
 
-  const transformToRequestBody = (data: ExperimentFormData) => {
-    // Check if cohorts are assigned directly to variants
-    const isAssignCohortsDirectly =
-      data.targeting?.isAssignCohortsDirectly || false;
-    const assignmentType = isAssignCohortsDirectly ? "STRATIFIED" : "COHORT";
-
-    const weights: Record<string, number | string[]> = {};
-    data.variants.forEach((variant, index) => {
-      const key = index === 0 ? "control" : `variant${index}`;
-      if (assignmentType === "STRATIFIED") {
-        // For STRATIFIED, use variant's cohorts array
-        weights[key] = variant.cohorts || [];
-      } else {
-        // For COHORT, use trafficSplit percentage
-        weights[key] = parseInt(variant.trafficSplit) || 0;
-      }
-    });
-
-    const variants: Record<string, any> = {};
-    data.variants.forEach((variant, index) => {
-      const key = index === 0 ? "control" : `variant${index}`;
-
-      const variables = variant.variables
-        .filter((v) => v.key && v.data_type)
-        .map((v) => ({
-          key: v.key,
-          value: v.value,
-          data_type: v.data_type,
-        }));
-
-      variants[key] = {
-        displayName: variant.name,
-        variables: variables,
-      };
-    });
-
-    // Transform filters to rule_attributes - direct 1:1 mapping
-    const rule_attributes =
-      data.targeting?.filters && data.targeting.filters.length > 0
-        ? [
-            {
-              name: "Targeting Rule",
-              conditions: data.targeting.filters.map(
-                ({ operand, operandDataType, operator, value }) => ({
-                  operand,
-                  operandDataType,
-                  operator,
-                  value,
-                }),
-              ),
-            },
-          ]
-        : [];
-
-    // Extract cohorts from targeting
-    const cohorts = data.targeting?.cohorts || [];
-
-    return {
-      name: data.name,
-      description: data.description || "",
-      hypothesis: data.hypothesis,
-      status: "LIVE",
-      type: "A_B",
-      guardrail_health_status: "PASSED",
-      cohorts: cohorts,
-      variant_weights: {
-        type: assignmentType,
-        weights: weights,
-      },
-      variants: variants,
-      distribution_strategy: "RANDOM",
-      assignment_domain: assignmentType,
-      rule_attributes: rule_attributes,
-      exposure: 100,
-      threshold: 50000,
-      start_time: Math.floor(Date.now() / 1000),
-      end_time: Math.floor(Date.now() / 1000) + 86400 * 30,
-      created_by: "user@example.com",
-      tags: data.tags || [],
-      owner: [],
-      metrics: {
-        primary: [],
-        secondary: [],
-      },
-    };
-  };
-
-  const handlePreviewRequestBody = () => {
-    const formData = getValues();
-    const apiRequestBody = transformToRequestBody(formData);
-    setRequestBody(apiRequestBody);
-    console.log("API Request Body:", apiRequestBody);
-  };
-
   const handleBack = () => {
     navigate(-1); // Go back to previous page
   };
 
   const onSubmit = (data: ExperimentFormData) => {
-    setSubmittedData(data);
-    console.log("Form submitted:", data);
+    const requestBody = transformToRequestBody(data);
+    createExperimentMutation.mutate(requestBody, {
+      onSuccess: (response) => {
+        navigate(`/experiments/${response.experiment_id}`);
+      },
+    });
   };
 
   return (
@@ -558,7 +488,9 @@ const CreateExperiment = () => {
                 label="Rate Limiting (optional)"
                 placeholder="Enter rate"
                 infoText="Set the maximum rate limit for this experiment"
-                width="10%"
+                width="15%"
+                type="number"
+                inputProps={{ min: 0, max: 100 }}
               />
             </Box>
 
@@ -568,9 +500,11 @@ const CreateExperiment = () => {
                 name="maxUsers"
                 control={control}
                 label="Maximum Users (optional)"
-                placeholder="######"
+                placeholder="Enter maximum users"
                 infoText="Set the maximum number of users for this experiment"
-                width="10%"
+                width="15%"
+                type="number"
+                inputProps={{ min: 0 }}
               />
             </Box>
           </Box>
@@ -585,28 +519,9 @@ const CreateExperiment = () => {
             }}
           >
             <Button
-              variant="outlined"
-              onClick={handlePreviewRequestBody}
-              sx={{
-                borderColor: "#0060E5",
-                color: "#0060E5",
-                textTransform: "none",
-                fontFamily: "Inter",
-                fontWeight: 600,
-                fontSize: "0.875rem",
-                padding: "0.625rem 2rem",
-                borderRadius: "0.5rem",
-                "&:hover": {
-                  borderColor: "#0050C5",
-                  backgroundColor: "rgba(0, 96, 229, 0.05)",
-                },
-              }}
-            >
-              Preview Request Body
-            </Button>
-            <Button
               variant="contained"
               onClick={handleSubmit(onSubmit)}
+              disabled={createExperimentMutation.isPending}
               sx={{
                 backgroundColor: "#0060E5",
                 color: "white",
@@ -619,91 +534,20 @@ const CreateExperiment = () => {
                 "&:hover": {
                   backgroundColor: "#0050C5",
                 },
+                "&:disabled": {
+                  backgroundColor: "#B0C4DE",
+                  color: "white",
+                },
               }}
             >
-              Create Experiment
+              {createExperimentMutation.isPending ? (
+                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+              ) : null}
+              {createExperimentMutation.isPending
+                ? "Creating..."
+                : "Create Experiment"}
             </Button>
           </Box>
-
-          {/* Display Request Body */}
-          {requestBody && (
-            <Box
-              sx={{
-                mt: "2rem",
-                padding: "1.5rem",
-                border: "1px solid #DADADD",
-                borderRadius: "0.5rem",
-                backgroundColor: "#F9F9F9",
-              }}
-            >
-              <Typography
-                sx={{
-                  fontFamily: "Inter",
-                  fontWeight: 600,
-                  fontSize: "1rem",
-                  color: "#333333",
-                  mb: "1rem",
-                }}
-              >
-                API Request Body
-              </Typography>
-              <Box
-                component="pre"
-                sx={{
-                  backgroundColor: "white",
-                  padding: "1rem",
-                  borderRadius: "0.5rem",
-                  overflow: "auto",
-                  maxHeight: "600px",
-                  fontSize: "0.75rem",
-                  fontFamily: "monospace",
-                  border: "1px solid #E0E0E0",
-                }}
-              >
-                {JSON.stringify(requestBody, null, 2)}
-              </Box>
-            </Box>
-          )}
-
-          {/* Display Submitted Data */}
-          {submittedData && (
-            <Box
-              sx={{
-                mt: "2rem",
-                padding: "1.5rem",
-                border: "1px solid #DADADD",
-                borderRadius: "0.5rem",
-                backgroundColor: "#F9F9F9",
-              }}
-            >
-              <Typography
-                sx={{
-                  fontFamily: "Inter",
-                  fontWeight: 600,
-                  fontSize: "1rem",
-                  color: "#333333",
-                  mb: "1rem",
-                }}
-              >
-                Submitted Form Data
-              </Typography>
-              <Box
-                component="pre"
-                sx={{
-                  backgroundColor: "white",
-                  padding: "1rem",
-                  borderRadius: "0.5rem",
-                  overflow: "auto",
-                  maxHeight: "400px",
-                  fontSize: "0.75rem",
-                  fontFamily: "monospace",
-                  border: "1px solid #E0E0E0",
-                }}
-              >
-                {JSON.stringify(submittedData, null, 2)}
-              </Box>
-            </Box>
-          )}
         </Box>
       </Box>
     </Box>
