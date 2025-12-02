@@ -2,29 +2,40 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../../apiClient";
 import { endpoints } from "../../endpoints";
 import { experimentKeys } from "../sharedKeys";
-import { ExperimentsResponse } from "./types";
+import type {
+  ExperimentsResponse,
+  ExperimentFilters,
+  ExperimentsApiResponse,
+} from "./types";
 import { parseExperimentsResponse } from "./parser";
 
-// Fetch function
+// Fetch experiments function
 export const fetchExperiments = async (
-  params?: Record<string, any>,
+  params?: ExperimentFilters,
 ): Promise<ExperimentsResponse> => {
-  const response = await api.get<ExperimentsResponse>(
+  const response = await api.get<ExperimentsApiResponse>(
     endpoints.experiments.list,
     {
       params,
     },
   );
-  return parseExperimentsResponse(response);
+  return parseExperimentsResponse(response.data);
 };
 
-// React Query hook
-export const useExperimentsList = (params?: Record<string, any>) => {
+// React Query hook for experiments list
+export const useExperiments = (params?: ExperimentFilters) => {
   return useQuery<ExperimentsResponse, Error>({
     queryKey: experimentKeys.list(params),
     queryFn: () => fetchExperiments(params),
   });
 };
 
+// Legacy alias for backwards compatibility
+export const useExperimentsList = useExperiments;
+
 // Export types
-export type { ExperimentsResponse } from "./types";
+export type {
+  ExperimentsResponse,
+  ExperimentFilters,
+  Pagination,
+} from "./types";

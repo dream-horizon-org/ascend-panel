@@ -1,10 +1,7 @@
 /**
- * Queries index file
- * Central export point for all experiment queries
+ * Experiments queries - convenience re-export file
+ * Re-exports all experiment-related queries from their respective folders
  */
-
-// Shared keys (used by mutations)
-export { experimentKeys } from "./sharedKeys";
 
 // Get Experiments List
 export {
@@ -35,3 +32,6 @@ export type {
 // Get Tags
 export { fetchTags, useTags } from "./getTags";
 export type { TagsResponse } from "./getTags";
+
+// Shared keys
+export { experimentKeys } from "./sharedKeys";
