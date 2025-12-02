@@ -6,4 +6,5 @@ export const experimentKeys = {
     [...experimentKeys.lists(), filters] as const,
   details: () => [...experimentKeys.all, "detail"] as const,
   detail: (id: string | number) => [...experimentKeys.details(), id] as const,
+  tags: () => [...experimentKeys.all, "tags"] as const,
 };
