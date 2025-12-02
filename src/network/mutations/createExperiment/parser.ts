@@ -111,7 +111,7 @@ export const transformToRequestBody = (
     experiment_key: data.id,
     description: data.description || "",
     hypothesis: data.hypothesis,
-    status: "DRAFT",
+    status: "LIVE",
     assignment_domain: assignmentType,
     distribution_strategy: "RANDOM",
     cohorts: cohorts,
