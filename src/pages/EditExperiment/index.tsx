@@ -13,7 +13,10 @@ import { z } from "zod";
 import ExperimentForm from "../CreateExperiment/components/ExperimentForm";
 import { experimentSchema } from "../CreateExperiment/schema";
 import { useExperiment } from "../../network/queries";
-import { useUpdateExperiment, UpdateExperimentRequest } from "../../network/mutations";
+import {
+  useUpdateExperiment,
+  UpdateExperimentRequest,
+} from "../../network/mutations";
 import { Experiment } from "../../network/queries";
 import AscendModal from "../../components/AscendModal/AscendModal";
 
@@ -23,7 +26,9 @@ const EditExperiment = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const editExperimentMutation = useUpdateExperiment();
-  const { data: experiment, isLoading: isLoadingExperiment } = useExperiment(id || null);
+  const { data: experiment, isLoading: isLoadingExperiment } = useExperiment(
+    id || null,
+  );
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [discardModalOpen, setDiscardModalOpen] = useState(false);
   const [pendingFormData, setPendingFormData] =
@@ -50,7 +55,7 @@ const EditExperiment = () => {
 
   // Transform experiment data to form data format
   const transformExperimentToFormData = (
-    exp: Experiment
+    exp: Experiment,
   ): Partial<ExperimentFormData> => {
     const variantKeys = Object.keys(exp.variants || {});
     const variants = variantKeys.map((key) => {
@@ -108,7 +113,7 @@ const EditExperiment = () => {
   };
 
   const transformToEditRequest = (
-    data: ExperimentFormData
+    data: ExperimentFormData,
   ): UpdateExperimentRequest => {
     // Only send description and advance configuration fields (rateLimit -> exposure, maxUsers -> threshold)
     const dirty: UpdateExperimentRequest = {};
@@ -170,7 +175,7 @@ const EditExperiment = () => {
           console.error("Failed to update experiment:", error);
           setConfirmModalOpen(false);
         },
-      }
+      },
     );
   };
 

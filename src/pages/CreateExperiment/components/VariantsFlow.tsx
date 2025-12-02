@@ -329,7 +329,9 @@ const VariantNode = ({ data }: any) => {
               }}
               disabled={isEditMode}
               onClick={
-                !isEditMode && (variable.data_type === "OBJECT" || variable.data_type === "LIST")
+                !isEditMode &&
+                (variable.data_type === "OBJECT" ||
+                  variable.data_type === "LIST")
                   ? () => handleOpenJsonModal(index, variable.value)
                   : undefined
               }
@@ -521,7 +523,10 @@ interface VariantsFlowProps {
   isEditMode?: boolean;
 }
 
-export default function VariantsFlow({ control, isEditMode = false }: VariantsFlowProps) {
+export default function VariantsFlow({
+  control,
+  isEditMode = false,
+}: VariantsFlowProps) {
   const [isTrafficEdited, setIsTrafficEdited] = useState(false);
 
   const shouldRedistribute = useRef(false);
@@ -880,16 +885,18 @@ export default function VariantsFlow({ control, isEditMode = false }: VariantsFl
           closeOnBackdropClick: isEditMode,
           closeOnEscape: isEditMode,
           showCloseButton: false,
-          nestedModal: !isEditMode ? {
-            width: 400,
-            showCloseButton: false,
-            children: (
-              <CreateExperimentTargetingChildModal
-                handleChildModalCancel={handleChildModalCancel}
-                handleChildModalExit={handleChildModalExit}
-              />
-            ),
-          } : undefined,
+          nestedModal: !isEditMode
+            ? {
+                width: 400,
+                showCloseButton: false,
+                children: (
+                  <CreateExperimentTargetingChildModal
+                    handleChildModalCancel={handleChildModalCancel}
+                    handleChildModalExit={handleChildModalExit}
+                  />
+                ),
+              }
+            : undefined,
           actions: !isEditMode ? (
             <Box
               sx={{
@@ -960,12 +967,14 @@ export default function VariantsFlow({ control, isEditMode = false }: VariantsFl
             onClick={() => {
               // Calculate variant number: Control Group is index 0, Variant 1 is index 1, etc.
               // So new variant number = current length (since Control is 0, next is Variant {length})
-              const newVariantNumber = variantFields.length;  
+              const newVariantNumber = variantFields.length;
 
               // Copy key/data_type structure from first variant, but with empty values
               const firstVariant: any = variantFields[0];
               const variablesTemplate = (
-                firstVariant?.variables || [{ key: "", data_type: "", value: "" }]
+                firstVariant?.variables || [
+                  { key: "", data_type: "", value: "" },
+                ]
               ).map((v: any) => ({
                 key: v.key || "",
                 data_type: v.data_type || "",
@@ -1152,7 +1161,9 @@ function CreateExperimentTargetingParentModal({
                         field.onChange(e);
                         // Auto-update operandDataType, clear value and operator when operand changes
                         const currentFilter = filters[index];
-                        const newDataType = getDataTypeForOperand(e.target.value);
+                        const newDataType = getDataTypeForOperand(
+                          e.target.value,
+                        );
                         updateFilter(index, {
                           ...currentFilter,
                           operand: e.target.value,
@@ -1318,7 +1329,12 @@ function CreateExperimentTargetingParentModal({
 
                   // Default to string input (includes STRING and SEMVER_STRING)
                   return (
-                    <TextField size="small" sx={{ width: 100 }} disabled={isEditMode} {...field} />
+                    <TextField
+                      size="small"
+                      sx={{ width: 100 }}
+                      disabled={isEditMode}
+                      {...field}
+                    />
                   );
                 }}
               />

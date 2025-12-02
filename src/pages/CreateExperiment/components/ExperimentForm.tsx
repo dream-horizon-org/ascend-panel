@@ -37,7 +37,7 @@ const ExperimentForm = ({
   onDiscard,
 }: ExperimentFormProps) => {
   const [submittedData, setSubmittedData] = useState<ExperimentFormData | null>(
-    null
+    null,
   );
   const [currentSection, setCurrentSection] =
     useState<string>("experiment-details");
@@ -105,7 +105,7 @@ const ExperimentForm = ({
 
     const observer = new IntersectionObserver(
       observerCallback,
-      observerOptions
+      observerOptions,
     );
 
     sections.forEach(({ id }) => {
@@ -182,7 +182,7 @@ const ExperimentForm = ({
                   operandDataType,
                   operator,
                   value,
-                })
+                }),
               ),
             },
           ]

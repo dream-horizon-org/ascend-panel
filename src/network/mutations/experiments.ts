@@ -77,7 +77,6 @@ export interface UpdateExperimentRequest {
   updated_by?: string;
 }
 
-
 export interface ConcludeExperimentRequest {
   status: "CONCLUDED";
 }
@@ -264,4 +263,3 @@ export const useTerminateExperiment = (
     ...options,
   });
 };
-
