@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../apiClient";
 import { endpoints } from "../endpoints";
-import { EditExperimentRequest } from "../mutations/experiments";
+import { UpdateExperimentRequest } from "../mutations/experiments";
 
 // Types
 export interface VariantVariable {
@@ -131,7 +131,7 @@ export const useExperiment = (id: string | number | null) => {
 
 export const patchExperiment = async (
   id: string | number,
-  data: EditExperimentRequest,
+  data: UpdateExperimentRequest,
 ): Promise<ExperimentResponse> => {
   console.log("PATCH Request to /experiments/" + id, data);
   const response = await api.patch<ExperimentApiResponse>(
@@ -147,7 +147,7 @@ export const useEditExperiment = () => {
   return useMutation<
     ExperimentResponse,
     Error,
-    { id: string | number; data: EditExperimentRequest }
+    { id: string | number; data: UpdateExperimentRequest }
   >({
     mutationFn: ({ id, data }) => patchExperiment(id, data),
     onSuccess: (_data, variables) => {

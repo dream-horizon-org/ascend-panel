@@ -1,13 +1,23 @@
-import { Box, IconButton, Typography, Button } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Typography,
+  Button,
+  CircularProgress,
+} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate, useParams } from "react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { z } from "zod";
 import ExperimentForm from "../CreateExperiment/components/ExperimentForm";
 import { experimentSchema } from "../CreateExperiment/schema";
-import { useEditExperiment } from "../../network/queries/experiments";
-import { EditExperimentRequest } from "../../network/mutations/experiments";
+import {
+  useEditExperiment,
+  useExperiment,
+} from "../../network/queries/experiments";
+import { UpdateExperimentRequest } from "../../network/mutations/experiments";
+import { Experiment } from "../../network/queries/experiments";
 import AscendModal from "../../components/AscendModal/AscendModal";
 
 type ExperimentFormData = z.infer<typeof experimentSchema>;
@@ -16,6 +26,55 @@ const EditExperiment = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const editExperimentMutation = useEditExperiment();
+  //   const { data: experiment, isLoading: isLoadingExperiment } = useExperiment(id || null);
+  const { data: experiment, isLoading: isLoadingExperiment } = {
+    data: {
+      name: "Test Experiment",
+      key: "test-experiment",
+      description: "This is a test experiment",
+      tags: ["test", "experiment"],
+      exposure: 100,
+      threshold: 50000,
+      experimentId: "123",
+      projectKey: "test-project",
+      hypothesis: "This is a test hypothesis",
+      status: "LIVE",
+      type: "A/B",
+      assignmentDomain: "STRATIFIED",
+      distributionStrategy: "RANDOM",
+      guardrailHealthStatus: "PASSED",
+      cohorts: ["test-cohort"],
+      variantWeights: {
+        type: "WEIGHTED",
+        weights: {
+          "test-variant": 50,
+        },
+      },
+      variants: {
+        "test-variant": {
+          display_name: "Test Variant",
+          variables: [
+            { key: "test-variable", dataType: "STRING", value: "test-value" },
+          ],
+        },
+      },
+      ruleAttributes: [
+        {
+          name: "Test Rule",
+          conditions: [
+            {
+              operand: "IF",
+              operandDataType: "STRING",
+              operator: "EQUALS",
+              value: "test-value",
+            },
+          ],
+        },
+      ],
+      overrides: [],
+    },
+    isLoading: false,
+  };
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [discardModalOpen, setDiscardModalOpen] = useState(false);
   const [pendingFormData, setPendingFormData] =
@@ -40,91 +99,97 @@ const EditExperiment = () => {
     setDiscardModalOpen(false);
   };
 
-  const transformToEditRequest = (
-    data: ExperimentFormData
-  ): EditExperimentRequest => {
-    const isAssignCohortsDirectly =
-      data.targeting?.isAssignCohortsDirectly || false;
-    const assignmentType = isAssignCohortsDirectly ? "STRATIFIED" : "COHORT";
+  // Transform experiment data to form data format
+  const transformExperimentToFormData = (
+    exp: Experiment
+  ): Partial<ExperimentFormData> => {
+    const variantKeys = Object.keys(exp.variants || {});
+    const variants = variantKeys.map((key) => {
+      const variant = exp.variants[key];
+      const weight = exp.variantWeights?.weights?.[key];
+      const trafficSplit = typeof weight === "number" ? weight.toString() : "0";
 
-    const variants: Record<
-      string,
-      {
-        display_name: string;
-        variables: Array<{
-          data_type: string;
-          value: string;
-          key: string;
-        }>;
-      }
-    > = {};
-
-    data.variants.forEach((variant, index) => {
-      const key = index === 0 ? "control" : `variant${index}`;
-
-      const variables = variant.variables
-        .filter((v) => v.key && v.data_type)
-        .map((v) => ({
-          key: v.key,
-          value: v.value,
-          data_type: v.data_type,
-        }));
-
-      variants[key] = {
-        display_name: variant.name,
-        variables: variables,
+      return {
+        name: variant.display_name || key,
+        trafficSplit: trafficSplit,
+        variables: (variant.variables || []).map((v: any) => ({
+          key: v.key || "",
+          data_type: v.dataType || v.data_type || "",
+          value: v.value || "",
+        })),
+        cohorts:
+          typeof weight === "object" && Array.isArray(weight) ? weight : [],
       };
     });
 
-    const rule_attributes =
-      data.targeting?.filters && data.targeting.filters.length > 0
-        ? [
-            {
-              name: "Targeting Rule",
-              conditions: data.targeting.filters.map(
-                ({ operand, operandDataType, operator, value }) => ({
-                  operand,
-                  operandDataType,
-                  operator,
-                  value,
-                })
-              ),
-            },
-          ]
-        : [];
+    const isAssignCohortsDirectly = exp.assignmentDomain === "STRATIFIED";
+    const filters = exp.ruleAttributes?.[0]?.conditions || [];
 
     return {
-      name: data.name,
-      experiment_key: data.id,
-      metrics: {
-        primary: [],
-        secondary: [],
+      name: exp.name || "",
+      id: exp.key || exp.experimentId || "",
+      hypothesis: exp.hypothesis || "",
+      description: exp.description || "",
+      tags: exp.tags || [],
+      rateLimit: exp.exposure ? `${exp.exposure}%` : "100%",
+      maxUsers: exp.threshold ? exp.threshold.toString() : "",
+      variants:
+        variants.length > 0
+          ? variants
+          : [
+              {
+                name: "Control Group",
+                trafficSplit: "50",
+                variables: [{ key: "", data_type: "", value: "" }],
+                cohorts: [],
+              },
+            ],
+      targeting: {
+        filters: filters.map((f: any) => ({
+          operand: f.operand || "",
+          operandDataType: f.operandDataType || "",
+          operator: f.operator || "",
+          value: f.value || "",
+          condition: "IF",
+        })),
+        cohorts: exp.cohorts || [],
+        isAssignCohortsDirectly: isAssignCohortsDirectly,
       },
-      tags: data.tags || [],
-      owner: [],
-      description: data.description || "",
-      hypothesis: data.hypothesis,
-      status: "LIVE",
-      type: "A_B",
-      assignment_domain: assignmentType,
-      distribution_strategy: "RANDOM",
-      guardrail_health_status: "PASSED",
-      cohorts: data.targeting?.cohorts || [],
-      variant_weights: {
-        type: assignmentType,
-      },
-      variants: variants,
-      rule_attributes: rule_attributes,
-      overrides: [],
-      winning_variant: {
-        variant_name: "",
-      },
-      exposure: 100,
-      threshold: 50000,
-      start_time: Math.floor(Date.now() / 1000),
-      end_time: Math.floor(Date.now() / 1000) + 86400 * 30,
-      updated_by: "user@example.com",
     };
+  };
+
+  const transformToEditRequest = (
+    data: ExperimentFormData
+  ): UpdateExperimentRequest => {
+    // Only send description and advance configuration fields (rateLimit -> exposure, maxUsers -> threshold)
+    const dirty: UpdateExperimentRequest = {};
+
+    // Check if description changed
+    const originalDescription = experiment?.description || "";
+    if (data.description !== originalDescription) {
+      dirty.description = data.description || "";
+    }
+
+    // Map rateLimit to exposure (convert "100%" to 100)
+    const rateLimitValue = data.rateLimit
+      ? parseInt(data.rateLimit.replace("%", "")) || 100
+      : 100;
+    const originalExposure = experiment?.exposure || 100;
+    if (rateLimitValue !== originalExposure) {
+      dirty.exposure = rateLimitValue;
+    }
+
+    // Map maxUsers to threshold (convert string to number)
+    // Only update if maxUsers is provided and different from original
+    if (data.maxUsers && data.maxUsers.trim() !== "") {
+      const maxUsersValue = parseInt(data.maxUsers) || 0;
+      const originalThreshold = experiment?.threshold || 50000;
+      if (maxUsersValue !== originalThreshold) {
+        dirty.threshold = maxUsersValue;
+      }
+    }
+
+    return dirty;
   };
 
   const handleSubmit = (data: ExperimentFormData) => {
@@ -165,44 +230,58 @@ const EditExperiment = () => {
     setPendingFormData(null);
   };
 
-  const defaultValues: Partial<ExperimentFormData> = {
-    name: "IPL 2024 Experiment",
-    id: "ipl_2024_experiment",
-    hypothesis:
-      "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
-    description:
-      "The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.",
-    tags: ["Label", "Label"],
-    rateLimit: "100%",
-    maxUsers: "",
-    variants: [
-      {
-        name: "Control Group",
-        trafficSplit: "50",
-        variables: [{ key: "", data_type: "", value: "" }],
-        cohorts: [],
-      },
-      {
-        name: "Variant 1",
-        trafficSplit: "50",
-        variables: [{ key: "", data_type: "", value: "" }],
-        cohorts: [],
-      },
-    ],
-    targeting: {
-      filters: [
+  // Transform experiment data to form default values
+  const defaultValues: Partial<ExperimentFormData> = useMemo(() => {
+    if (experiment) {
+      return transformExperimentToFormData(experiment as unknown as Experiment);
+    }
+    // Fallback default values while loading
+    return {
+      name: "",
+      id: "",
+      hypothesis: "",
+      description: "",
+      tags: [],
+      rateLimit: "100%",
+      maxUsers: "",
+      variants: [
         {
-          operand: "app_version",
-          operandDataType: "STRING",
-          operator: "!=",
-          value: "88.88.88",
-          condition: "IF",
+          name: "Control Group",
+          trafficSplit: "50",
+          variables: [{ key: "", data_type: "", value: "" }],
+          cohorts: [],
         },
       ],
-      cohorts: ["Tag1"],
-      isAssignCohortsDirectly: false,
-    },
-  };
+      targeting: {
+        filters: [],
+        cohorts: [],
+        isAssignCohortsDirectly: false,
+      },
+    };
+  }, [experiment]);
+
+  if (isLoadingExperiment) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!experiment) {
+    return (
+      <Box>
+        <Typography>Experiment not found</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>

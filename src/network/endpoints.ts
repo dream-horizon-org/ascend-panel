@@ -5,7 +5,7 @@
  * API Base: /v1 (version 1 of the API)
  */
 
-const API_BASE = "";
+const API_BASE = "http://localhost:8080/v1";
 
 export const endpoints = {
   // Experiment endpoints
