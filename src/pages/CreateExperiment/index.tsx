@@ -15,7 +15,10 @@ import { useEffect, useRef, useState } from "react";
 import AscendTextFieldControlled from "../../components/AscendTextField/AscendTextFieldControlled";
 import VariantsFlow from "./components/VariantsFlow";
 import AscendAutoCompleteControlled from "../../components/AscendAutoComplete/AscendAutoCompleteControlled";
-import { useCreateExperiment } from "../../network/mutations/createExperiment";
+import {
+  useCreateExperiment,
+  transformToRequestBody,
+} from "../../network/mutations/createExperiment";
 
 // Form validation schema
 const experimentSchema = z.object({
@@ -179,87 +182,6 @@ const CreateExperiment = () => {
     // Generate ID: remove spaces, replace with underscore, convert to lowercase
     const generatedId = value.replace(/\s+/g, "_").toLowerCase();
     setValue("id", generatedId, { shouldValidate: false });
-  };
-
-  const transformToRequestBody = (data: ExperimentFormData) => {
-    // Check if cohorts are assigned directly to variants
-    const isAssignCohortsDirectly =
-      data.targeting?.isAssignCohortsDirectly || false;
-    const assignmentType = isAssignCohortsDirectly ? "STRATIFIED" : "COHORT";
-
-    // Build weights object
-    const weights: Record<string, number> = {};
-    data.variants.forEach((variant, index) => {
-      const key = index === 0 ? "control" : `variant${index}`;
-      weights[key] = parseInt(variant.trafficSplit) || 0;
-    });
-
-    // Build variants object
-    const variants: Record<
-      string,
-      {
-        display_name: string;
-        variables: { key: string; value: string; data_type: string }[];
-      }
-    > = {};
-    data.variants.forEach((variant, index) => {
-      const key = index === 0 ? "control" : `variant${index}`;
-
-      const variables = variant.variables
-        .filter((v) => v.key && v.data_type)
-        .map((v) => ({
-          key: v.key,
-          value: v.value,
-          data_type: v.data_type,
-        }));
-
-      variants[key] = {
-        display_name: variant.name,
-        variables: variables,
-      };
-    });
-
-    // Transform filters to rule_attributes - direct 1:1 mapping
-    const rule_attributes =
-      data.targeting?.filters && data.targeting.filters.length > 0
-        ? [
-            {
-              name: "Targeting Rule",
-              conditions: data.targeting.filters.map(
-                ({ operand, operandDataType, operator, value }) => ({
-                  operand,
-                  operandDataType,
-                  operator,
-                  value,
-                }),
-              ),
-            },
-          ]
-        : [];
-
-    // Extract cohorts from targeting
-    const cohorts = data.targeting?.cohorts || [];
-
-    return {
-      name: data.name,
-      experiment_key: data.id,
-      description: data.description || "",
-      hypothesis: data.hypothesis,
-      status: "DRAFT" as const,
-      assignment_domain: assignmentType,
-      distribution_strategy: "RANDOM",
-      cohorts: cohorts,
-      type: "A/B",
-      variant_weights: {
-        weights: weights,
-      },
-      variants: variants,
-      rule_attributes: rule_attributes,
-      exposure: data.rateLimit ? Number(data.rateLimit) : 0,
-      threshold: data.maxUsers ? Number(data.maxUsers) : 0,
-      created_by: "user@example.com",
-      tags: data.tags || [],
-    };
   };
 
   const handleBack = () => {
