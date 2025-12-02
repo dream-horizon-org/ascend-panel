@@ -44,7 +44,7 @@ export default function ExperimentDetails() {
     ? convertVariantsToDisplay(
         experiment.variants,
         experiment.variantWeights,
-        experiment.exposure || 0
+        experiment.exposure || 0,
       )
     : [];
 

@@ -35,7 +35,7 @@ apiClient.interceptors.request.use(
     // Add project key header (required for all requests)
     // const projectKey =
     //   import.meta.env.VITE_PROJECT_KEY || localStorage.getItem("projectKey");
-    const projectKey = "666118b4-a1a5-4849-9837-9f7685a09569"; //Hardcoded project Key remove when merging
+    const projectKey = "550e8400-e29b-41d4-a716-446655440001"; //Hardcoded project Key remove when merging
     if (projectKey && config.headers) {
       config.headers["x-project-key"] = projectKey;
     }
