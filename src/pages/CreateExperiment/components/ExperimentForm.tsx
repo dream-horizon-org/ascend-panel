@@ -1,6 +1,6 @@
 import { Box, Typography, Button } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import { useForm, Control } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState, useEffect, useRef } from "react";
@@ -23,6 +23,8 @@ interface ExperimentFormProps {
   onSubmit: (data: ExperimentFormData) => void;
   onNameChange?: (value: string) => void;
   submitButtonText?: string;
+  isLoading?: boolean;
+  onDiscard?: () => void;
 }
 
 const ExperimentForm = ({
@@ -31,6 +33,8 @@ const ExperimentForm = ({
   onSubmit,
   onNameChange,
   submitButtonText = "Create Experiment",
+  isLoading = false,
+  onDiscard,
 }: ExperimentFormProps) => {
   const [submittedData, setSubmittedData] = useState<ExperimentFormData | null>(
     null
@@ -515,45 +519,102 @@ const ExperimentForm = ({
             gap: 2,
           }}
         >
-          <Button
-            variant="outlined"
-            onClick={handlePreviewRequestBody}
-            sx={{
-              borderColor: "#0060E5",
-              color: "#0060E5",
-              textTransform: "none",
-              fontFamily: "Inter",
-              fontWeight: 600,
-              fontSize: "0.875rem",
-              padding: "0.625rem 2rem",
-              borderRadius: "0.5rem",
-              "&:hover": {
-                borderColor: "#0050C5",
-                backgroundColor: "rgba(0, 96, 229, 0.05)",
-              },
-            }}
-          >
-            Preview Request Body
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleSubmit(handleFormSubmit)}
-            sx={{
-              backgroundColor: "#0060E5",
-              color: "white",
-              textTransform: "none",
-              fontFamily: "Inter",
-              fontWeight: 600,
-              fontSize: "0.875rem",
-              padding: "0.625rem 2rem",
-              borderRadius: "0.5rem",
-              "&:hover": {
-                backgroundColor: "#0050C5",
-              },
-            }}
-          >
-            {submitButtonText}
-          </Button>
+          {isEditMode ? (
+            <>
+              <Button
+                variant="text"
+                onClick={onDiscard}
+                disabled={isLoading}
+                sx={{
+                  color: "#0060E5",
+                  textTransform: "none",
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  padding: "0.625rem 2rem",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 96, 229, 0.05)",
+                  },
+                  "&:disabled": {
+                    color: "#CCCCCC",
+                  },
+                }}
+              >
+                Discard Changes
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleSubmit(handleFormSubmit)}
+                disabled={isLoading}
+                sx={{
+                  backgroundColor: "#0060E5",
+                  color: "white",
+                  textTransform: "none",
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  padding: "0.625rem 2rem",
+                  borderRadius: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#0050C5",
+                  },
+                  "&:disabled": {
+                    backgroundColor: "#CCCCCC",
+                    color: "#666666",
+                  },
+                }}
+              >
+                {isLoading ? "Saving..." : submitButtonText}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="outlined"
+                onClick={handlePreviewRequestBody}
+                sx={{
+                  borderColor: "#0060E5",
+                  color: "#0060E5",
+                  textTransform: "none",
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  padding: "0.625rem 2rem",
+                  borderRadius: "0.5rem",
+                  "&:hover": {
+                    borderColor: "#0050C5",
+                    backgroundColor: "rgba(0, 96, 229, 0.05)",
+                  },
+                }}
+              >
+                Preview Request Body
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleSubmit(handleFormSubmit)}
+                disabled={isLoading}
+                sx={{
+                  backgroundColor: "#0060E5",
+                  color: "white",
+                  textTransform: "none",
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  padding: "0.625rem 2rem",
+                  borderRadius: "0.5rem",
+                  "&:hover": {
+                    backgroundColor: "#0050C5",
+                  },
+                  "&:disabled": {
+                    backgroundColor: "#CCCCCC",
+                    color: "#666666",
+                  },
+                }}
+              >
+                {isLoading ? "Saving..." : submitButtonText}
+              </Button>
+            </>
+          )}
         </Box>
 
         {/* Display Request Body */}

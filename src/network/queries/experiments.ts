@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../apiClient";
 import { endpoints } from "../endpoints";
+import { EditExperimentRequest } from "../mutations/experiments";
 
 // Types
 export interface VariantVariable {
@@ -125,5 +126,34 @@ export const useExperiment = (id: string | number | null) => {
     queryKey: experimentKeys.detail(id!),
     queryFn: () => fetchExperiment(id!),
     enabled: !!id, // Only fetch if id is provided
+  });
+};
+
+export const patchExperiment = async (
+  id: string | number,
+  data: EditExperimentRequest,
+): Promise<ExperimentResponse> => {
+  console.log("PATCH Request to /experiments/" + id, data);
+  const response = await api.patch<ExperimentApiResponse>(
+    endpoints.experiments.update(id),
+    data,
+  );
+  return response.data.data;
+};
+
+export const useEditExperiment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    ExperimentResponse,
+    Error,
+    { id: string | number; data: EditExperimentRequest }
+  >({
+    mutationFn: ({ id, data }) => patchExperiment(id, data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: experimentKeys.detail(variables.id),
+      });
+    },
   });
 };
