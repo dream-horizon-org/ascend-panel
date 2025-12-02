@@ -23,7 +23,8 @@ export interface RuleAttributeInput {
 }
 
 export interface VariantWeightsInput {
-  weights: Record<string, number>;
+  type: string;
+  weights: Record<string, number | string[]>;
 }
 
 export interface CreateExperimentRequest {

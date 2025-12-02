@@ -47,11 +47,17 @@ export const transformToRequestBody = (
     data.targeting?.isAssignCohortsDirectly || false;
   const assignmentType = isAssignCohortsDirectly ? "STRATIFIED" : "COHORT";
 
-  // Build weights object
-  const weights: Record<string, number> = {};
+  // Build weights object based on assignment type
+  const weights: Record<string, number | string[]> = {};
   data.variants.forEach((variant, index) => {
     const key = index === 0 ? "control" : `variant${index}`;
-    weights[key] = parseInt(variant.trafficSplit) || 0;
+    if (assignmentType === "STRATIFIED") {
+      // For STRATIFIED, use variant's cohorts array
+      weights[key] = variant.cohorts || [];
+    } else {
+      // For COHORT, use trafficSplit percentage
+      weights[key] = parseInt(variant.trafficSplit) || 0;
+    }
   });
 
   // Build variants object
@@ -111,6 +117,7 @@ export const transformToRequestBody = (
     cohorts: cohorts,
     type: "A/B",
     variant_weights: {
+      type: assignmentType,
       weights: weights,
     },
     variants: variants,
