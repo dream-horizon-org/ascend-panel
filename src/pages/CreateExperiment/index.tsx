@@ -269,8 +269,8 @@ const CreateExperiment = () => {
   const onSubmit = (data: ExperimentFormData) => {
     const requestBody = transformToRequestBody(data);
     createExperimentMutation.mutate(requestBody, {
-      onSuccess: (experiment) => {
-        navigate(`/experiments/${experiment.experimentId}`);
+      onSuccess: (response) => {
+        navigate(`/experiments/${response.experiment_id}`);
       },
     });
   };

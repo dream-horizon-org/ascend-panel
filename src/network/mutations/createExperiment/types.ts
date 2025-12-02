@@ -45,6 +45,9 @@ export interface CreateExperimentRequest {
   tags: string[];
 }
 
-// Response types - reuse Experiment from queries
-export { Experiment as CreateExperimentResponse } from "../../queries/getExperimentDetails/types";
+// Response type for Create Experiment API
+export interface CreateExperimentResponse {
+  experiment_id: string;
+  status: boolean;
+}
 
