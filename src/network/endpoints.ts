@@ -12,7 +12,7 @@ export const endpoints = {
   experiments: {
     list: `${API_BASE}/experiments`,
     detail: (id: string | number) => `${API_BASE}/experiments/${id}`,
-    create: `${API_BASE}/experiments`,
+    create: `${API_BASE}/experiment`, // POST to singular endpoint
     update: (id: string | number) => `${API_BASE}/experiments/${id}`,
     clone: (id: string | number) => `${API_BASE}/experiments/${id}/clone`,
     terminate: (id: string | number) => `${API_BASE}/experiments/${id}`,

@@ -2,6 +2,10 @@ import { Box, IconButton, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router";
 import { z } from "zod";
+import {
+  useCreateExperiment,
+  transformToRequestBody,
+} from "../../network/mutations/createExperiment";
 import ExperimentForm from "./components/ExperimentForm";
 import { experimentSchema } from "./schema";
 
@@ -9,13 +13,19 @@ type ExperimentFormData = z.infer<typeof experimentSchema>;
 
 const CreateExperiment = () => {
   const navigate = useNavigate();
+  const createExperimentMutation = useCreateExperiment();
 
   const handleBack = () => {
     navigate(-1);
   };
 
-  const handleSubmit = (data: ExperimentFormData) => {
-    console.log("Form submitted:", data);
+  const onSubmit = (data: ExperimentFormData) => {
+    const requestBody = transformToRequestBody(data);
+    createExperimentMutation.mutate(requestBody, {
+      onSuccess: (response) => {
+        navigate(`/experiments/${response.experiment_id}`);
+      },
+    });
   };
 
   return (
@@ -54,7 +64,7 @@ const CreateExperiment = () => {
 
       <ExperimentForm
         isEditMode={false}
-        onSubmit={handleSubmit}
+        onSubmit={onSubmit}
         submitButtonText="Create Experiment"
       />
     </Box>
