@@ -17,4 +17,4 @@ export { queryClient } from "./queryClient";
 export * from "./queries";
 
 // Mutations
-export * from "./mutations/experiments";
+export * from "./mutations";
