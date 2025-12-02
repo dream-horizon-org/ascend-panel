@@ -9,15 +9,19 @@ export { experimentKeys } from "./sharedKeys";
 // Get Experiments List
 export {
   fetchExperiments,
+  useExperiments,
   useExperimentsList,
+  fetchTags,
+  useTags,
 } from "./getExperimentsList";
-export type { ExperimentsResponse } from "./getExperimentsList";
+export type {
+  ExperimentsResponse,
+  ExperimentFilters,
+  Pagination,
+} from "./getExperimentsList";
 
 // Get Experiment Details
-export {
-  fetchExperiment,
-  useExperiment,
-} from "./getExperimentDetails";
+export { fetchExperiment, useExperiment } from "./getExperimentDetails";
 export type {
   VariantVariable,
   Variant,
@@ -29,4 +33,3 @@ export type {
   ExperimentApiResponse,
   ExperimentResponse,
 } from "./getExperimentDetails";
-

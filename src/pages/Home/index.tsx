@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Box,
   Typography,
@@ -12,8 +12,10 @@ import {
   Chip,
   IconButton,
   Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { useNavigate } from "react-router";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import AddIcon from "@mui/icons-material/Add";
 import { TableVirtuoso, TableComponents } from "react-virtuoso";
@@ -22,18 +24,15 @@ import AscendButton from "../../components/AscendButton/AscendButton";
 import AscendDropdown from "../../components/AscendDropdown/AscendDropdown";
 import AscendMenu from "../../components/AscendMenu/AscendMenu";
 import AscendMenuItem from "../../components/AscendMenuItem/AscendMenuItem";
-import experimentsDataJson from "../../data/experiments.json";
-
-interface ExperimentData {
-  experimentId: string;
-  name: string;
-  status: string;
-  tags: string[];
-  updatedAt: string;
-}
+import {
+  useTags,
+  useExperiments,
+  Experiment,
+  ExperimentFilters,
+} from "../../network";
 
 interface ColumnData {
-  dataKey: keyof ExperimentData | "actions";
+  dataKey: keyof Experiment | "actions";
   label: string;
   width: string;
 }
@@ -48,24 +47,12 @@ const COLUMNS: ColumnData[] = [
 ];
 
 const STATUS_OPTIONS = ["LIVE", "PAUSED", "DRAFT", "CONCLUDED", "TERMINATED"];
-const TAG_OPTIONS = [
-  "ML",
-  "A/B Test",
-  "Mobile",
-  "High Priority",
-  "Marketing",
-  "UX",
-  "Backend",
-  "Frontend",
-  "Analytics",
-];
-
-const experiments = (experimentsDataJson as any).data
-  .experiments as ExperimentData[];
+const DEFAULT_PAGE_SIZE = 20;
 
 const createTableComponents = (
   theme: any,
-): TableComponents<ExperimentData> => ({
+  onRowClick: (experiment: Experiment) => void,
+): TableComponents<Experiment> => ({
   Scroller: React.forwardRef<HTMLDivElement>((props, ref) => (
     <TableContainer
       component={Paper}
@@ -96,13 +83,24 @@ const createTableComponents = (
   TableHead: React.forwardRef<HTMLTableSectionElement>((props, ref) => (
     <TableHead {...props} ref={ref} />
   )),
-  TableRow,
+  TableRow: ({ item, ...props }) => (
+    <TableRow
+      {...props}
+      onClick={() => onRowClick(item)}
+      sx={{
+        cursor: "pointer",
+        "&:hover": {
+          backgroundColor: theme.palette.action.hover,
+        },
+      }}
+    />
+  ),
   TableBody: React.forwardRef<HTMLTableSectionElement>((props, ref) => (
     <TableBody {...props} ref={ref} />
   )),
 });
 
-const RowActionsMenu: React.FC<{ row: ExperimentData }> = ({ row }) => {
+const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -113,9 +111,14 @@ const RowActionsMenu: React.FC<{ row: ExperimentData }> = ({ row }) => {
     handleClose();
   };
 
+  const handleMenuClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent row click navigation
+    setAnchorEl(e.currentTarget as HTMLElement);
+  };
+
   return (
     <>
-      <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)}>
+      <IconButton size="small" onClick={handleMenuClick}>
         <MoreHorizIcon />
       </IconButton>
       <AscendMenu
@@ -295,88 +298,169 @@ const TableHeader = () => (
   </TableRow>
 );
 
-const createRowContent =
-  (theme: any) => (_index: number, row: ExperimentData) => (
-    <React.Fragment>
-      {COLUMNS.map((column) => {
-        if (column.dataKey === "experimentId")
-          return (
-            <CellWithTooltip
-              key={column.dataKey}
-              text={row.experimentId}
-              width={column.width}
-            />
-          );
-        if (column.dataKey === "name")
-          return (
-            <CellWithTooltip
-              key={column.dataKey}
-              text={row.name}
-              width={column.width}
-            />
-          );
-        if (column.dataKey === "status") {
-          return (
-            <TableCell key={column.dataKey} sx={{ width: column.width }}>
-              <StatusChip status={row.status} theme={theme} />
-            </TableCell>
-          );
-        }
-        if (column.dataKey === "tags") {
-          return (
-            <TableCell
-              key={column.dataKey}
-              sx={{ width: column.width, overflow: "hidden" }}
-            >
-              <TagsCell tags={row.tags} theme={theme} />
-            </TableCell>
-          );
-        }
-        if (column.dataKey === "actions") {
-          return (
-            <TableCell
-              key={column.dataKey}
-              align="center"
-              sx={{ width: column.width }}
-            >
-              <RowActionsMenu row={row} />
-            </TableCell>
-          );
-        }
-        if (column.dataKey === "updatedAt") {
-          const formattedDate = new Date(row.updatedAt).toLocaleDateString(
-            "en-US",
-            {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-            },
-          );
-          return (
-            <TableCell key={column.dataKey} sx={{ width: column.width }}>
-              {formattedDate}
-            </TableCell>
-          );
-        }
+const createRowContent = (theme: any) => (_index: number, row: Experiment) => (
+  <React.Fragment>
+    {COLUMNS.map((column) => {
+      if (column.dataKey === "experimentId")
+        return (
+          <CellWithTooltip
+            key={column.dataKey}
+            text={row.experimentId}
+            width={column.width}
+          />
+        );
+      if (column.dataKey === "name")
+        return (
+          <CellWithTooltip
+            key={column.dataKey}
+            text={row.name}
+            width={column.width}
+          />
+        );
+      if (column.dataKey === "status") {
         return (
           <TableCell key={column.dataKey} sx={{ width: column.width }}>
-            {row[column.dataKey as keyof ExperimentData]}
+            <StatusChip status={row.status} theme={theme} />
           </TableCell>
         );
-      })}
-    </React.Fragment>
-  );
+      }
+      if (column.dataKey === "tags") {
+        return (
+          <TableCell
+            key={column.dataKey}
+            sx={{ width: column.width, overflow: "hidden" }}
+          >
+            <TagsCell tags={row.tags} theme={theme} />
+          </TableCell>
+        );
+      }
+      if (column.dataKey === "actions") {
+        return (
+          <TableCell
+            key={column.dataKey}
+            align="center"
+            sx={{ width: column.width }}
+          >
+            <RowActionsMenu row={row} />
+          </TableCell>
+        );
+      }
+      if (column.dataKey === "updatedAt") {
+        const formattedDate = new Date(row.updatedAt).toLocaleDateString(
+          "en-US",
+          {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          },
+        );
+        return (
+          <TableCell key={column.dataKey} sx={{ width: column.width }}>
+            {formattedDate}
+          </TableCell>
+        );
+      }
+      return (
+        <TableCell key={column.dataKey} sx={{ width: column.width }}>
+          {String(row[column.dataKey as keyof Experiment] ?? "")}
+        </TableCell>
+      );
+    })}
+  </React.Fragment>
+);
 
 const Home: React.FC = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const [searchText, setSearchText] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [tagsFilter, setTagsFilter] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const hasFilters = statusFilter.length > 0 || tagsFilter.length > 0;
+  // Fetch tags from API
+  const { data: tagsData, isLoading: isTagsLoading } = useTags();
+  const tagOptions = tagsData ?? [];
+
+  // Build filter params for API - comma-separated values for status and tag
+  const filterParams = useMemo<ExperimentFilters>(() => {
+    const params: ExperimentFilters = {
+      limit: DEFAULT_PAGE_SIZE,
+      page: currentPage,
+    };
+
+    if (searchText.trim()) {
+      params.name = searchText.trim();
+    }
+
+    // Comma-separated status values
+    if (statusFilter.length > 0) {
+      params.status = statusFilter.join(",");
+    }
+
+    // Comma-separated tag values
+    if (tagsFilter.length > 0) {
+      params.tag = tagsFilter.join(",");
+    }
+
+    return params;
+  }, [searchText, statusFilter, tagsFilter, currentPage]);
+
+  // Fetch experiments from API
+  const {
+    data: experimentsData,
+    isLoading,
+    isError,
+    error,
+  } = useExperiments(filterParams);
+
+  const experiments = experimentsData?.experiments ?? [];
+  const pagination = experimentsData?.pagination;
+
+  const hasFilters =
+    searchText.trim() !== "" ||
+    statusFilter.length > 0 ||
+    tagsFilter.length > 0;
+
   const clearFilters = () => {
+    setSearchText("");
     setStatusFilter([]);
     setTagsFilter([]);
+    setCurrentPage(1);
   };
+
+  const handleCreateExperiment = () => {
+    navigate("/create-experiment");
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+    setCurrentPage(1); // Reset to first page on search
+  };
+
+  const handleStatusChange = (value: string | string[]) => {
+    setStatusFilter(value as string[]);
+    setCurrentPage(1); // Reset to first page on filter change
+  };
+
+  const handleTagsChange = (value: string | string[]) => {
+    setTagsFilter(value as string[]);
+    setCurrentPage(1); // Reset to first page on filter change
+  };
+
+  const handleRowClick = (experiment: Experiment) => {
+    navigate(`/experiment/${experiment.experimentId}`, {
+      state: {
+        experimentId: experiment.experimentId,
+        projectKey: experiment.projectKey,
+      },
+    });
+  };
+
+  // Memoize table components to prevent unnecessary re-renders
+  const tableComponents = useMemo(
+    () => createTableComponents(theme, handleRowClick),
+    [theme],
+  );
 
   return (
     <Box
@@ -405,6 +489,8 @@ const Home: React.FC = () => {
             size="small"
             variant="standard"
             placeholder="Search experiments..."
+            value={searchText}
+            onChange={handleSearchChange}
           />
         </Box>
 
@@ -423,7 +509,7 @@ const Home: React.FC = () => {
             placeholder="Select status"
             options={STATUS_OPTIONS}
             value={statusFilter}
-            onChange={(value) => setStatusFilter(value as string[])}
+            onChange={handleStatusChange}
             showCount
           />
           <AscendDropdown
@@ -431,13 +517,18 @@ const Home: React.FC = () => {
             size="md"
             borderRadius="lg"
             label="Tags"
-            placeholder="Select tags"
-            options={TAG_OPTIONS}
+            placeholder={isTagsLoading ? "Loading..." : "Select tags"}
+            options={tagOptions}
             value={tagsFilter}
-            onChange={(value) => setTagsFilter(value as string[])}
+            onChange={handleTagsChange}
             showCount
+            disabled={isTagsLoading}
           />
-          <AscendButton startIcon={<AddIcon />} size="small">
+          <AscendButton
+            startIcon={<AddIcon />}
+            size="small"
+            onClick={handleCreateExperiment}
+          >
             Experiment
           </AscendButton>
         </Box>
@@ -445,12 +536,104 @@ const Home: React.FC = () => {
 
       {/* Table */}
       <Box sx={{ flexGrow: 1, height: "calc(100vh - 200px)" }}>
-        <TableVirtuoso
-          data={experiments}
-          components={createTableComponents(theme)}
-          fixedHeaderContent={TableHeader}
-          itemContent={createRowContent(theme)}
-        />
+        {isLoading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : isError ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              flexDirection: "column",
+              gap: 2,
+            }}
+          >
+            <Typography color="error">
+              Failed to load experiments: {error?.message || "Unknown error"}
+            </Typography>
+            <AscendButton
+              variant="outlined"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </AscendButton>
+          </Box>
+        ) : experiments.length === 0 ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              flexDirection: "column",
+              gap: 2,
+            }}
+          >
+            <Typography color="text.secondary">
+              {hasFilters
+                ? "No experiments match your filters"
+                : "No experiments found"}
+            </Typography>
+            {hasFilters && (
+              <AscendButton variant="text" onClick={clearFilters}>
+                Clear Filters
+              </AscendButton>
+            )}
+          </Box>
+        ) : (
+          <>
+            <TableVirtuoso
+              data={experiments}
+              components={tableComponents}
+              fixedHeaderContent={TableHeader}
+              itemContent={createRowContent(theme)}
+            />
+            {pagination && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mt: 2,
+                  px: 1,
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  Showing {experiments.length} of {pagination.totalCount}{" "}
+                  experiments
+                </Typography>
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <AscendButton
+                    variant="outlined"
+                    size="small"
+                    disabled={currentPage <= 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  >
+                    Previous
+                  </AscendButton>
+                  <AscendButton
+                    variant="outlined"
+                    size="small"
+                    disabled={!pagination.hasNext}
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                  >
+                    Next
+                  </AscendButton>
+                </Box>
+              </Box>
+            )}
+          </>
+        )}
       </Box>
     </Box>
   );
