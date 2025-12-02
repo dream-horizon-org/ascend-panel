@@ -30,13 +30,6 @@ export interface ExperimentsResponse {
   pagination: Pagination;
 }
 
-// Tags API response
-export interface TagsApiResponse {
-  data: {
-    tags: string[];
-  };
-}
-
 // Raw API response types (snake_case - as received from API)
 export interface RawExperiment {
   experiment_id: string;

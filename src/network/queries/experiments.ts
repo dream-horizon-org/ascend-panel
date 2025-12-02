@@ -8,8 +8,6 @@ export {
   fetchExperiments,
   useExperiments,
   useExperimentsList,
-  fetchTags,
-  useTags,
 } from "./getExperimentsList";
 export type {
   ExperimentsResponse,
@@ -31,6 +29,9 @@ export type {
   ExperimentResponse,
 } from "./getExperimentDetails";
 
+// Get Tags
+export { fetchTags, useTags } from "./getTags";
+export type { TagsResponse } from "./getTags";
+
 // Shared keys
 export { experimentKeys } from "./sharedKeys";
-

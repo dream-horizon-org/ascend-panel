@@ -11,8 +11,6 @@ export {
   fetchExperiments,
   useExperiments,
   useExperimentsList,
-  fetchTags,
-  useTags,
 } from "./getExperimentsList";
 export type {
   ExperimentsResponse,
@@ -33,3 +31,7 @@ export type {
   ExperimentApiResponse,
   ExperimentResponse,
 } from "./getExperimentDetails";
+
+// Get Tags
+export { fetchTags, useTags } from "./getTags";
+export type { TagsResponse } from "./getTags";
