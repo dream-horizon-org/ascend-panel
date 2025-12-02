@@ -38,7 +38,7 @@ export const calculateDays = (startTime?: number, endTime?: number): number => {
 };
 
 export const mapStatus = (
-  status: string
+  status: string,
 ): { label: string; color: "active" | "inactive" | "draft" } => {
   const statusMap: Record<
     string,
@@ -55,7 +55,7 @@ export const mapStatus = (
 export const convertVariantsToDisplay = (
   variants: Record<string, any>,
   variantWeights: any,
-  exposure: number
+  exposure: number,
 ): Variant[] => {
   const variantArray: Variant[] = [];
   const colors = ["#1976d2", "#d32f2f", "#388e3c", "#f57c00", "#7b1fa2"];

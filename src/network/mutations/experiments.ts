@@ -57,16 +57,6 @@ export const updateExperiment = async (
   return response.data.data;
 };
 
-export const deleteExperiment = async (
-  id: string | number,
-): Promise<{ message: string }> => {
-  const response = await api.delete<{ data: { message: string } }>(
-    endpoints.experiments.delete(id),
-  );
-  // API might return wrapped response
-  return response.data.data || response.data;
-};
-
 export const concludeExperiment = async (
   id: string | number,
   data: ConcludeExperimentRequest,
@@ -74,16 +64,6 @@ export const concludeExperiment = async (
   const response = await api.post<ExperimentMutationApiResponse>(
     endpoints.experiments.declareWinner(id),
     data,
-  );
-  // API returns experiment wrapped in { data: Experiment }
-  return response.data.data;
-};
-
-export const cloneExperiment = async (
-  id: string | number,
-): Promise<ExperimentMutationResponse> => {
-  const response = await api.post<ExperimentMutationApiResponse>(
-    endpoints.experiments.clone(id),
   );
   // API returns experiment wrapped in { data: Experiment }
   return response.data.data;
@@ -153,23 +133,6 @@ export const useUpdateExperiment = (
   });
 };
 
-export const useDeleteExperiment = (
-  options?: Omit<
-    UseMutationOptions<{ message: string }, Error, string | number>,
-    "mutationFn"
-  >,
-) => {
-  const queryClient = useQueryClient();
-
-  return useMutation<{ message: string }, Error, string | number>({
-    mutationFn: deleteExperiment,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: experimentKeys.lists() });
-    },
-    ...options,
-  });
-};
-
 export const useConcludeExperiment = (
   options?: Omit<
     UseMutationOptions<
@@ -192,23 +155,6 @@ export const useConcludeExperiment = (
       queryClient.invalidateQueries({
         queryKey: experimentKeys.detail(variables.id),
       });
-      queryClient.invalidateQueries({ queryKey: experimentKeys.lists() });
-    },
-    ...options,
-  });
-};
-
-export const useCloneExperiment = (
-  options?: Omit<
-    UseMutationOptions<ExperimentMutationResponse, Error, string | number>,
-    "mutationFn"
-  >,
-) => {
-  const queryClient = useQueryClient();
-
-  return useMutation<ExperimentMutationResponse, Error, string | number>({
-    mutationFn: cloneExperiment,
-    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: experimentKeys.lists() });
     },
     ...options,

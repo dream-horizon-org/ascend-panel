@@ -1,4 +1,4 @@
-import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "../apiClient";
 import { endpoints } from "../endpoints";
 
@@ -113,33 +113,17 @@ export const fetchExperiment = async (
 };
 
 // React Query hooks
-export const useExperiments = (
-  params?: Record<string, any>,
-  options?: Omit<
-    UseQueryOptions<ExperimentsResponse, Error>,
-    "queryKey" | "queryFn"
-  >,
-) => {
+export const useExperimentsList = (params?: Record<string, any>) => {
   return useQuery<ExperimentsResponse, Error>({
     queryKey: experimentKeys.list(params),
     queryFn: () => fetchExperiments(params),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    ...options,
   });
 };
 
-export const useExperiment = (
-  id: string | number | null,
-  options?: Omit<
-    UseQueryOptions<ExperimentResponse, Error>,
-    "queryKey" | "queryFn"
-  >,
-) => {
+export const useExperiment = (id: string | number | null) => {
   return useQuery<ExperimentResponse, Error>({
     queryKey: experimentKeys.detail(id!),
     queryFn: () => fetchExperiment(id!),
     enabled: !!id, // Only fetch if id is provided
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    ...options,
   });
 };

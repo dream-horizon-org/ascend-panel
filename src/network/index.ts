@@ -14,7 +14,6 @@ export type { Endpoints } from "./endpoints";
 export { queryClient } from "./queryClient";
 
 // Queries
-export * from "./queries/users";
 export * from "./queries/experiments";
 
 // Mutations
