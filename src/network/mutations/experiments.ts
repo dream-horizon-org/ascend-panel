@@ -77,56 +77,6 @@ export interface UpdateExperimentRequest {
   updated_by?: string;
 }
 
-export interface EditExperimentRequest {
-  name: string;
-  experiment_key: string;
-  metrics: {
-    primary: string[];
-    secondary: string[];
-  };
-  tags: string[];
-  owner: string[];
-  description: string;
-  hypothesis: string;
-  status: string;
-  type: string;
-  assignment_domain: string;
-  distribution_strategy: string;
-  guardrail_health_status: string;
-  cohorts: string[];
-  variant_weights: {
-    type: string;
-  };
-  variants: Record<
-    string,
-    {
-      display_name: string;
-      variables: Array<{
-        data_type: string;
-        value: string;
-        key: string;
-      }>;
-    }
-  >;
-  rule_attributes: Array<{
-    name: string;
-    conditions: Array<{
-      operand: string;
-      operandDataType: string;
-      operator: string;
-      value: string;
-    }>;
-  }>;
-  overrides: string[];
-  winning_variant: {
-    variant_name: string;
-  };
-  exposure: number;
-  threshold: number;
-  start_time: number;
-  end_time: number;
-  updated_by: string;
-}
 
 export interface ConcludeExperimentRequest {
   status: "CONCLUDED";
@@ -315,43 +265,3 @@ export const useTerminateExperiment = (
   });
 };
 
-export const editExperiment = async (
-  id: string | number,
-  data: EditExperimentRequest,
-): Promise<ExperimentMutationResponse> => {
-  const response = await api.put<ExperimentMutationApiResponse>(
-    endpoints.experiments.update(id),
-    data,
-  );
-  // API returns experiment wrapped in { data: Experiment }
-  return response.data.data;
-};
-
-// React Query mutation hook for editing experiment
-export const useEditExperiment = (
-  options?: Omit<
-    UseMutationOptions<
-      ExperimentMutationResponse,
-      Error,
-      { id: string | number; data: EditExperimentRequest }
-    >,
-    "mutationFn"
-  >,
-) => {
-  const queryClient = useQueryClient();
-
-  return useMutation<
-    ExperimentMutationResponse,
-    Error,
-    { id: string | number; data: EditExperimentRequest }
-  >({
-    mutationFn: ({ id, data }) => editExperiment(id, data),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: experimentKeys.detail(variables.id),
-      });
-      queryClient.invalidateQueries({ queryKey: experimentKeys.lists() });
-    },
-    ...options,
-  });
-};

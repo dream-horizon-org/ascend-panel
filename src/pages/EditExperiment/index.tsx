@@ -12,12 +12,9 @@ import { useState, useMemo } from "react";
 import { z } from "zod";
 import ExperimentForm from "../CreateExperiment/components/ExperimentForm";
 import { experimentSchema } from "../CreateExperiment/schema";
-import {
-  useEditExperiment,
-  useExperiment,
-} from "../../network/queries/experiments";
-import { UpdateExperimentRequest } from "../../network/mutations/experiments";
-import { Experiment } from "../../network/queries/experiments";
+import { useExperiment } from "../../network/queries";
+import { useUpdateExperiment, UpdateExperimentRequest } from "../../network/mutations";
+import { Experiment } from "../../network/queries";
 import AscendModal from "../../components/AscendModal/AscendModal";
 
 type ExperimentFormData = z.infer<typeof experimentSchema>;
@@ -25,56 +22,8 @@ type ExperimentFormData = z.infer<typeof experimentSchema>;
 const EditExperiment = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const editExperimentMutation = useEditExperiment();
-  //   const { data: experiment, isLoading: isLoadingExperiment } = useExperiment(id || null);
-  const { data: experiment, isLoading: isLoadingExperiment } = {
-    data: {
-      name: "Test Experiment",
-      key: "test-experiment",
-      description: "This is a test experiment",
-      tags: ["test", "experiment"],
-      exposure: 100,
-      threshold: 50000,
-      experimentId: "123",
-      projectKey: "test-project",
-      hypothesis: "This is a test hypothesis",
-      status: "LIVE",
-      type: "A/B",
-      assignmentDomain: "STRATIFIED",
-      distributionStrategy: "RANDOM",
-      guardrailHealthStatus: "PASSED",
-      cohorts: ["test-cohort"],
-      variantWeights: {
-        type: "WEIGHTED",
-        weights: {
-          "test-variant": 50,
-        },
-      },
-      variants: {
-        "test-variant": {
-          display_name: "Test Variant",
-          variables: [
-            { key: "test-variable", dataType: "STRING", value: "test-value" },
-          ],
-        },
-      },
-      ruleAttributes: [
-        {
-          name: "Test Rule",
-          conditions: [
-            {
-              operand: "IF",
-              operandDataType: "STRING",
-              operator: "EQUALS",
-              value: "test-value",
-            },
-          ],
-        },
-      ],
-      overrides: [],
-    },
-    isLoading: false,
-  };
+  const editExperimentMutation = useUpdateExperiment();
+  const { data: experiment, isLoading: isLoadingExperiment } = useExperiment(id || null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [discardModalOpen, setDiscardModalOpen] = useState(false);
   const [pendingFormData, setPendingFormData] =
