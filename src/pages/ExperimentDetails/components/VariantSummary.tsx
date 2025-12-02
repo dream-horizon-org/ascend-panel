@@ -114,7 +114,9 @@ export default function VariantSummary({ variants }: { variants: Variant[] }) {
                   padding: "0.75rem",
                 }}
               >
-                {variant.userCount.toLocaleString()}
+                {variant.userCount === "NA"
+                  ? "NA"
+                  : variant.userCount.toLocaleString()}
               </TableCell>
             </TableRow>
           ))}

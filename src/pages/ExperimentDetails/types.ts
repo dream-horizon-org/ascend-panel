@@ -30,5 +30,5 @@ export type Variant = {
   name: string;
   color: string;
   percentage: number;
-  userCount: number;
+  userCount: number | "NA";
 };

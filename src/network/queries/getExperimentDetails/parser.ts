@@ -70,6 +70,7 @@ interface ApiExperiment {
   updated_at: string;
   tags?: string[];
   owners?: string[];
+  variant_counts?: Record<string, number>;
 }
 
 interface ApiExperimentResponse {
@@ -156,6 +157,7 @@ const parseExperiment = (apiExperiment: ApiExperiment): Experiment => {
     updatedAt: apiExperiment.updated_at,
     tags: apiExperiment.tags || [],
     owners: apiExperiment.owners || [],
+    variantCounts: apiExperiment.variant_counts,
   };
 };
 

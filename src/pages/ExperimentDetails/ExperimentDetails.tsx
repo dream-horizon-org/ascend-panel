@@ -43,7 +43,7 @@ export default function ExperimentDetails() {
     ? convertVariantsToDisplay(
         experiment.variants,
         experiment.variantWeights,
-        experiment.exposure || 0,
+        experiment.variantCounts,
       )
     : [];
 
@@ -101,8 +101,13 @@ export default function ExperimentDetails() {
     return <ErrorPage errorMessage="Experiment not found" severity="warning" />;
   }
 
-  const currentUsers = experiment.exposure || 0;
-  const targetUsers = experiment.threshold || 0;
+  // Calculate current users from variantCounts if available, otherwise show NA
+  const currentUsers: number | "NA" = experiment.variantCounts
+    ? Object.values(experiment.variantCounts).reduce(
+        (sum, count) => sum + count,
+        0,
+      )
+    : "NA";
   const duration = calculateDays(experiment.startTime, experiment.endTime);
   const lastModified = formatDate(experiment.updatedAt);
   const statusInfo = mapStatus(experiment.status);
@@ -147,7 +152,7 @@ export default function ExperimentDetails() {
                 mb: 1,
               }}
             >
-              Current / Targetted Users
+              Current Users
             </Typography>
             <Typography
               sx={{
@@ -157,7 +162,7 @@ export default function ExperimentDetails() {
                 color: theme.palette.text.primary,
               }}
             >
-              {formatNumber(currentUsers)} / {formatNumber(targetUsers)}
+              {currentUsers === "NA" ? "NA" : formatNumber(currentUsers)}
             </Typography>
           </Paper>
 
