@@ -5,7 +5,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+import { PowerSettingsNew as PowerSettingsNewIcon } from "@mui/icons-material";
 
 export default function AppBar() {
   const theme = useTheme();
