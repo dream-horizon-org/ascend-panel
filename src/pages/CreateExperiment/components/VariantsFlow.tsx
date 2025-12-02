@@ -414,30 +414,39 @@ const nodeTypes = {
   variant: VariantNode,
 };
 
-// Auto-generate edges based on number of variants
-const generateEdges = (variants: number) => {
+const generateEdges = (variants: number, isAssignCohortsDirectly: boolean) => {
   const edges = [];
 
   for (let i = 0; i < variants; i++) {
-    const splitId = `split-${i + 1}`;
     const variantId = i === 0 ? "control" : `variant-${i}`;
 
-    // Targeting to split (curved)
-    edges.push({
-      id: `e-targeting-${splitId}`,
-      source: "targeting",
-      target: splitId,
-      style: { stroke: "#DADADD", strokeWidth: 2 },
-    });
+    if (isAssignCohortsDirectly) {
+      edges.push({
+        id: `e-targeting-${variantId}`,
+        source: "targeting",
+        target: variantId,
+        style: { stroke: "#DADADD", strokeWidth: 2 },
+      });
+    } else {
+      const splitId = `split-${i + 1}`;
 
-    // Split to variant (straight line)
-    edges.push({
-      id: `e-${splitId}-${variantId}`,
-      source: splitId,
-      target: variantId,
-      type: "straight",
-      style: { stroke: "#DADADD", strokeWidth: 2 },
-    });
+      // Targeting to split (curved)
+      edges.push({
+        id: `e-targeting-${splitId}`,
+        source: "targeting",
+        target: splitId,
+        style: { stroke: "#DADADD", strokeWidth: 2 },
+      });
+
+      // Split to variant (straight line)
+      edges.push({
+        id: `e-${splitId}-${variantId}`,
+        source: splitId,
+        target: variantId,
+        type: "straight",
+        style: { stroke: "#DADADD", strokeWidth: 2 },
+      });
+    }
   }
 
   return edges;
@@ -448,12 +457,18 @@ interface VariantsFlowProps {
 }
 
 export default function VariantsFlow({ control }: VariantsFlowProps) {
-  // Track if traffic splits have been manually edited
   const [isTrafficEdited, setIsTrafficEdited] = useState(false);
-  // Track if we need to redistribute traffic after adding a variant
+
   const shouldRedistribute = useRef(false);
   const [parentModalOpen, setParentModalOpen] = useState(false);
   const [childModalOpen, setChildModalOpen] = useState(false);
+
+  const { field: isAssignCohortsDirectlyField } = useController({
+    control,
+    name: "targeting.isAssignCohortsDirectly",
+    defaultValue: false,
+  });
+  const isAssignCohortsDirectly = isAssignCohortsDirectlyField.value;
 
   const handleParentModalOpen = () => {
     setParentModalOpen(true);
@@ -580,6 +595,7 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     const generateNodesWithHandlers = (
       variantsConfig: any[],
       handleTrafficSplitChange: (index: number, value: string) => void,
+      isAssignCohortsDirectly: boolean,
     ) => {
       const COLUMN_GAP = 300;
       const MIN_SPACING = 80;
@@ -618,24 +634,28 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
         const variablesLength = config.variables?.length || 1;
         const cardHeight = BASE_HEIGHT + variablesLength * ROW_HEIGHT;
 
-        nodes.push({
-          id: `split-${i + 1}`,
-          type: "trafficSplit",
-          position: {
-            x: START_X + COLUMN_GAP,
-            y: currentY + cardHeight / 2 - 6,
-          },
-          data: {
-            percentage: config.trafficSplit || "",
-            onChange: (value: string) => handleTrafficSplitChange(i, value),
-            onBlur: () => handleTrafficBlur(i),
-          },
-        });
+        if (!isAssignCohortsDirectly) {
+          nodes.push({
+            id: `split-${i + 1}`,
+            type: "trafficSplit",
+            position: {
+              x: START_X + COLUMN_GAP,
+              y: currentY + cardHeight / 2 - 6,
+            },
+            data: {
+              percentage: config.trafficSplit || "",
+              onChange: (value: string) => handleTrafficSplitChange(i, value),
+              onBlur: () => handleTrafficBlur(i),
+            },
+          });
+        }
+
+        const variantXPosition = START_X + COLUMN_GAP * 2;
 
         nodes.push({
           id: i === 0 ? "control" : `variant-${i}`,
           type: "variant",
-          position: { x: START_X + COLUMN_GAP * 2, y: currentY },
+          position: { x: variantXPosition, y: currentY },
           data: {
             name: config.name,
             variables: config.variables || [
@@ -733,7 +753,11 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
       return nodes;
     };
 
-    return generateNodesWithHandlers(variantsConfig, handleTrafficSplitChange);
+    return generateNodesWithHandlers(
+      variantsConfig,
+      handleTrafficSplitChange,
+      isAssignCohortsDirectly,
+    );
   }, [
     variantsConfig,
     variantFields,
@@ -742,11 +766,12 @@ export default function VariantsFlow({ control }: VariantsFlowProps) {
     handleTrafficSplitChange,
     handleTrafficBlur,
     isTrafficEdited,
+    isAssignCohortsDirectly,
   ]);
 
   const edges = useMemo(
-    () => generateEdges(variantsConfig.length),
-    [variantsConfig.length],
+    () => generateEdges(variantsConfig.length, isAssignCohortsDirectly),
+    [variantsConfig.length, isAssignCohortsDirectly],
   );
 
   // Calculate canvas height dynamically
