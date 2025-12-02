@@ -128,4 +128,3 @@ export const transformToRequestBody = (
     tags: data.tags || [],
   };
 };
-

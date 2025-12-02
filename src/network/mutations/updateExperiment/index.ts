@@ -41,5 +41,7 @@ export const useUpdateExperiment = () => {
 };
 
 // Export types
-export type { UpdateExperimentRequest, UpdateExperimentResponse } from "./types";
-
+export type {
+  UpdateExperimentRequest,
+  UpdateExperimentResponse,
+} from "./types";

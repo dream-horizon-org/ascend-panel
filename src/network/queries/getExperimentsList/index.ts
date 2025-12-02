@@ -28,4 +28,3 @@ export const useExperimentsList = (params?: Record<string, any>) => {
 
 // Export types
 export type { ExperimentsResponse } from "./types";
-

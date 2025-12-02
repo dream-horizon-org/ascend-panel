@@ -93,47 +93,45 @@ const CreateExperiment = () => {
   const createExperimentMutation = useCreateExperiment();
 
   const { control, handleSubmit, setValue } = useForm<ExperimentFormData>({
-      resolver: zodResolver(experimentSchema),
-      mode: "onSubmit", // Validate only on submit
-      defaultValues: {
-        name: "",
-        id: "",
-        hypothesis:
-          "",
-        description:
-          "",
-        tags: [],
-        rateLimit: "100",
-        maxUsers: "",
-        variants: [
+    resolver: zodResolver(experimentSchema),
+    mode: "onSubmit", // Validate only on submit
+    defaultValues: {
+      name: "",
+      id: "",
+      hypothesis: "",
+      description: "",
+      tags: [],
+      rateLimit: "100",
+      maxUsers: "",
+      variants: [
+        {
+          name: "Control Group",
+          trafficSplit: "50",
+          variables: [{ key: "", data_type: "", value: "" }],
+          cohorts: [],
+        },
+        {
+          name: "Variant 1",
+          trafficSplit: "50",
+          variables: [{ key: "", data_type: "", value: "" }],
+          cohorts: [],
+        },
+      ],
+      targeting: {
+        filters: [
           {
-            name: "Control Group",
-            trafficSplit: "50",
-            variables: [{ key: "", data_type: "", value: "" }],
-            cohorts: [],
-          },
-          {
-            name: "Variant 1",
-            trafficSplit: "50",
-            variables: [{ key: "", data_type: "", value: "" }],
-            cohorts: [],
+            operand: "app_version",
+            operandDataType: "STRING",
+            operator: "!=",
+            value: "12.3",
+            condition: "IF",
           },
         ],
-        targeting: {
-          filters: [
-            {
-              operand: "app_version",
-              operandDataType: "STRING",
-              operator: "!=",
-              value: "12.3",
-              condition: "IF",
-            },
-          ],
-          cohorts: ["Tag1"],
-          isAssignCohortsDirectly: false,
-        },
+        cohorts: ["Tag1"],
+        isAssignCohortsDirectly: false,
       },
-    });
+    },
+  });
 
   useEffect(() => {
     const observerOptions = {

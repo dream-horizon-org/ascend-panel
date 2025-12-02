@@ -7,4 +7,3 @@ export interface TerminateExperimentResponse {
   experiment_id: string;
   status: boolean;
 }
-

@@ -7,4 +7,3 @@ export const experimentKeys = {
   details: () => [...experimentKeys.all, "detail"] as const,
   detail: (id: string | number) => [...experimentKeys.details(), id] as const,
 };
-

@@ -2,7 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../apiClient";
 import { endpoints } from "../../endpoints";
 import { experimentKeys } from "../../queries/sharedKeys";
-import { TerminateExperimentRequest, TerminateExperimentResponse } from "./types";
+import {
+  TerminateExperimentRequest,
+  TerminateExperimentResponse,
+} from "./types";
 
 // API response wrapper
 interface TerminateExperimentApiResponse {
@@ -41,5 +44,7 @@ export const useTerminateExperiment = () => {
 };
 
 // Export types
-export type { TerminateExperimentRequest, TerminateExperimentResponse } from "./types";
-
+export type {
+  TerminateExperimentRequest,
+  TerminateExperimentResponse,
+} from "./types";

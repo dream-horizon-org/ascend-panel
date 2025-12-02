@@ -51,4 +51,3 @@ export interface CreateExperimentResponse {
   experiment_id: string;
   status: boolean;
 }
-

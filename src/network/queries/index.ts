@@ -7,17 +7,11 @@
 export { experimentKeys } from "./sharedKeys";
 
 // Get Experiments List
-export {
-  fetchExperiments,
-  useExperimentsList,
-} from "./getExperimentsList";
+export { fetchExperiments, useExperimentsList } from "./getExperimentsList";
 export type { ExperimentsResponse } from "./getExperimentsList";
 
 // Get Experiment Details
-export {
-  fetchExperiment,
-  useExperiment,
-} from "./getExperimentDetails";
+export { fetchExperiment, useExperiment } from "./getExperimentDetails";
 export type {
   VariantVariable,
   Variant,
@@ -29,4 +23,3 @@ export type {
   ExperimentApiResponse,
   ExperimentResponse,
 } from "./getExperimentDetails";
-

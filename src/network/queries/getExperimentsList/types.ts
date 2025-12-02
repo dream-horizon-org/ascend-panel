@@ -7,4 +7,3 @@ export interface ExperimentsResponse {
   page: number;
   limit: number;
 }
-

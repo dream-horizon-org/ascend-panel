@@ -5,4 +5,3 @@ export interface ConcludeExperimentRequest {
 
 // Response type - reuse Experiment from queries
 export { Experiment as ConcludeExperimentResponse } from "../../queries/getExperimentDetails/types";
-

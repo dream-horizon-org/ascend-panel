@@ -35,9 +35,11 @@ export const useCreateExperiment = () => {
 };
 
 // Export types
-export type { CreateExperimentRequest, CreateExperimentResponse } from "./types";
+export type {
+  CreateExperimentRequest,
+  CreateExperimentResponse,
+} from "./types";
 
 // Export parser
 export { transformToRequestBody } from "./parser";
 export type { ExperimentFormData } from "./parser";
-
