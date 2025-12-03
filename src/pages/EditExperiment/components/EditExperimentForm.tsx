@@ -1,4 +1,10 @@
-import { Box, CircularProgress, IconButton, Typography, Button } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  IconButton,
+  Typography,
+  Button,
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useState, useMemo } from "react";
 import { z } from "zod";
@@ -19,9 +25,9 @@ interface EditExperimentFormProps {
   onDiscardConfirm?: () => void;
 }
 
-const EditExperimentForm = ({ 
-  experimentId, 
-  onDiscardConfirm 
+const EditExperimentForm = ({
+  experimentId,
+  onDiscardConfirm,
 }: EditExperimentFormProps) => {
   const editExperimentMutation = useUpdateExperiment();
   const { data: experiment, isLoading: isLoadingExperiment } = useExperiment(
@@ -46,7 +52,7 @@ const EditExperimentForm = ({
   const handleCancelDiscard = () => {
     setDiscardModalOpen(false);
   };
-    
+
   const transformExperimentToFormData = (
     exp: Experiment,
   ): Partial<ExperimentFormData> => {
@@ -464,4 +470,3 @@ const EditExperimentForm = ({
 };
 
 export default EditExperimentForm;
-

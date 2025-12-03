@@ -30,8 +30,7 @@ export default function ExperimentDetails() {
   const { isPending: isConcluding } = concludeMutation;
   const { isPending: isTerminating } = terminateMutation;
 
-  const chartData: ChartDataPoint[] = [
-  ];
+  const chartData: ChartDataPoint[] = [];
 
   // Convert API variants to display format
   const variants: Variant[] = experiment

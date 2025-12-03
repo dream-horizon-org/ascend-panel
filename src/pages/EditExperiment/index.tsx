@@ -56,8 +56,8 @@ const EditExperiment = () => {
         </Typography>
       </Box>
 
-      <EditExperimentForm 
-        experimentId={id} 
+      <EditExperimentForm
+        experimentId={id}
         onDiscardConfirm={handleDiscardConfirm}
       />
     </Box>

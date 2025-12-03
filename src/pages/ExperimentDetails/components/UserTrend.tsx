@@ -36,7 +36,10 @@ export default function UserTrend({
       {hasData ? (
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={theme.palette.divider}
+            />
             <XAxis
               dataKey="date"
               stroke={theme.palette.text.secondary}

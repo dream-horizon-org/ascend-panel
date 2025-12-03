@@ -1,6 +1,10 @@
 import { Box, Typography, Paper, useTheme } from "@mui/material";
 import { Variant } from "../types";
-import { formatNumber, formatDate, calculateDays } from "../../../utils/helpers";
+import {
+  formatNumber,
+  formatDate,
+  calculateDays,
+} from "../../../utils/helpers";
 import VariantSummary from "./VariantSummary";
 import UserTrend from "./UserTrend";
 import { Experiment } from "../../../network/queries/getExperimentDetails/types";
@@ -151,4 +155,3 @@ export default function ExperimentDetailsContent({
     </Box>
   );
 }
-
