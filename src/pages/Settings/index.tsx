@@ -12,6 +12,7 @@ import {
   Chip,
   IconButton,
   Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import KeyIcon from "@mui/icons-material/Key";
@@ -21,26 +22,18 @@ import CheckIcon from "@mui/icons-material/Check";
 import AscendModal from "../../components/AscendModal/AscendModal";
 import AscendDropdown from "../../components/AscendDropdown/AscendDropdown";
 import AscendTextField from "../../components/AscendTextField/AscendTextField";
+import {
+  useTenants,
+  useProjects,
+  useCreateProject,
+  useGenerateApiKey,
+  useRotateApiKey,
+} from "../../network";
 
-// Mock tenant options - replace with API data later
-const MOCK_TENANTS = [
-  "tenant-alpha",
-  "tenant-beta",
-  "tenant-gamma",
-  "tenant-delta",
-];
-
-// Mock projects per tenant - replace with API data later
-const MOCK_PROJECTS: Record<string, string[]> = {
-  "tenant-alpha": ["mobile-ios-app", "web-dashboard", "api-backend"],
-  "tenant-beta": ["checkout-service", "inventory-api"],
-  "tenant-gamma": ["analytics-platform"],
-  "tenant-delta": ["payment-gateway", "notification-service", "user-auth"],
-};
-
-// Mock API keys data - replace with API data later
+// Mock API keys data - TODO: Replace with useApiKeys query when endpoint is available
 interface ApiKeyData {
   key_id: string;
+  tenant_id: string;
   project_id: string;
   project_key: string;
   name: string;
@@ -52,6 +45,7 @@ interface ApiKeyData {
 const MOCK_API_KEYS: ApiKeyData[] = [
   {
     key_id: "key_12345",
+    tenant_id: "tenant-alpha",
     project_id: "770e8400-alpha",
     project_key: "mobile-ios-app",
     name: "CI Pipeline Key",
@@ -61,6 +55,7 @@ const MOCK_API_KEYS: ApiKeyData[] = [
   },
   {
     key_id: "key_67890",
+    tenant_id: "tenant-alpha",
     project_id: "770e8400-beta",
     project_key: "web-dashboard",
     name: "Production Key",
@@ -70,6 +65,7 @@ const MOCK_API_KEYS: ApiKeyData[] = [
   },
   {
     key_id: "key_11111",
+    tenant_id: "tenant-beta",
     project_id: "770e8400-gamma",
     project_key: "api-backend",
     name: "Staging Key",
@@ -79,6 +75,7 @@ const MOCK_API_KEYS: ApiKeyData[] = [
   },
   {
     key_id: "key_22222",
+    tenant_id: "tenant-beta",
     project_id: "770e8400-delta",
     project_key: "checkout-service",
     name: "Development Key",
@@ -89,6 +86,9 @@ const MOCK_API_KEYS: ApiKeyData[] = [
 ];
 
 export default function Settings() {
+  // Fetch tenants
+  const { data: tenants = [], isLoading: isLoadingTenants } = useTenants();
+
   // Create Project Modal State
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] =
     useState(false);
@@ -96,11 +96,16 @@ export default function Settings() {
   const [projectName, setProjectName] = useState("");
   const [projectNameError, setProjectNameError] = useState("");
 
+
   // API Key Modal State
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [apiKeyTenant, setApiKeyTenant] = useState<string>("");
   const [apiKeyProject, setApiKeyProject] = useState<string>("");
   const [apiKeyName, setApiKeyName] = useState("");
+
+  // Fetch projects for API key tenant
+  const { data: projectsForApiKeyTenant = [], isLoading: isLoadingProjects } =
+    useProjects(apiKeyTenant);
 
   // API Key Success Modal State
   const [isApiKeySuccessModalOpen, setIsApiKeySuccessModalOpen] =
@@ -110,6 +115,19 @@ export default function Settings() {
     "generated" | "rotated"
   >("generated");
   const [isCopied, setIsCopied] = useState(false);
+
+  // Mutations
+  const createProjectMutation = useCreateProject();
+  const generateApiKeyMutation = useGenerateApiKey();
+  const rotateApiKeyMutation = useRotateApiKey();
+
+  // Get tenant options for dropdowns
+  const tenantOptions = tenants.map((t) => t.tenant_id);
+
+  // Get project options for API key dropdown
+  const getProjectOptionsForApiKeyTenant = () => {
+    return projectsForApiKeyTenant.map((p) => p.project_key);
+  };
 
   const validateProjectName = (name: string): boolean => {
     const regex = /^[a-z0-9-]+$/;
@@ -145,14 +163,21 @@ export default function Settings() {
       return;
     }
 
-    // TODO: Call API to create project
-    console.log("Creating project:", {
-      tenant_id: selectedTenant,
-      name: projectName,
-    });
-
-    // Reset form and close modal
-    handleCloseModal();
+    createProjectMutation.mutate(
+      {
+        tenant_id: selectedTenant,
+        name: projectName,
+      },
+      {
+        onSuccess: () => {
+          handleCloseModal();
+        },
+        onError: (error) => {
+          console.error("Failed to create project:", error);
+          setProjectNameError("Failed to create project. Please try again.");
+        },
+      },
+    );
   };
 
   const handleCloseModal = () => {
@@ -168,21 +193,31 @@ export default function Settings() {
       return;
     }
 
-    // TODO: Call API to generate API key
-    console.log("Generating API key:", {
-      tenant_id: apiKeyTenant,
-      project_id: apiKeyProject,
-      name: apiKeyName || undefined,
-    });
+    // Find the project_id from the project_key
+    const project = projectsForApiKeyTenant.find(
+      (p) => p.project_key === apiKeyProject,
+    );
+    const projectId = project?.project_key || apiKeyProject;
 
-    // Mock generated API key - replace with actual API response
-    const mockApiKey = `exp_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-
-    // Close generate modal and show success modal
-    handleCloseApiKeyModal();
-    setGeneratedApiKey(mockApiKey);
-    setApiKeySuccessType("generated");
-    setIsApiKeySuccessModalOpen(true);
+    generateApiKeyMutation.mutate(
+      {
+        tenant_id: apiKeyTenant,
+        project_id: projectId,
+        name: apiKeyName || undefined,
+      },
+      {
+        onSuccess: (data) => {
+          // Close generate modal and show success modal with the actual API key
+          handleCloseApiKeyModal();
+          setGeneratedApiKey(data.api_key);
+          setApiKeySuccessType("generated");
+          setIsApiKeySuccessModalOpen(true);
+        },
+        onError: (error) => {
+          console.error("Failed to generate API key:", error);
+        },
+      },
+    );
   };
 
   const handleCloseApiKeyModal = () => {
@@ -197,27 +232,26 @@ export default function Settings() {
     setApiKeyProject(""); // Reset project when tenant changes
   };
 
-  const getProjectsForTenant = (tenant: string): string[] => {
-    return MOCK_PROJECTS[tenant] || [];
-  };
-
   // Handle rotate from table row
   const handleRotateKeyFromTable = (apiKey: ApiKeyData) => {
-    // TODO: Call API to rotate API key directly
-    console.log("Rotating API key from table:", {
-      key_id: apiKey.key_id,
-      project_id: apiKey.project_id,
-      project_key: apiKey.project_key,
-      name: apiKey.name,
-    });
-
-    // Mock rotated API key - replace with actual API response
-    const mockRotatedApiKey = `exp_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-
-    // Show success modal with new API key
-    setGeneratedApiKey(mockRotatedApiKey);
-    setApiKeySuccessType("rotated");
-    setIsApiKeySuccessModalOpen(true);
+    rotateApiKeyMutation.mutate(
+      {
+        tenant_id: apiKey.tenant_id,
+        project_id: apiKey.project_id,
+        key_id: apiKey.key_id,
+      },
+      {
+        onSuccess: (data) => {
+          // Show success modal with the new API key
+          setGeneratedApiKey(data.api_key);
+          setApiKeySuccessType("rotated");
+          setIsApiKeySuccessModalOpen(true);
+        },
+        onError: (error) => {
+          console.error("Failed to rotate API key:", error);
+        },
+      },
+    );
   };
 
   // Handle copy API key
@@ -341,12 +375,15 @@ export default function Settings() {
                   <span style={{ color: "#EF4444", marginLeft: "2px" }}>*</span>
                 </Typography>
                 <AscendDropdown
-                  options={MOCK_TENANTS}
+                  options={tenantOptions}
                   value={selectedTenant}
                   onChange={(value) => setSelectedTenant(value as string)}
-                  placeholder="Select a tenant"
+                  placeholder={
+                    isLoadingTenants ? "Loading tenants..." : "Select a tenant"
+                  }
                   fullWidth
                   size="md"
+                  disabled={isLoadingTenants}
                 />
               </Box>
 
@@ -370,6 +407,7 @@ export default function Settings() {
               <Button
                 variant="text"
                 onClick={handleCloseModal}
+                disabled={createProjectMutation.isPending}
                 sx={{
                   color: "#666666",
                   textTransform: "none",
@@ -387,7 +425,12 @@ export default function Settings() {
               <Button
                 variant="contained"
                 onClick={handleCreateProject}
-                disabled={!selectedTenant || !projectName || !!projectNameError}
+                disabled={
+                  !selectedTenant ||
+                  !projectName ||
+                  !!projectNameError ||
+                  createProjectMutation.isPending
+                }
                 sx={{
                   backgroundColor: "#0060E5",
                   color: "white",
@@ -406,7 +449,11 @@ export default function Settings() {
                   },
                 }}
               >
-                Create Project
+                {createProjectMutation.isPending ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  "Create Project"
+                )}
               </Button>
             </>
           ),
@@ -584,14 +631,19 @@ export default function Settings() {
                       title={
                         apiKey.status === "REVOKED"
                           ? "Cannot rotate revoked key"
-                          : "Rotate this key"
+                          : rotateApiKeyMutation.isPending
+                            ? "Rotating..."
+                            : "Rotate this key"
                       }
                     >
                       <span>
                         <IconButton
                           size="small"
                           onClick={() => handleRotateKeyFromTable(apiKey)}
-                          disabled={apiKey.status === "REVOKED"}
+                          disabled={
+                            apiKey.status === "REVOKED" ||
+                            rotateApiKeyMutation.isPending
+                          }
                           sx={{
                             color: "#0060E5",
                             "&:hover": {
@@ -602,7 +654,11 @@ export default function Settings() {
                             },
                           }}
                         >
-                          <RotateRightIcon fontSize="small" />
+                          {rotateApiKeyMutation.isPending ? (
+                            <CircularProgress size={18} color="inherit" />
+                          ) : (
+                            <RotateRightIcon fontSize="small" />
+                          )}
                         </IconButton>
                       </span>
                     </Tooltip>
@@ -643,14 +699,17 @@ export default function Settings() {
                   <span style={{ color: "#EF4444", marginLeft: "2px" }}>*</span>
                 </Typography>
                 <AscendDropdown
-                  options={MOCK_TENANTS}
+                  options={tenantOptions}
                   value={apiKeyTenant}
                   onChange={(value) =>
                     handleApiKeyTenantChange(value as string)
                   }
-                  placeholder="Select a tenant"
+                  placeholder={
+                    isLoadingTenants ? "Loading tenants..." : "Select a tenant"
+                  }
                   fullWidth
                   size="md"
+                  disabled={isLoadingTenants}
                 />
               </Box>
 
@@ -669,15 +728,19 @@ export default function Settings() {
                   <span style={{ color: "#EF4444", marginLeft: "2px" }}>*</span>
                 </Typography>
                 <AscendDropdown
-                  options={getProjectsForTenant(apiKeyTenant)}
+                  options={getProjectOptionsForApiKeyTenant()}
                   value={apiKeyProject}
                   onChange={(value) => setApiKeyProject(value as string)}
                   placeholder={
-                    apiKeyTenant ? "Select a project" : "Select a tenant first"
+                    !apiKeyTenant
+                      ? "Select a tenant first"
+                      : isLoadingProjects
+                        ? "Loading projects..."
+                        : "Select a project"
                   }
                   fullWidth
                   size="md"
-                  disabled={!apiKeyTenant}
+                  disabled={!apiKeyTenant || isLoadingProjects}
                 />
               </Box>
 
@@ -696,6 +759,7 @@ export default function Settings() {
               <Button
                 variant="text"
                 onClick={handleCloseApiKeyModal}
+                disabled={generateApiKeyMutation.isPending}
                 sx={{
                   color: "#666666",
                   textTransform: "none",
@@ -713,7 +777,11 @@ export default function Settings() {
               <Button
                 variant="contained"
                 onClick={handleGenerateApiKey}
-                disabled={!apiKeyTenant || !apiKeyProject}
+                disabled={
+                  !apiKeyTenant ||
+                  !apiKeyProject ||
+                  generateApiKeyMutation.isPending
+                }
                 sx={{
                   backgroundColor: "#0060E5",
                   color: "white",
@@ -732,7 +800,11 @@ export default function Settings() {
                   },
                 }}
               >
-                Generate Key
+                {generateApiKeyMutation.isPending ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  "Generate Key"
+                )}
               </Button>
             </>
           ),
