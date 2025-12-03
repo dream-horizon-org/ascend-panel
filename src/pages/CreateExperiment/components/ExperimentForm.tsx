@@ -8,6 +8,7 @@ import AscendTextFieldControlled from "../../../components/AscendTextField/Ascen
 import VariantsFlow from "./VariantsFlow";
 import AscendAutoCompleteControlled from "../../../components/AscendAutoComplete/AscendAutoCompleteControlled";
 import { experimentSchema } from "../schema";
+import { useTags } from "../../../network";
 
 type ExperimentFormData = z.infer<typeof experimentSchema>;
 
@@ -36,6 +37,7 @@ const ExperimentForm = ({
   isLoading = false,
   onDiscard,
 }: ExperimentFormProps) => {
+  const { data: tags = [] } = useTags();
   const [submittedData, setSubmittedData] = useState<ExperimentFormData | null>(
     null,
   );
@@ -51,12 +53,10 @@ const ExperimentForm = ({
       defaultValues: defaultValues || {
         name: "",
         id: "",
-        hypothesis:
-          "The hypothesis written by the user will come here and will take up as much space as it needs. Max 120 char limit",
-        description:
-          "The description written by the user will come here and will take up as much space as it needs. We should have a 300 character limit on the description.",
+        hypothesis: "",
+        description: "",
         tags: [],
-        rateLimit: "100%",
+        rateLimit: "100",
         maxUsers: "",
         variants: [
           {
@@ -82,7 +82,7 @@ const ExperimentForm = ({
               condition: "IF",
             },
           ],
-          cohorts: ["Tag1"],
+          cohorts: [],
           isAssignCohortsDirectly: false,
         },
       },
@@ -382,14 +382,7 @@ const ExperimentForm = ({
               control={control}
               label="Tags (optional)"
               placeholder={isEditMode ? "" : "Select tags"}
-              options={[
-                "Performance",
-                "UI/UX",
-                "Backend",
-                "Frontend",
-                "A/B Test",
-                "Feature Flag",
-              ]}
+              options={tags}
               multiple
               filterSelectedOptions
               disabled={isEditMode}

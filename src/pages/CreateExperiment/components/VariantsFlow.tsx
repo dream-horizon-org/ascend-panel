@@ -1044,7 +1044,7 @@ function CreateExperimentTargetingParentModal({
   const { field: cohortsField } = useController({
     control,
     name: "targeting.cohorts",
-    defaultValue: ["Tag1"],
+    defaultValue: [],
   });
 
   // Use react-hook-form field array for variants
@@ -1370,7 +1370,7 @@ function CreateExperimentTargetingParentModal({
             <AscendDropdown
               placeholder="Select Cohorts"
               variant="multi-chip"
-              options={["Tag1", "Tag2", "Tag3"]}
+              options={[]}
               value={cohorts}
               fullWidth
               size="lg"
@@ -1408,7 +1408,7 @@ function CreateExperimentTargetingParentModal({
                       <AscendDropdown
                         placeholder="Select Cohorts"
                         variant="multi-chip"
-                        options={["Tag1", "Tag2", "Tag3"]}
+                        options={[]}
                         value={field.value || []}
                         fullWidth
                         size="lg"
