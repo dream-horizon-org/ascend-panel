@@ -19,6 +19,7 @@ interface AscendAutoCompleteControlledProps {
   filterSelectedOptions?: boolean;
   className?: string;
   chipStyles?: SxProps<Theme>;
+  disabled?: boolean;
 }
 
 const AscendAutoCompleteControlled = ({
@@ -34,6 +35,7 @@ const AscendAutoCompleteControlled = ({
   filterSelectedOptions = false,
   className = "",
   chipStyles,
+  disabled = false,
 }: AscendAutoCompleteControlledProps) => {
   return (
     <Controller
@@ -47,7 +49,12 @@ const AscendAutoCompleteControlled = ({
             filterSelectedOptions={filterSelectedOptions}
             options={options}
             value={value || (multiple ? [] : null)}
-            onChange={(_, newValue) => onChange(newValue)}
+            onChange={(_, newValue) => {
+              if (!disabled) {
+                onChange(newValue);
+              }
+            }}
+            disabled={disabled}
             size="small"
             fullWidth
             popupIcon={<KeyboardArrowDownIcon />}
