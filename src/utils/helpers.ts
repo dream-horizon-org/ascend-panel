@@ -48,6 +48,7 @@ export const mapStatus = (
     DRAFT: { label: "Draft", color: "draft" },
     PAUSED: { label: "Paused", color: "inactive" },
     CONCLUDED: { label: "Concluded", color: "inactive" },
+    TERMINATED: { label: "Terminated", color: "inactive" },
   };
   return statusMap[status] || { label: status, color: "draft" };
 };

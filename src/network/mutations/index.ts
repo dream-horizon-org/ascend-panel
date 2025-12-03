@@ -37,3 +37,7 @@ export type {
   TerminateExperimentRequest,
   TerminateExperimentResponse,
 } from "./terminateExperiment";
+
+// Import Cohort
+export { importCohort, useImportCohort } from "./importCohort";
+export type { ImportCohortRequest, ImportCohortResponse } from "./importCohort";

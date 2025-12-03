@@ -16,6 +16,11 @@ export const endpoints = {
     update: (id: string | number) => `${API_BASE}/experiments/${id}`,
     tags: `${API_BASE}/experiments/tags`,
   },
+
+  // Audience/Cohort endpoints
+  audiences: {
+    import: (id: string | number) => `${API_BASE}/audiences/${id}/imports`,
+  },
 } as const;
 
 export type Endpoints = typeof endpoints;
