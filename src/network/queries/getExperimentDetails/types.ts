@@ -59,6 +59,7 @@ export interface Experiment {
   updatedAt: string;
   tags: string[];
   owners: string[];
+  variantCounts?: Record<string, number>;
 }
 
 export interface ExperimentApiResponse {

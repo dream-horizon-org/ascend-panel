@@ -1,5 +1,3 @@
-import { Experiment } from "../../queries/experiments";
-
 // Types for Update Experiment API
 export interface UpdateExperimentMetrics {
   primary?: string[];
@@ -64,4 +62,4 @@ export interface UpdateExperimentRequest {
 }
 
 // Response type - reuse Experiment from queries
-export type UpdateExperimentResponse = Experiment;
+export type { Experiment as UpdateExperimentResponse } from "../../queries/getExperimentDetails/types";

@@ -21,6 +21,8 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
   title,
   status,
   experimentId,
+  experimentStatus,
+  variants,
   onBack,
   onCopyId,
   onMenuClick,
@@ -30,6 +32,11 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
   onDeclareWinner,
   className = "",
 }) => {
+  // Determine visibility based on experiment status
+  const isTerminated = experimentStatus === "TERMINATED";
+  const isConcluded = experimentStatus === "CONCLUDED";
+  const shouldShowConcludeButton = !isTerminated && !isConcluded;
+  const shouldShowTerminateMenuItem = !isTerminated;
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [concludeAnchorEl, setConcludeAnchorEl] = useState<null | HTMLElement>(
@@ -74,10 +81,10 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
     }
   };
 
-  const handleDeclareWinner = (winner: "Control Group" | "Variant 1") => {
+  const handleDeclareWinner = (variantKey: string) => {
     handleConcludeMenuClose();
     if (onDeclareWinner) {
-      onDeclareWinner(winner);
+      onDeclareWinner(variantKey);
     }
   };
 
@@ -239,31 +246,35 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
         <AscendMenuItem onClick={handleCloneExperiment}>
           Clone Experiment
         </AscendMenuItem>
-        <AscendMenuItem onClick={handleTerminateExperiment}>
-          Terminate Experiment
-        </AscendMenuItem>
+        {shouldShowTerminateMenuItem && (
+          <AscendMenuItem onClick={handleTerminateExperiment}>
+            Terminate Experiment
+          </AscendMenuItem>
+        )}
       </AscendMenu>
 
       {/* Conclude Button */}
-      <AscendButton
-        variant="contained"
-        color="primary"
-        onClick={handleConcludeClick}
-        aria-controls={concludeOpen ? "conclude-menu" : undefined}
-        aria-haspopup="true"
-        aria-expanded={concludeOpen ? "true" : undefined}
-        endIcon={<KeyboardArrowDownIcon />}
-        sx={{
-          borderRadius: "0.5rem",
-          textTransform: "none",
-          fontFamily: "Inter",
-          fontWeight: 500,
-          fontSize: "0.875rem",
-          padding: "0.5rem 1rem",
-        }}
-      >
-        Conclude
-      </AscendButton>
+      {shouldShowConcludeButton && (
+        <AscendButton
+          variant="contained"
+          color="primary"
+          onClick={handleConcludeClick}
+          aria-controls={concludeOpen ? "conclude-menu" : undefined}
+          aria-haspopup="true"
+          aria-expanded={concludeOpen ? "true" : undefined}
+          endIcon={<KeyboardArrowDownIcon />}
+          sx={{
+            borderRadius: "0.5rem",
+            textTransform: "none",
+            fontFamily: "Inter",
+            fontWeight: 500,
+            fontSize: "0.875rem",
+            padding: "0.5rem 1rem",
+          }}
+        >
+          Conclude
+        </AscendButton>
+      )}
 
       {/* Conclude Dropdown Menu */}
       <AscendMenu
@@ -289,12 +300,15 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
             Declare Winner
           </Typography>
         </Box>
-        <AscendMenuItem onClick={() => handleDeclareWinner("Control Group")}>
-          Control Group
-        </AscendMenuItem>
-        <AscendMenuItem onClick={() => handleDeclareWinner("Variant 1")}>
-          Variant 1
-        </AscendMenuItem>
+        {variants &&
+          Object.entries(variants).map(([variantKey, variant]) => (
+            <AscendMenuItem
+              key={variantKey}
+              onClick={() => handleDeclareWinner(variantKey)}
+            >
+              {variant.display_name}
+            </AscendMenuItem>
+          ))}
       </AscendMenu>
     </Box>
   );

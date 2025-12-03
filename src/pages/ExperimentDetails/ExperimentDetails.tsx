@@ -6,10 +6,15 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router";
+import { useState } from "react";
 
 import ExperimentDetailsHeader from "./ExperimentDetailsHeader";
 import { ChartDataPoint, Variant } from "./types";
-import { useExperiment } from "../../network/queries/experiments";
+import { useExperiment } from "../../network/queries";
+import {
+  useConcludeExperiment,
+  useTerminateExperiment,
+} from "../../network/mutations";
 import {
   convertVariantsToDisplay,
   formatDate,
@@ -20,6 +25,7 @@ import {
 import ErrorPage from "./components/ErrorPage";
 import UserTrend from "./components/UserTrend";
 import VariantSummary from "./components/VariantSummary";
+import AscendSnackbar from "../../components/AscendSnackbar/AscendSnackbar";
 
 export default function ExperimentDetails() {
   const navigate = useNavigate();
@@ -27,6 +33,28 @@ export default function ExperimentDetails() {
   const { id } = useParams<{ id: string }>();
 
   const { data: experiment, isLoading, error } = useExperiment(id || null);
+
+  const concludeMutation = useConcludeExperiment();
+  const terminateMutation = useTerminateExperiment();
+
+  // State for copy ID snackbar
+  const [copySuccessOpen, setCopySuccessOpen] = useState(false);
+
+  // Extract states from conclude mutation
+  const {
+    isPending: isConcluding,
+    isError: isConcludeError,
+    error: concludeError,
+    isSuccess: isConcludeSuccess,
+  } = concludeMutation;
+
+  // Extract states from terminate mutation
+  const {
+    isPending: isTerminating,
+    isError: isTerminateError,
+    error: terminateError,
+    isSuccess: isTerminateSuccess,
+  } = terminateMutation;
 
   const chartData: ChartDataPoint[] = [
     { date: "17 Nov", control: 5000, variant1: 10000 },
@@ -43,7 +71,7 @@ export default function ExperimentDetails() {
     ? convertVariantsToDisplay(
         experiment.variants,
         experiment.variantWeights,
-        experiment.exposure || 0,
+        experiment.variantCounts,
       )
     : [];
 
@@ -54,28 +82,31 @@ export default function ExperimentDetails() {
   const handleCopyId = () => {
     if (experiment?.experimentId) {
       navigator.clipboard.writeText(experiment.experimentId);
-      console.log("Experiment ID copied to clipboard");
+      setCopySuccessOpen(true);
     }
   };
 
-  const handleMenuClick = () => {
-    console.log("Menu clicked");
-  };
-
-  const handleConcludeClick = () => {
-    console.log("Conclude clicked");
-  };
-
-  const handleCloneExperiment = () => {
-    console.log("Clone Experiment clicked");
-  };
-
   const handleTerminateExperiment = () => {
-    console.log("Terminate Experiment clicked");
+    if (id && !isTerminating) {
+      terminateMutation.mutate({
+        id,
+        data: { status: "TERMINATED" },
+      });
+    }
   };
 
-  const handleDeclareWinner = (winner: "Control Group" | "Variant 1") => {
-    console.log(`Declare Winner: ${winner}`);
+  const handleDeclareWinner = (variantKey: string) => {
+    if (id && !isConcluding) {
+      concludeMutation.mutate({
+        id,
+        data: {
+          status: "CONCLUDED",
+          winning_variant: {
+            variant_name: variantKey,
+          },
+        },
+      });
+    }
   };
 
   if (isLoading) {
@@ -101,11 +132,50 @@ export default function ExperimentDetails() {
     return <ErrorPage errorMessage="Experiment not found" severity="warning" />;
   }
 
-  const currentUsers = experiment.exposure || 0;
-  const targetUsers = experiment.threshold || 0;
+  // Calculate current users from variantCounts if available, otherwise show NA
+  const currentUsers: number | "NA" = experiment.variantCounts
+    ? Object.values(experiment.variantCounts).reduce(
+        (sum, count) => sum + count,
+        0,
+      )
+    : "NA";
   const duration = calculateDays(experiment.startTime, experiment.endTime);
   const lastModified = formatDate(experiment.updatedAt);
   const statusInfo = mapStatus(experiment.status);
+
+  // Snackbar configurations
+  const snackbars = [
+    {
+      open: copySuccessOpen,
+      message: "Experiment ID copied to clipboard",
+      severity: "success" as const,
+      onClose: () => setCopySuccessOpen(false),
+    },
+    {
+      open: isConcludeSuccess,
+      message: "Experiment concluded successfully",
+      severity: "success" as const,
+      onClose: () => concludeMutation.reset(),
+    },
+    {
+      open: isConcludeError,
+      message: concludeError?.message || "Failed to conclude experiment",
+      severity: "error" as const,
+      onClose: () => concludeMutation.reset(),
+    },
+    {
+      open: isTerminateSuccess,
+      message: "Experiment terminated successfully",
+      severity: "success" as const,
+      onClose: () => terminateMutation.reset(),
+    },
+    {
+      open: isTerminateError,
+      message: terminateError?.message || "Failed to terminate experiment",
+      severity: "error" as const,
+      onClose: () => terminateMutation.reset(),
+    },
+  ];
 
   return (
     <Box>
@@ -113,11 +183,10 @@ export default function ExperimentDetails() {
         title={experiment.name}
         status={statusInfo}
         experimentId={`#${experiment.experimentId}`}
+        experimentStatus={experiment.status}
+        variants={experiment.variants}
         onBack={handleBack}
         onCopyId={handleCopyId}
-        onMenuClick={handleMenuClick}
-        onConcludeClick={handleConcludeClick}
-        onCloneExperiment={handleCloneExperiment}
         onTerminateExperiment={handleTerminateExperiment}
         onDeclareWinner={handleDeclareWinner}
       />
@@ -147,7 +216,7 @@ export default function ExperimentDetails() {
                 mb: 1,
               }}
             >
-              Current / Targetted Users
+              Current Users
             </Typography>
             <Typography
               sx={{
@@ -157,7 +226,7 @@ export default function ExperimentDetails() {
                 color: theme.palette.text.primary,
               }}
             >
-              {formatNumber(currentUsers)} / {formatNumber(targetUsers)}
+              {currentUsers === "NA" ? "NA" : formatNumber(currentUsers)}
             </Typography>
           </Paper>
 
@@ -241,6 +310,11 @@ export default function ExperimentDetails() {
           </Box>
         </Paper>
       </Box>
+
+      {/* Snackbars */}
+      {snackbars.map((snackbar, index) => (
+        <AscendSnackbar key={index} {...snackbar} />
+      ))}
     </Box>
   );
 }

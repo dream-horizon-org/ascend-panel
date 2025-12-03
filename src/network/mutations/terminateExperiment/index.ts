@@ -18,7 +18,7 @@ export const terminateExperiment = async (
   data: TerminateExperimentRequest,
 ): Promise<TerminateExperimentResponse> => {
   const response = await api.patch<TerminateExperimentApiResponse>(
-    endpoints.experiments.terminate(id),
+    endpoints.experiments.update(id),
     data,
   );
   return response.data.data;
