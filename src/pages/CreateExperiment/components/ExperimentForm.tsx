@@ -53,10 +53,8 @@ const ExperimentForm = ({
       defaultValues: defaultValues || {
         name: "",
         id: "",
-        hypothesis:
-          "",
-        description:
-          "",
+        hypothesis: "",
+        description: "",
         tags: [],
         rateLimit: "100",
         maxUsers: "",
