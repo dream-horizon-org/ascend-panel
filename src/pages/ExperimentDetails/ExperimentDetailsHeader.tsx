@@ -243,9 +243,6 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
         open={open}
         onClose={handleMenuClose}
       >
-        <AscendMenuItem onClick={handleCloneExperiment}>
-          Clone Experiment
-        </AscendMenuItem>
         {shouldShowTerminateMenuItem && (
           <AscendMenuItem onClick={handleTerminateExperiment}>
             Terminate Experiment

@@ -1,38 +1,34 @@
-import { Box, CircularProgress } from "@mui/material";
-import { useNavigate, useParams } from "react-router";
+import { Box, Tabs, Tab, CircularProgress } from "@mui/material";
+import { useParams } from "react-router";
 import { useState } from "react";
-
-import ExperimentDetailsHeader from "./ExperimentDetailsHeader";
-import ExperimentDetailsContent from "./components/ExperimentDetailsContent";
-import ExperimentDetailsSnackbars from "./components/ExperimentDetailsSnackbars";
-import { ChartDataPoint, Variant } from "./types";
 import { useExperiment } from "../../network/queries";
+import ExperimentDetailsHeader from "../ExperimentDetails/ExperimentDetailsHeader";
+import ExperimentDetailsContent from "../ExperimentDetails/components/ExperimentDetailsContent";
+import ExperimentDetailsSnackbars from "../ExperimentDetails/components/ExperimentDetailsSnackbars";
+import { convertVariantsToDisplay, mapStatus } from "../../utils/helpers";
+import ErrorPage from "../ExperimentDetails/components/ErrorPage";
 import {
   useConcludeExperiment,
   useTerminateExperiment,
 } from "../../network/mutations";
-import { convertVariantsToDisplay, mapStatus } from "../../utils/helpers";
-import ErrorPage from "./components/ErrorPage";
+import { ChartDataPoint, Variant } from "../ExperimentDetails/types";
+import SetupTab from "./components/SetupTab";
 
-export default function ExperimentDetails() {
-  const navigate = useNavigate();
+export default function ExperimentOverview() {
   const { id } = useParams<{ id: string }>();
+  const [activeTab, setActiveTab] = useState<"setup" | "results">("setup");
 
   const { data: experiment, isLoading, error } = useExperiment(id || null);
-
   const concludeMutation = useConcludeExperiment();
   const terminateMutation = useTerminateExperiment();
 
-  // State for copy ID snackbar
   const [copySuccessOpen, setCopySuccessOpen] = useState(false);
 
-  // Extract states from mutations
   const { isPending: isConcluding } = concludeMutation;
   const { isPending: isTerminating } = terminateMutation;
 
   const chartData: ChartDataPoint[] = [];
 
-  // Convert API variants to display format
   const variants: Variant[] = experiment
     ? convertVariantsToDisplay(
         experiment.variants,
@@ -41,8 +37,8 @@ export default function ExperimentDetails() {
       )
     : [];
 
-  const handleBack = () => {
-    navigate(-1);
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue === 0 ? "setup" : "results");
   };
 
   const handleCopyId = () => {
@@ -108,16 +104,57 @@ export default function ExperimentDetails() {
         experimentId={`#${experiment.experimentId}`}
         experimentStatus={experiment.status}
         variants={experiment.variants}
-        onBack={handleBack}
+        onBack={() => window.history.back()}
         onCopyId={handleCopyId}
         onTerminateExperiment={handleTerminateExperiment}
         onDeclareWinner={handleDeclareWinner}
       />
-      <ExperimentDetailsContent
-        experiment={experiment}
-        variants={variants}
-        chartData={chartData}
-      />
+
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: "divider",
+          backgroundColor: "background.paper",
+        }}
+      >
+        <Tabs
+          value={activeTab === "setup" ? 0 : 1}
+          onChange={handleTabChange}
+          sx={{
+            "& .MuiTabs-indicator": {
+              backgroundColor: "#0060E5",
+            },
+            "& .MuiTab-root": {
+              textTransform: "none",
+              fontFamily: "Inter",
+              fontWeight: 600,
+              fontSize: "0.875rem",
+              color: "#666666",
+              padding: "1rem 1.5rem",
+              minHeight: "auto",
+              "&.Mui-selected": {
+                color: "#0060E5",
+              },
+            },
+          }}
+        >
+          <Tab label="Setup" />
+          <Tab label="Results" />
+        </Tabs>
+      </Box>
+
+      <Box sx={{ flex: 1, overflowY: "auto" }}>
+        {activeTab === "setup" ? (
+          <SetupTab experimentId={id || ""} />
+        ) : (
+          <ExperimentDetailsContent
+            experiment={experiment}
+            variants={variants}
+            chartData={chartData}
+          />
+        )}
+      </Box>
+
       <ExperimentDetailsSnackbars
         copySuccessOpen={copySuccessOpen}
         onCopySuccessClose={() => setCopySuccessOpen(false)}
