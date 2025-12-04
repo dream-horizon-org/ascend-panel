@@ -74,7 +74,7 @@ export default function CreateAudienceModal({
         description: description.trim(),
         type: "STATIC", // Hardcoded as per requirement
         expireDate: expireTimestamp,
-        sinkIds: [4], // Hardcoded as per requirement
+        sinkIds: [1], // Hardcoded as per requirement
       },
       {
         onSuccess: (response) => {
