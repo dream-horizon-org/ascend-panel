@@ -1,4 +1,4 @@
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, Tooltip } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -300,13 +300,20 @@ const ExperimentForm = ({
             >
               Experiment Details
             </Typography>
-            <InfoOutlinedIcon
-              sx={{
-                width: "1rem",
-                height: "1rem",
-                color: "#DADADA",
-              }}
-            />
+            <Tooltip
+              title="Configure basic experiment information including name, key, hypothesis, description, and tags"
+              arrow
+              placement="top"
+            >
+              <InfoOutlinedIcon
+                sx={{
+                  width: "1rem",
+                  height: "1rem",
+                  color: "#DADADA",
+                  cursor: "pointer",
+                }}
+              />
+            </Tooltip>
           </Box>
 
           {/* Input Fields */}
@@ -413,13 +420,20 @@ const ExperimentForm = ({
             >
               Variants and Targeting
             </Typography>
-            <InfoOutlinedIcon
-              sx={{
-                width: "1rem",
-                height: "1rem",
-                color: "#DADADA",
-              }}
-            />
+            <Tooltip
+              title="Set up experiment variants with traffic splits and define targeting rules for user segmentation"
+              arrow
+              placement="top"
+            >
+              <InfoOutlinedIcon
+                sx={{
+                  width: "1rem",
+                  height: "1rem",
+                  color: "#DADADA",
+                  cursor: "pointer",
+                }}
+              />
+            </Tooltip>
           </Box>
 
           {/* Variants Flow */}
@@ -450,13 +464,20 @@ const ExperimentForm = ({
             >
               Advance Configuration
             </Typography>
-            <InfoOutlinedIcon
-              sx={{
-                width: "1rem",
-                height: "1rem",
-                color: "#DADADA",
-              }}
-            />
+            <Tooltip
+              title="Configure advanced settings like rate limiting and maximum users for the experiment"
+              arrow
+              placement="top"
+            >
+              <InfoOutlinedIcon
+                sx={{
+                  width: "1rem",
+                  height: "1rem",
+                  color: "#DADADA",
+                  cursor: "pointer",
+                }}
+              />
+            </Tooltip>
           </Box>
 
           {/* Rate Limiting Field */}
