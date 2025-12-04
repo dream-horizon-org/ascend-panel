@@ -1,16 +1,25 @@
 import React from "react";
 import { Tabs, Tab, Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { useNavigate, useLocation } from "react-router";
 import ScienceIcon from "@mui/icons-material/Science";
-import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import SettingsIcon from "@mui/icons-material/Settings";
 
+const tabRoutes = ["/", "/settings"];
+
 export default function SideNavTabs() {
-  const [value, setValue] = React.useState(0);
   const theme = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Determine active tab based on current path
+  const getActiveTab = () => {
+    if (location.pathname === "/settings") return 1;
+    return 0;
+  };
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+    navigate(tabRoutes[newValue]);
   };
 
   return (
@@ -27,7 +36,7 @@ export default function SideNavTabs() {
     >
       <Tabs
         orientation="vertical"
-        value={value}
+        value={getActiveTab()}
         onChange={handleChange}
         sx={{
           width: "100%",
@@ -62,7 +71,6 @@ export default function SideNavTabs() {
         }}
       >
         <Tab icon={<ScienceIcon />} aria-label="experiments" />
-        <Tab icon={<PeopleAltOutlinedIcon />} aria-label="users" />
         <Tab icon={<SettingsIcon />} aria-label="settings" />
       </Tabs>
     </Box>
