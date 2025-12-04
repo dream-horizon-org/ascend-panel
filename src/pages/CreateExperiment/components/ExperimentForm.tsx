@@ -48,7 +48,7 @@ const ExperimentForm = ({
   const { control, handleSubmit, setValue, getValues, watch, reset } =
     useForm<ExperimentFormData>({
       resolver: zodResolver(experimentSchema),
-      mode: "onSubmit",
+      mode: "onChange",
       defaultValues: defaultValues || {
         name: "",
         id: "",
@@ -90,7 +90,6 @@ const ExperimentForm = ({
   // Watch form fields for change detection
   const watchedName = watch("name");
   const watchedId = watch("id");
-  const watchedHypothesis = watch("hypothesis");
   const watchedDescription = watch("description");
   const watchedRateLimit = watch("rateLimit");
   const watchedMaxUsers = watch("maxUsers");
@@ -126,18 +125,15 @@ const ExperimentForm = ({
       // The form starts with default variants, so we only need to check required fields
       const hasName = watchedName && watchedName.trim() !== "";
       const hasId = watchedId && watchedId.trim() !== "";
-      const hasHypothesis =
-        watchedHypothesis && watchedHypothesis.trim() !== "";
 
       // Form has changes if all required fields are filled
-      return hasName && hasId && hasHypothesis;
+      return hasName && hasId;
     }
   }, [
     isEditMode,
     defaultValues,
     watchedName,
     watchedId,
-    watchedHypothesis,
     watchedDescription,
     watchedRateLimit,
     watchedMaxUsers,
@@ -199,7 +195,7 @@ const ExperimentForm = ({
     } else if (!isEditMode) {
       // Auto-generate id from name in create mode
       const generatedId = value.replace(/\s+/g, "_").toLowerCase();
-      setValue("id", generatedId, { shouldValidate: false });
+      setValue("id", generatedId, { shouldValidate: true });
     }
   };
 
@@ -316,6 +312,7 @@ const ExperimentForm = ({
               infoText="Provide a unique name for your experiment"
               onChangeCustom={handleNameChange}
               disabled={isEditMode}
+              required
             />
             <AscendTextFieldControlled
               name="id"
@@ -324,6 +321,7 @@ const ExperimentForm = ({
               placeholder="Enter experiment Key"
               infoText="Unique identifier for the experiment"
               disabled={isEditMode}
+              required
             />
           </Box>
 
@@ -344,7 +342,7 @@ const ExperimentForm = ({
             <AscendTextFieldControlled
               name="description"
               control={control}
-              label="Description (optional)"
+              label="Description"
               placeholder="Enter description"
               height="120px"
             />
@@ -356,7 +354,7 @@ const ExperimentForm = ({
               name="tags"
               freeSolo
               control={control}
-              label="Tags (optional)"
+              label="Tags"
               placeholder={isEditMode ? "" : "Select tags"}
               options={tags}
               multiple
@@ -459,7 +457,7 @@ const ExperimentForm = ({
             <AscendTextFieldControlled
               name="rateLimit"
               control={control}
-              label="Rate Limiting (optional)"
+              label="Rate Limiting"
               placeholder="Enter rate"
               infoText="Set the maximum rate limit for this experiment"
               width="10%"
@@ -471,7 +469,7 @@ const ExperimentForm = ({
             <AscendTextFieldControlled
               name="maxUsers"
               control={control}
-              label="Maximum Users (optional)"
+              label="Maximum Users"
               placeholder="######"
               infoText="Set the maximum number of users for this experiment"
               width="10%"
