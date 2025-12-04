@@ -19,7 +19,7 @@ export const useExperiment = (id: string | number | null) => {
   return useQuery<ExperimentResponse, Error>({
     queryKey: experimentKeys.detail(id!),
     queryFn: () => fetchExperiment(id!),
-    enabled: !!id, // Only fetch if id is provided
+    enabled: !!id,
   });
 };
 

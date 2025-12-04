@@ -540,9 +540,9 @@ export default function VariantsFlow({
   });
   const isAssignCohortsDirectly = isAssignCohortsDirectlyField.value;
 
-  const handleParentModalOpen = () => {
+  const handleParentModalOpen = useCallback(() => {
     setParentModalOpen(true);
-  };
+  }, []);
 
   const handleChildModalOpen = () => {
     setChildModalOpen(true);
@@ -651,14 +651,17 @@ export default function VariantsFlow({
   );
 
   // Function to handle traffic split change with circular redistribution
-  const handleTrafficSplitChange = (index: number, value: string) => {
-    if (value !== "" && !/^\d+$/.test(value)) return;
+  const handleTrafficSplitChange = useCallback(
+    (index: number, value: string) => {
+      if (value !== "" && !/^\d+$/.test(value)) return;
 
-    const num = Math.min(100, Math.max(0, parseInt(value || "0")));
-    const variant = variantFields[index];
-    updateVariant(index, { ...variant, trafficSplit: num.toString() });
-    setIsTrafficEdited(true);
-  };
+      const num = Math.min(100, Math.max(0, parseInt(value || "0")));
+      const variant = variantFields[index];
+      updateVariant(index, { ...variant, trafficSplit: num.toString() });
+      setIsTrafficEdited(true);
+    },
+    [variantFields, updateVariant],
+  );
 
   // Generate nodes with onChange handlers (memoized for performance)
   const nodes = useMemo(() => {
@@ -671,7 +674,7 @@ export default function VariantsFlow({
       const MIN_SPACING = 80;
       const START_X = 5;
       const START_Y = 0;
-      const ROW_HEIGHT = 48;
+      const ROW_HEIGHT = isEditMode ? 0 : 48;
       const BASE_HEIGHT = 64;
       const TARGETING_HEIGHT = 100;
 
@@ -837,7 +840,7 @@ export default function VariantsFlow({
     removeVariant,
     handleTrafficSplitChange,
     handleTrafficBlur,
-    isTrafficEdited,
+    handleParentModalOpen,
     isAssignCohortsDirectly,
   ]);
 
@@ -850,14 +853,11 @@ export default function VariantsFlow({
   const canvasHeight = useMemo(() => {
     const ROW_HEIGHT = 48;
     const BASE_HEIGHT = 64;
-    const MIN_SPACING = 50;
-    return (
-      200 +
-      variantsConfig.reduce((sum: number, config: any) => {
-        const variablesLength = config.variables?.length || 1;
-        return sum + BASE_HEIGHT + variablesLength * ROW_HEIGHT + MIN_SPACING;
-      }, 0)
-    );
+    const MIN_SPACING = 80;
+    return variantsConfig.reduce((sum: number, config: any) => {
+      const variablesLength = config.variables?.length || 1;
+      return sum + BASE_HEIGHT + variablesLength * ROW_HEIGHT + MIN_SPACING;
+    }, 0);
   }, [variantsConfig]);
 
   const handleChildModalCancel = () => {
@@ -958,6 +958,7 @@ export default function VariantsFlow({
           preventScrolling={false}
           minZoom={1}
           maxZoom={1}
+          proOptions={{ hideAttribution: true }}
         ></ReactFlow>
       </Box>
       {!isEditMode && (

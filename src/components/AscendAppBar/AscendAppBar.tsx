@@ -6,10 +6,11 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { PowerSettingsNew as PowerSettingsNewIcon } from "@mui/icons-material";
+import { useNavigate } from "react-router";
 
 export default function AppBar() {
   const theme = useTheme();
-
+  const navigate = useNavigate();
   return (
     <MuiAppBar
       position="static"
@@ -36,7 +37,18 @@ export default function AppBar() {
           alignItems: "center",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            navigate("/");
+            window.location.reload();
+          }}
+        >
           <Box
             component="img"
             src="/Ascend-logo.png"

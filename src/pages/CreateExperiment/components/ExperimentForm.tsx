@@ -3,7 +3,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import AscendTextFieldControlled from "../../../components/AscendTextField/AscendTextFieldControlled";
 import VariantsFlow from "./VariantsFlow";
 import AscendAutoCompleteControlled from "../../../components/AscendAutoComplete/AscendAutoCompleteControlled";
@@ -26,6 +26,7 @@ interface ExperimentFormProps {
   submitButtonText?: string;
   isLoading?: boolean;
   onDiscard?: () => void;
+  onResetForm?: (resetFn: () => void) => void;
 }
 
 const ExperimentForm = ({
@@ -36,17 +37,15 @@ const ExperimentForm = ({
   submitButtonText = "Create Experiment",
   isLoading = false,
   onDiscard,
+  onResetForm,
 }: ExperimentFormProps) => {
   const { data: tags = [] } = useTags();
-  const [submittedData, setSubmittedData] = useState<ExperimentFormData | null>(
-    null,
-  );
+
   const [currentSection, setCurrentSection] =
     useState<string>("experiment-details");
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
-  const [requestBody, setRequestBody] = useState<any>(null);
 
-  const { control, handleSubmit, setValue, getValues } =
+  const { control, handleSubmit, setValue, getValues, watch, reset } =
     useForm<ExperimentFormData>({
       resolver: zodResolver(experimentSchema),
       mode: "onSubmit",
@@ -88,6 +87,62 @@ const ExperimentForm = ({
       },
     });
 
+  // Watch form fields for change detection
+  const watchedName = watch("name");
+  const watchedId = watch("id");
+  const watchedHypothesis = watch("hypothesis");
+  const watchedDescription = watch("description");
+  const watchedRateLimit = watch("rateLimit");
+  const watchedMaxUsers = watch("maxUsers");
+
+  const hasChanges = useMemo(() => {
+    if (isEditMode) {
+      // For edit mode: check if editable fields have changed from defaultValues
+      if (!defaultValues) return true;
+
+      const currentDescription = watchedDescription || "";
+      const originalDescription = defaultValues.description || "";
+
+      const currentRateLimit = watchedRateLimit || "100%";
+      const originalRateLimit = defaultValues.rateLimit || "100%";
+      // Normalize rateLimit for comparison (remove % if present)
+      const normalizeRateLimit = (value: string) => {
+        return value.replace("%", "").trim();
+      };
+
+      const currentMaxUsers = watchedMaxUsers || "";
+      const originalMaxUsers = defaultValues.maxUsers || "";
+
+      // Check if any editable field has changed
+      const descriptionChanged = currentDescription !== originalDescription;
+      const rateLimitChanged =
+        normalizeRateLimit(currentRateLimit) !==
+        normalizeRateLimit(originalRateLimit);
+      const maxUsersChanged = currentMaxUsers !== originalMaxUsers;
+
+      return descriptionChanged || rateLimitChanged || maxUsersChanged;
+    } else {
+      // For create mode: check if required fields have meaningful data
+      // The form starts with default variants, so we only need to check required fields
+      const hasName = watchedName && watchedName.trim() !== "";
+      const hasId = watchedId && watchedId.trim() !== "";
+      const hasHypothesis =
+        watchedHypothesis && watchedHypothesis.trim() !== "";
+
+      // Form has changes if all required fields are filled
+      return hasName && hasId && hasHypothesis;
+    }
+  }, [
+    isEditMode,
+    defaultValues,
+    watchedName,
+    watchedId,
+    watchedHypothesis,
+    watchedDescription,
+    watchedRateLimit,
+    watchedMaxUsers,
+  ]);
+
   useEffect(() => {
     const observerOptions = {
       root: null,
@@ -121,6 +176,16 @@ const ExperimentForm = ({
     };
   }, []);
 
+  // Expose reset function to parent component
+  useEffect(() => {
+    if (onResetForm && defaultValues) {
+      const resetForm = () => {
+        reset(defaultValues as ExperimentFormData);
+      };
+      onResetForm(resetForm);
+    }
+  }, [onResetForm, defaultValues, reset]);
+
   const handleSidebarClick = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -138,97 +203,7 @@ const ExperimentForm = ({
     }
   };
 
-  const transformToRequestBody = (data: ExperimentFormData) => {
-    const isAssignCohortsDirectly =
-      data.targeting?.isAssignCohortsDirectly || false;
-    const assignmentType = isAssignCohortsDirectly ? "STRATIFIED" : "COHORT";
-
-    const weights: Record<string, number | string[]> = {};
-    data.variants.forEach((variant, index) => {
-      const key = index === 0 ? "control" : `variant${index}`;
-      if (assignmentType === "STRATIFIED") {
-        weights[key] = variant.cohorts || [];
-      } else {
-        weights[key] = parseInt(variant.trafficSplit) || 0;
-      }
-    });
-
-    const variants: Record<string, any> = {};
-    data.variants.forEach((variant, index) => {
-      const key = index === 0 ? "control" : `variant${index}`;
-
-      const variables = variant.variables
-        .filter((v) => v.key && v.data_type)
-        .map((v) => ({
-          key: v.key,
-          value: v.value,
-          data_type: v.data_type,
-        }));
-
-      variants[key] = {
-        displayName: variant.name,
-        variables: variables,
-      };
-    });
-
-    const rule_attributes =
-      data.targeting?.filters && data.targeting.filters.length > 0
-        ? [
-            {
-              name: "Targeting Rule",
-              conditions: data.targeting.filters.map(
-                ({ operand, operandDataType, operator, value }) => ({
-                  operand,
-                  operandDataType,
-                  operator,
-                  value,
-                }),
-              ),
-            },
-          ]
-        : [];
-
-    const cohorts = data.targeting?.cohorts || [];
-
-    return {
-      name: data.name,
-      description: data.description || "",
-      hypothesis: data.hypothesis,
-      status: "LIVE",
-      type: "A_B",
-      guardrail_health_status: "PASSED",
-      cohorts: cohorts,
-      variant_weights: {
-        type: assignmentType,
-        weights: weights,
-      },
-      variants: variants,
-      distribution_strategy: "RANDOM",
-      assignment_domain: assignmentType,
-      rule_attributes: rule_attributes,
-      exposure: 100,
-      threshold: 50000,
-      start_time: Math.floor(Date.now() / 1000),
-      end_time: Math.floor(Date.now() / 1000) + 86400 * 30,
-      created_by: "user@example.com",
-      tags: data.tags || [],
-      owner: [],
-      metrics: {
-        primary: [],
-        secondary: [],
-      },
-    };
-  };
-
-  const handlePreviewRequestBody = () => {
-    const formData = getValues();
-    const apiRequestBody = transformToRequestBody(formData);
-    setRequestBody(apiRequestBody);
-    console.log("API Request Body:", apiRequestBody);
-  };
-
   const handleFormSubmit = (data: ExperimentFormData) => {
-    setSubmittedData(data);
     onSubmit(data);
   };
 
@@ -345,8 +320,8 @@ const ExperimentForm = ({
             <AscendTextFieldControlled
               name="id"
               control={control}
-              label="Experiment ID"
-              placeholder="Enter experiment id"
+              label="Experiment Key"
+              placeholder="Enter experiment Key"
               infoText="Unique identifier for the experiment"
               disabled={isEditMode}
             />
@@ -379,6 +354,7 @@ const ExperimentForm = ({
           <Box sx={{ mt: "1.5rem" }}>
             <AscendAutoCompleteControlled
               name="tags"
+              freeSolo
               control={control}
               label="Tags (optional)"
               placeholder={isEditMode ? "" : "Select tags"}
@@ -517,7 +493,7 @@ const ExperimentForm = ({
               <Button
                 variant="text"
                 onClick={onDiscard}
-                disabled={isLoading}
+                disabled={isLoading || !hasChanges}
                 sx={{
                   color: "#0060E5",
                   textTransform: "none",
@@ -538,7 +514,7 @@ const ExperimentForm = ({
               <Button
                 variant="contained"
                 onClick={handleSubmit(handleFormSubmit)}
-                disabled={isLoading}
+                disabled={isLoading || !hasChanges}
                 sx={{
                   backgroundColor: "#0060E5",
                   color: "white",
@@ -563,29 +539,9 @@ const ExperimentForm = ({
           ) : (
             <>
               <Button
-                variant="outlined"
-                onClick={handlePreviewRequestBody}
-                sx={{
-                  borderColor: "#0060E5",
-                  color: "#0060E5",
-                  textTransform: "none",
-                  fontFamily: "Inter",
-                  fontWeight: 600,
-                  fontSize: "0.875rem",
-                  padding: "0.625rem 2rem",
-                  borderRadius: "0.5rem",
-                  "&:hover": {
-                    borderColor: "#0050C5",
-                    backgroundColor: "rgba(0, 96, 229, 0.05)",
-                  },
-                }}
-              >
-                Preview Request Body
-              </Button>
-              <Button
                 variant="contained"
                 onClick={handleSubmit(handleFormSubmit)}
-                disabled={isLoading}
+                disabled={isLoading || !hasChanges}
                 sx={{
                   backgroundColor: "#0060E5",
                   color: "white",
@@ -609,86 +565,6 @@ const ExperimentForm = ({
             </>
           )}
         </Box>
-
-        {/* Display Request Body */}
-        {requestBody && (
-          <Box
-            sx={{
-              mt: "2rem",
-              padding: "1.5rem",
-              border: "1px solid #DADADD",
-              borderRadius: "0.5rem",
-              backgroundColor: "#F9F9F9",
-            }}
-          >
-            <Typography
-              sx={{
-                fontFamily: "Inter",
-                fontWeight: 600,
-                fontSize: "1rem",
-                color: "#333333",
-                mb: "1rem",
-              }}
-            >
-              API Request Body
-            </Typography>
-            <Box
-              component="pre"
-              sx={{
-                backgroundColor: "white",
-                padding: "1rem",
-                borderRadius: "0.5rem",
-                overflow: "auto",
-                maxHeight: "600px",
-                fontSize: "0.75rem",
-                fontFamily: "monospace",
-                border: "1px solid #E0E0E0",
-              }}
-            >
-              {JSON.stringify(requestBody, null, 2)}
-            </Box>
-          </Box>
-        )}
-
-        {/* Display Submitted Data */}
-        {submittedData && (
-          <Box
-            sx={{
-              mt: "2rem",
-              padding: "1.5rem",
-              border: "1px solid #DADADD",
-              borderRadius: "0.5rem",
-              backgroundColor: "#F9F9F9",
-            }}
-          >
-            <Typography
-              sx={{
-                fontFamily: "Inter",
-                fontWeight: 600,
-                fontSize: "1rem",
-                color: "#333333",
-                mb: "1rem",
-              }}
-            >
-              Submitted Form Data
-            </Typography>
-            <Box
-              component="pre"
-              sx={{
-                backgroundColor: "white",
-                padding: "1rem",
-                borderRadius: "0.5rem",
-                overflow: "auto",
-                maxHeight: "400px",
-                fontSize: "0.75rem",
-                fontFamily: "monospace",
-                border: "1px solid #E0E0E0",
-              }}
-            >
-              {JSON.stringify(submittedData, null, 2)}
-            </Box>
-          </Box>
-        )}
       </Box>
     </Box>
   );

@@ -1,11 +1,10 @@
 /**
  * Queries index file
- * Central export point for all queries
+ * Central export point for all experiment queries
  */
 
 // Shared keys (used by mutations)
 export { experimentKeys } from "./sharedKeys";
-export { settingsKeys } from "./settingsKeys";
 
 // Get Experiments List
 export {
@@ -36,11 +35,3 @@ export type {
 // Get Tags
 export { fetchTags, useTags } from "./getTags";
 export type { TagsResponse } from "./getTags";
-
-// Get Tenants
-export { fetchTenants, useTenants } from "./getTenants";
-export type { Tenant, TenantsResponse } from "./getTenants";
-
-// Get Projects
-export { fetchProjects, useProjects } from "./getProjects";
-export type { Project, ProjectsResponse } from "./getProjects";

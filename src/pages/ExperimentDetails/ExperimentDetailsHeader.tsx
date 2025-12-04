@@ -42,6 +42,7 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
   const [concludeAnchorEl, setConcludeAnchorEl] = useState<null | HTMLElement>(
     null,
   );
+  console.log("experiment");
   const open = Boolean(anchorEl);
   const concludeOpen = Boolean(concludeAnchorEl);
 
