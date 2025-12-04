@@ -58,3 +58,10 @@ export type { RotateApiKeyRequest, RotateApiKeyResponse } from "./rotateApiKey";
 // Import Cohort
 export { importCohort, useImportCohort } from "./importCohort";
 export type { ImportCohortRequest, ImportCohortResponse } from "./importCohort";
+
+// Create Audience/Cohort
+export { createAudience, useCreateAudience } from "./createAudience";
+export type {
+  CreateAudienceRequest,
+  CreateAudienceResponse,
+} from "./createAudience";

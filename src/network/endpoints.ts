@@ -40,6 +40,7 @@ export const endpoints = {
   },
   // Audience/Cohort endpoints
   audiences: {
+    create: `${API_BASE}/audiences`,
     import: (id: string | number) => `${API_BASE}/audiences/${id}/imports`,
   },
 } as const;
