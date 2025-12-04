@@ -379,6 +379,7 @@ const ExperimentForm = ({
           <Box sx={{ mt: "1.5rem" }}>
             <AscendAutoCompleteControlled
               name="tags"
+              freeSolo
               control={control}
               label="Tags (optional)"
               placeholder={isEditMode ? "" : "Select tags"}
