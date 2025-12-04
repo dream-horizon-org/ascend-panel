@@ -49,8 +49,8 @@ const CreateExperiment = () => {
     if (!error) return "Failed to create experiment";
     // Handle axios error structure
     const axiosError = error as any;
-    if (axiosError?.response?.data?.message) {
-      return axiosError.response.data.message;
+    if (axiosError?.response?.data?.error?.message) {
+      return axiosError.response.data.error.message;
     }
     return error.message || "Failed to create experiment";
   };
