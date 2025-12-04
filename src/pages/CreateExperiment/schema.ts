@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const experimentSchema = z.object({
   name: z.string().min(1, "Experiment name is required"),
-  id: z.string().min(1, "Experiment ID is required"),
+  id: z.string().min(1, "Experiment Key is required"),
   hypothesis: z
     .string()
     .min(1, "Hypothesis is required")

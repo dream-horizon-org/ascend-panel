@@ -671,7 +671,7 @@ export default function VariantsFlow({
       const MIN_SPACING = 80;
       const START_X = 5;
       const START_Y = 0;
-      const ROW_HEIGHT = 48;
+      const ROW_HEIGHT = isEditMode ? 0 : 48;
       const BASE_HEIGHT = 64;
       const TARGETING_HEIGHT = 100;
 
@@ -850,14 +850,11 @@ export default function VariantsFlow({
   const canvasHeight = useMemo(() => {
     const ROW_HEIGHT = 48;
     const BASE_HEIGHT = 64;
-    const MIN_SPACING = 50;
-    return (
-      200 +
-      variantsConfig.reduce((sum: number, config: any) => {
-        const variablesLength = config.variables?.length || 1;
-        return sum + BASE_HEIGHT + variablesLength * ROW_HEIGHT + MIN_SPACING;
-      }, 0)
-    );
+    const MIN_SPACING = 80;
+    return variantsConfig.reduce((sum: number, config: any) => {
+      const variablesLength = config.variables?.length || 1;
+      return sum + BASE_HEIGHT + variablesLength * ROW_HEIGHT + MIN_SPACING;
+    }, 0);
   }, [variantsConfig]);
 
   const handleChildModalCancel = () => {
@@ -958,6 +955,7 @@ export default function VariantsFlow({
           preventScrolling={false}
           minZoom={1}
           maxZoom={1}
+          proOptions={{ hideAttribution: true }}
         ></ReactFlow>
       </Box>
       {!isEditMode && (
