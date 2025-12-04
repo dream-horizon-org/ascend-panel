@@ -345,8 +345,8 @@ const ExperimentForm = ({
             <AscendTextFieldControlled
               name="id"
               control={control}
-              label="Experiment ID"
-              placeholder="Enter experiment id"
+              label="Experiment Key"
+              placeholder="Enter experiment Key"
               infoText="Unique identifier for the experiment"
               disabled={isEditMode}
             />
