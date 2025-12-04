@@ -27,6 +27,8 @@ export const useExperiments = (params?: ExperimentFilters) => {
   return useQuery<ExperimentsResponse, Error>({
     queryKey: experimentKeys.list(params),
     queryFn: () => fetchExperiments(params),
+    retry: 3, // Only retry once for faster error feedback
+    retryDelay: 1000, // 1 second delay before retry
   });
 };
 

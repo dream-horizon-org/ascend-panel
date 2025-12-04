@@ -19,6 +19,8 @@ export const useTags = (
     queryKey: experimentKeys.tags(),
     queryFn: fetchTags,
     staleTime: 10 * 60 * 1000, // 10 minutes - tags don't change often
+    retry: 1, // Only retry once for faster error feedback
+    retryDelay: 1000,
     ...options,
   });
 };
