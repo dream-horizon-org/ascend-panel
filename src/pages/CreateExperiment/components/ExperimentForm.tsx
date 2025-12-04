@@ -99,35 +99,36 @@ const ExperimentForm = ({
     if (isEditMode) {
       // For edit mode: check if editable fields have changed from defaultValues
       if (!defaultValues) return true;
-      
+
       const currentDescription = watchedDescription || "";
       const originalDescription = defaultValues.description || "";
-      
+
       const currentRateLimit = watchedRateLimit || "100%";
       const originalRateLimit = defaultValues.rateLimit || "100%";
       // Normalize rateLimit for comparison (remove % if present)
       const normalizeRateLimit = (value: string) => {
         return value.replace("%", "").trim();
       };
-      
+
       const currentMaxUsers = watchedMaxUsers || "";
       const originalMaxUsers = defaultValues.maxUsers || "";
-      
+
       // Check if any editable field has changed
       const descriptionChanged = currentDescription !== originalDescription;
       const rateLimitChanged =
         normalizeRateLimit(currentRateLimit) !==
         normalizeRateLimit(originalRateLimit);
       const maxUsersChanged = currentMaxUsers !== originalMaxUsers;
-      
+
       return descriptionChanged || rateLimitChanged || maxUsersChanged;
     } else {
       // For create mode: check if required fields have meaningful data
       // The form starts with default variants, so we only need to check required fields
       const hasName = watchedName && watchedName.trim() !== "";
       const hasId = watchedId && watchedId.trim() !== "";
-      const hasHypothesis = watchedHypothesis && watchedHypothesis.trim() !== "";
-      
+      const hasHypothesis =
+        watchedHypothesis && watchedHypothesis.trim() !== "";
+
       // Form has changes if all required fields are filled
       return hasName && hasId && hasHypothesis;
     }
@@ -159,7 +160,7 @@ const ExperimentForm = ({
 
     const observer = new IntersectionObserver(
       observerCallback,
-      observerOptions
+      observerOptions,
     );
 
     sections.forEach(({ id }) => {

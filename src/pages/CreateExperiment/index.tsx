@@ -83,7 +83,7 @@ const CreateExperiment = () => {
       isCreateError,
       createError,
       createExperimentMutation,
-    ]
+    ],
   );
 
   return (

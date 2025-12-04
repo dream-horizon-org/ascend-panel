@@ -79,7 +79,7 @@ export default function ExperimentDetailsSnackbars({
       isTerminateSuccess,
       isTerminateError,
       terminateError?.message,
-    ]
+    ],
   );
 
   return (

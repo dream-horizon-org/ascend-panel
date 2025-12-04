@@ -26,9 +26,7 @@ interface EditExperimentFormProps {
   onDiscardConfirm?: () => void;
 }
 
-const EditExperimentForm = ({
-  experimentId,
-}: EditExperimentFormProps) => {
+const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
   const editExperimentMutation = useUpdateExperiment();
   const { data: experiment, isLoading: isLoadingExperiment } = useExperiment(
     experimentId || null,
@@ -203,12 +201,7 @@ const EditExperimentForm = ({
         onClose: () => editExperimentMutation.reset(),
       },
     ],
-    [
-      isUpdateSuccess,
-      isUpdateError,
-      updateError,
-      getErrorMessage,
-    ],
+    [isUpdateSuccess, isUpdateError, updateError, getErrorMessage],
   );
 
   const handleCancelSave = useCallback(() => {
@@ -216,12 +209,9 @@ const EditExperimentForm = ({
     setPendingFormData(null);
   }, []);
 
-  const handleResetForm = useCallback(
-    (resetFn: () => void) => {
-      setResetFormFn(() => resetFn);
-    },
-    [],
-  );
+  const handleResetForm = useCallback((resetFn: () => void) => {
+    setResetFormFn(() => resetFn);
+  }, []);
 
   const confirmModalConfig = useMemo(
     () => ({
