@@ -671,7 +671,7 @@ export default function VariantsFlow({
       const MIN_SPACING = 80;
       const START_X = 5;
       const START_Y = 0;
-      const ROW_HEIGHT = 48;
+      const ROW_HEIGHT = isEditMode ? 0 : 48;
       const BASE_HEIGHT = 64;
       const TARGETING_HEIGHT = 100;
 
