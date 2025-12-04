@@ -101,25 +101,6 @@ export default function AppBar() {
           >
             Feedback
           </Typography>
-          <IconButton
-            size="small"
-            sx={{
-              padding: 0,
-              minWidth: "auto",
-              "&:hover": {
-                backgroundColor: "transparent",
-              },
-            }}
-          >
-            <PowerSettingsNewIcon
-              sx={{
-                width: theme.customComponents.appBar.logoSize,
-                height: theme.customComponents.appBar.logoSize,
-                fontSize: theme.customComponents.appBar.logoSize,
-                color: theme.palette.text.primary,
-              }}
-            />
-          </IconButton>
         </Box>
       </Box>
     </MuiAppBar>
