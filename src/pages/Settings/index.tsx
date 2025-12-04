@@ -96,7 +96,6 @@ export default function Settings() {
   const [projectName, setProjectName] = useState("");
   const [projectNameError, setProjectNameError] = useState("");
 
-
   // API Key Modal State
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [apiKeyTenant, setApiKeyTenant] = useState<string>("");
