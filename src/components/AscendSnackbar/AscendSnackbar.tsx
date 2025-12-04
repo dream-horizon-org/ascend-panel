@@ -1,11 +1,11 @@
 import { FC } from "react";
-import { Snackbar, Alert, AlertColor } from "@mui/material";
+import { Snackbar, Alert, AlertColor, Fade } from "@mui/material";
 
 export interface AscendSnackbarProps {
   open: boolean;
   message: string;
   severity?: AlertColor;
-  autoHideDuration?: number;
+  autoHideDuration?: number | null;
   onClose: () => void;
   anchorOrigin?: {
     vertical: "top" | "bottom";
@@ -17,7 +17,7 @@ const AscendSnackbar: FC<AscendSnackbarProps> = ({
   open,
   message,
   severity = "info",
-  autoHideDuration = 6000,
+  autoHideDuration = 3000,
   onClose,
   anchorOrigin = { vertical: "top", horizontal: "center" },
 }) => {
@@ -27,6 +27,8 @@ const AscendSnackbar: FC<AscendSnackbarProps> = ({
       autoHideDuration={autoHideDuration}
       onClose={onClose}
       anchorOrigin={anchorOrigin}
+      TransitionComponent={Fade}
+      TransitionProps={{ timeout: 500 }}
     >
       <Alert onClose={onClose} severity={severity} sx={{ width: "100%" }}>
         {message}
