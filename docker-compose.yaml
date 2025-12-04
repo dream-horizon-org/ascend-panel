@@ -1,0 +1,13 @@
+name: panel
+
+services:
+  ascend-panel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - '9000:80'
+    environment:
+      API_BASE_URL: 'http://localhost:8000'
+    restart: unless-stopped
