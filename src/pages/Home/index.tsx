@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import {
   Box,
   Typography,
@@ -32,7 +38,9 @@ import {
   ExperimentFilters,
 } from "../../network";
 import CsvUploadModal from "../../components/CsvUploadModal/CsvUploadModal";
+import CreateAudienceModal from "../../components/CreateAudienceModal/CreateAudienceModal";
 import AscendSnackbar from "../../components/AscendSnackbar/AscendSnackbar";
+import { useDebounce } from "../../utils/useDebounce";
 
 interface ColumnData {
   dataKey: keyof Experiment | "actions";
@@ -142,13 +150,6 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
     handleClose();
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    console.log(`Delete experiment: ${row.experimentId}`);
-    // TODO: Implement delete functionality when API is available
-    handleClose();
-  };
-
   return (
     <>
       <IconButton size="small" onClick={handleMenuClick}>
@@ -173,16 +174,6 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
             {isTerminating ? "Terminating..." : "Terminate"}
           </AscendMenuItem>
         )}
-        <AscendMenuItem
-          onClick={handleDelete}
-          sx={{
-            fontSize: "12px",
-            fontWeight: 600,
-            color: theme.customComponents.actions.delete,
-          }}
-        >
-          Delete
-        </AscendMenuItem>
       </AscendMenu>
 
       {/* Snackbars for terminate action */}
@@ -422,7 +413,23 @@ const Home: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [tagsFilter, setTagsFilter] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // Debounce filter values (300ms delay)
+  const debouncedSearchText = useDebounce(searchText, 300);
+  const debouncedStatusFilter = useDebounce(statusFilter, 300);
+  const debouncedTagsFilter = useDebounce(tagsFilter, 300);
+
+  // Audience creation flow states
+  const [isCreateAudienceModalOpen, setIsCreateAudienceModalOpen] =
+    useState<boolean>(false);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState<boolean>(false);
+  const [createdAudienceId, setCreatedAudienceId] = useState<number | null>(
+    null,
+  );
+  const [showAudienceSuccessSnackbar, setShowAudienceSuccessSnackbar] =
+    useState<boolean>(false);
+  const [showCsvUploadSuccessSnackbar, setShowCsvUploadSuccessSnackbar] =
+    useState<boolean>(false);
 
   // Accumulated experiments for infinite scroll
   const [allExperiments, setAllExperiments] = useState<Experiment[]>([]);
@@ -432,45 +439,50 @@ const Home: React.FC = () => {
   const { data: tagsData, isLoading: isTagsLoading } = useTags();
   const tagOptions = tagsData ?? [];
 
-  // Build filter params for API - comma-separated values for status and tag
+  // Build filter params for API - uses debounced values
   const filterParams = useMemo<ExperimentFilters>(() => {
     const params: ExperimentFilters = {
       limit: DEFAULT_PAGE_SIZE,
       page: currentPage,
     };
 
-    if (searchText.trim()) {
-      params.name = searchText.trim();
+    if (debouncedSearchText.trim()) {
+      params.name = debouncedSearchText.trim();
     }
 
     // Comma-separated status values
-    if (statusFilter.length > 0) {
-      params.status = statusFilter.join(",");
+    if (debouncedStatusFilter.length > 0) {
+      params.status = debouncedStatusFilter.join(",");
     }
 
     // Comma-separated tag values
-    if (tagsFilter.length > 0) {
-      params.tag = tagsFilter.join(",");
+    if (debouncedTagsFilter.length > 0) {
+      params.tag = debouncedTagsFilter.join(",");
     }
 
     return params;
-  }, [searchText, statusFilter, tagsFilter, currentPage]);
+  }, [
+    debouncedSearchText,
+    debouncedStatusFilter,
+    debouncedTagsFilter,
+    currentPage,
+  ]);
 
-  // Fetch experiments from API
+  // Fetch experiments from API (uses queryClient retry configuration)
   const {
     data: experimentsData,
     isLoading,
     isFetching,
     isError,
-    error,
+    refetch,
   } = useExperiments(filterParams);
 
-  // Reset accumulated experiments when filters change
+  // Reset accumulated experiments when debounced filters change
   useEffect(() => {
     setAllExperiments([]);
     setCurrentPage(1);
     setHasMore(true);
-  }, [searchText, statusFilter, tagsFilter]);
+  }, [debouncedSearchText, debouncedStatusFilter, debouncedTagsFilter]);
 
   // Append new experiments when data arrives
   useEffect(() => {
@@ -481,7 +493,6 @@ const Home: React.FC = () => {
       } else {
         // Subsequent pages - append experiments
         setAllExperiments((prev) => {
-          // Avoid duplicates by checking experimentId
           const existingIds = new Set(prev.map((e) => e.experimentId));
           const newExperiments = experimentsData.experiments.filter(
             (e) => !existingIds.has(e.experimentId),
@@ -510,6 +521,13 @@ const Home: React.FC = () => {
     setHasMore(true);
   };
 
+  const handleRefresh = () => {
+    setAllExperiments([]);
+    setCurrentPage(1);
+    setHasMore(true);
+    refetch();
+  };
+
   const handleCreateExperiment = () => {
     navigate("/create-experiment");
   };
@@ -535,12 +553,33 @@ const Home: React.FC = () => {
     });
   };
 
+  // IntersectionObserver ref for infinite scroll
+  const observerRef = useRef<HTMLDivElement>(null);
+
   // Load more experiments when scrolling to the end
   const loadMore = useCallback(() => {
-    if (!isFetching && hasMore) {
-      setCurrentPage((prev) => prev + 1);
-    }
+    if (isFetching || !hasMore) return;
+    setCurrentPage((prev) => prev + 1);
   }, [isFetching, hasMore]);
+
+  // IntersectionObserver for infinite scroll
+  useEffect(() => {
+    const currentRef = observerRef.current;
+    if (!currentRef) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isFetching && hasMore) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(currentRef);
+
+    return () => observer.disconnect();
+  }, [loadMore, isFetching, hasMore]);
 
   // Memoize table components to prevent unnecessary re-renders
   const tableComponents = useMemo(
@@ -624,17 +663,51 @@ const Home: React.FC = () => {
           <AscendButton
             startIcon={<AddIcon />}
             size="small"
-            onClick={() => setIsCsvModalOpen(true)}
+            onClick={() => setIsCreateAudienceModalOpen(true)}
           >
-            Cohort
+            Audience
           </AscendButton>
         </Box>
       </Box>
 
-      {/* CSV Upload Modal for Cohort */}
+      {/* Create Audience Modal - Step 1 */}
+      <CreateAudienceModal
+        open={isCreateAudienceModalOpen}
+        onClose={() => setIsCreateAudienceModalOpen(false)}
+        onSuccess={(audienceId) => {
+          setCreatedAudienceId(audienceId);
+          setShowAudienceSuccessSnackbar(true);
+          setIsCsvModalOpen(true);
+        }}
+      />
+
+      {/* Audience Created Success Snackbar */}
+      <AscendSnackbar
+        open={showAudienceSuccessSnackbar}
+        message="Audience created successfully"
+        severity="success"
+        onClose={() => setShowAudienceSuccessSnackbar(false)}
+      />
+
+      {/* CSV Upload Modal - Step 2 */}
       <CsvUploadModal
         open={isCsvModalOpen}
-        onClose={() => setIsCsvModalOpen(false)}
+        onClose={() => {
+          setIsCsvModalOpen(false);
+          setCreatedAudienceId(null);
+        }}
+        onUploadSuccess={() => {
+          setShowCsvUploadSuccessSnackbar(true);
+        }}
+        audienceId={createdAudienceId ?? undefined}
+      />
+
+      {/* CSV Upload Success Snackbar */}
+      <AscendSnackbar
+        open={showCsvUploadSuccessSnackbar}
+        message="CSV uploaded successfully"
+        severity="success"
+        onClose={() => setShowCsvUploadSuccessSnackbar(false)}
       />
 
       {/* Table */}
@@ -650,28 +723,7 @@ const Home: React.FC = () => {
           >
             <CircularProgress />
           </Box>
-        ) : isError ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100%",
-              flexDirection: "column",
-              gap: 2,
-            }}
-          >
-            <Typography color="error">
-              Failed to load experiments: {error?.message || "Unknown error"}
-            </Typography>
-            <AscendButton
-              variant="outlined"
-              onClick={() => window.location.reload()}
-            >
-              Retry
-            </AscendButton>
-          </Box>
-        ) : allExperiments.length === 0 && !isFetching ? (
+        ) : isError || (allExperiments.length === 0 && !isFetching) ? (
           <Box
             sx={{
               display: "flex",
@@ -683,15 +735,22 @@ const Home: React.FC = () => {
             }}
           >
             <Typography color="text.secondary">
-              {hasFilters
-                ? "No experiments match your filters"
-                : "No experiments found"}
+              {isError
+                ? "No experiments present"
+                : hasFilters
+                  ? "No experiments match your filters"
+                  : "No experiments present"}
             </Typography>
-            {hasFilters && (
-              <AscendButton variant="text" onClick={clearFilters}>
-                Clear Filters
+            <Box sx={{ display: "flex", gap: 1 }}>
+              {hasFilters && (
+                <AscendButton variant="text" onClick={clearFilters}>
+                  Clear Filters
+                </AscendButton>
+              )}
+              <AscendButton variant="outlined" onClick={handleRefresh}>
+                Refresh
               </AscendButton>
-            )}
+            </Box>
           </Box>
         ) : (
           <Box
@@ -702,19 +761,20 @@ const Home: React.FC = () => {
               overflow: "hidden",
             }}
           >
-            <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+            <Box sx={{ flexGrow: 1, minHeight: 0, overflow: "auto" }}>
               <TableVirtuoso
                 style={{ height: "100%" }}
                 data={allExperiments}
                 components={tableComponents}
                 fixedHeaderContent={TableHeader}
                 itemContent={createRowContent(theme)}
-                endReached={loadMore}
                 overscan={200}
               />
+              {/* Sentinel element for IntersectionObserver */}
+              <Box ref={observerRef} sx={{ height: 20, width: "100%" }} />
             </Box>
             {/* Loading indicator for infinite scroll */}
-            {isFetching && currentPage > 1 && (
+            {isFetching && (
               <Box
                 sx={{
                   display: "flex",
@@ -730,7 +790,15 @@ const Home: React.FC = () => {
                   color="text.secondary"
                   sx={{ ml: 1 }}
                 >
-                  Loading more...
+                  Loading...
+                </Typography>
+              </Box>
+            )}
+            {/* No more data message */}
+            {!hasMore && allExperiments.length > 0 && (
+              <Box sx={{ py: 1, px: 1, flexShrink: 0, textAlign: "center" }}>
+                <Typography variant="body2" color="text.secondary">
+                  No more experiments
                 </Typography>
               </Box>
             )}

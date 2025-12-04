@@ -8,24 +8,26 @@ import {
   Box,
   Typography,
   IconButton,
-  Alert,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import CloseIcon from "@mui/icons-material/Close";
+import AscendSnackbar from "../AscendSnackbar/AscendSnackbar";
 import { useImportCohort } from "../../network";
 
 interface CsvUploadModalProps {
   open: boolean;
   onClose: () => void;
+  onUploadSuccess?: () => void;
   audienceId?: string | number;
 }
 
 export default function CsvUploadModal({
   open,
   onClose,
-  audienceId = "1",
+  onUploadSuccess,
+  audienceId,
 }: CsvUploadModalProps) {
   const theme = useTheme();
   const [file, setFile] = useState<File | null>(null);
@@ -83,6 +85,11 @@ export default function CsvUploadModal({
   const handleUpload = async () => {
     if (!file) return;
 
+    if (!audienceId) {
+      setError("No audience ID provided. Please create an audience first.");
+      return;
+    }
+
     importMutation.mutate(
       {
         audienceId,
@@ -95,6 +102,7 @@ export default function CsvUploadModal({
         onSuccess: () => {
           console.log("Upload successful");
           handleClose();
+          onUploadSuccess?.();
         },
         onError: (err) => {
           console.error("Upload error:", err);
@@ -127,13 +135,34 @@ export default function CsvUploadModal({
         </IconButton>
       </DialogTitle>
       <DialogContent>
+        {/* Audience ID Display */}
+        {audienceId && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              mb: 2,
+              p: 1.5,
+              backgroundColor: theme.palette.action.hover,
+              borderRadius: 1,
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              Audience ID:
+            </Typography>
+            <Typography variant="body2" fontWeight={600}>
+              {audienceId}
+            </Typography>
+          </Box>
+        )}
+
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            mt: 2,
           }}
         >
           {/* Drop Zone */}
@@ -245,13 +274,6 @@ export default function CsvUploadModal({
               </Box>
             )}
           </Box>
-
-          {/* Error Alert */}
-          {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {error}
-            </Alert>
-          )}
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -266,6 +288,14 @@ export default function CsvUploadModal({
           {importMutation.isPending ? "Uploading..." : "Upload"}
         </Button>
       </DialogActions>
+
+      {/* Error Snackbar */}
+      <AscendSnackbar
+        open={!!error}
+        message={error || ""}
+        severity="error"
+        onClose={() => setError(null)}
+      />
     </Dialog>
   );
 }
