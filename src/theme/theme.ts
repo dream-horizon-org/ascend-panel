@@ -73,18 +73,31 @@ type CustomComponents = {
   status: {
     live: {
       background: string;
+      color: string;
     };
     draft: {
       background: string;
+      color: string;
     };
     completed: {
       background: string;
+      color: string;
     };
     paused: {
       background: string;
+      color: string;
     };
     archived: {
       background: string;
+      color: string;
+    };
+    concluded: {
+      background: string;
+      color: string;
+    };
+    terminated: {
+      background: string;
+      color: string;
     };
   };
   chip: {
@@ -230,19 +243,32 @@ export const theme = createTheme({
     },
     status: {
       live: {
-        background: "#C8E6C9",
+        background: "#A5D6A7",
+        color: "#212121",
       },
       draft: {
-        background: "#E0E0E0",
+        background: "#FFCC80",
+        color: "#212121",
       },
       completed: {
-        background: "#E1BEE7",
+        background: "#CE93D8",
+        color: "#212121",
       },
       paused: {
-        background: "#FFE0B2",
+        background: "#BDBDBD",
+        color: "#212121",
       },
       archived: {
-        background: "#FFCDD2",
+        background: "#EF9A9A",
+        color: "#212121",
+      },
+      concluded: {
+        background: "#D1C4E9",
+        color: "#212121",
+      },
+      terminated: {
+        background: "#EF9A9A",
+        color: "#212121",
       },
     },
     chip: {

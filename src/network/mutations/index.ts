@@ -55,3 +55,6 @@ export type {
 // Rotate API Key
 export { rotateApiKey, useRotateApiKey } from "./rotateApiKey";
 export type { RotateApiKeyRequest, RotateApiKeyResponse } from "./rotateApiKey";
+// Import Cohort
+export { importCohort, useImportCohort } from "./importCohort";
+export type { ImportCohortRequest, ImportCohortResponse } from "./importCohort";

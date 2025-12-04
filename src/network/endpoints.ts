@@ -16,7 +16,6 @@ export const endpoints = {
     update: (id: string | number) => `${API_BASE}/experiments/${id}`,
     tags: `${API_BASE}/experiments/tags`,
   },
-
   // Tenant endpoints
   tenants: {
     list: `${API_BASE}/tenants`,
@@ -38,6 +37,10 @@ export const endpoints = {
       `${API_BASE}/tenants/${tenantId}/projects/${projectId}/api-keys/${keyId}/rotate`,
     detail: (tenantId: string, projectId: string, keyId: string) =>
       `${API_BASE}/tenants/${tenantId}/projects/${projectId}/api-keys/${keyId}`,
+  },
+  // Audience/Cohort endpoints
+  audiences: {
+    import: (id: string | number) => `${API_BASE}/audiences/${id}/imports`,
   },
 } as const;
 

@@ -30,6 +30,7 @@ import {
   Experiment,
   ExperimentFilters,
 } from "../../network";
+import CsvUploadModal from "../../components/CsvUploadModal/CsvUploadModal";
 
 interface ColumnData {
   dataKey: keyof Experiment | "actions";
@@ -104,9 +105,15 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const handleClose = () => setAnchorEl(null);
+  const handleClose = (e?: React.MouseEvent | {}) => {
+    if (e && "stopPropagation" in e) {
+      (e as React.MouseEvent).stopPropagation();
+    }
+    setAnchorEl(null);
+  };
 
-  const handleAction = (action: string) => () => {
+  const handleAction = (action: string) => (e: React.MouseEvent) => {
+    e.stopPropagation();
     console.log(`${action} experiment: ${row.experimentId}`);
     handleClose();
   };
@@ -214,9 +221,10 @@ const StatusChip: React.FC<{ status: string; theme: any }> = ({
         height: "28px",
         borderRadius: "4px",
         backgroundColor: config.background,
-        fontWeight: 400,
-        fontSize: "14px",
-        "& .MuiChip-label": { padding: "4px 8px", lineHeight: 1 },
+        color: config.color,
+        fontWeight: 500,
+        fontSize: "12px",
+        "& .MuiChip-label": { padding: "0 12px", lineHeight: 1 },
       }}
     />
   );
@@ -340,6 +348,7 @@ const createRowContent = (theme: any) => (_index: number, row: Experiment) => (
             key={column.dataKey}
             align="center"
             sx={{ width: column.width }}
+            onClick={(e) => e.stopPropagation()}
           >
             <RowActionsMenu row={row} />
           </TableCell>
@@ -376,6 +385,7 @@ const Home: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [tagsFilter, setTagsFilter] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [isCsvModalOpen, setIsCsvModalOpen] = useState<boolean>(false);
 
   // Fetch tags from API
   const { data: tagsData, isLoading: isTagsLoading } = useTags();
@@ -531,8 +541,21 @@ const Home: React.FC = () => {
           >
             Experiment
           </AscendButton>
+          <AscendButton
+            startIcon={<AddIcon />}
+            size="small"
+            onClick={() => setIsCsvModalOpen(true)}
+          >
+            Cohort
+          </AscendButton>
         </Box>
       </Box>
+
+      {/* CSV Upload Modal for Cohort */}
+      <CsvUploadModal
+        open={isCsvModalOpen}
+        onClose={() => setIsCsvModalOpen(false)}
+      />
 
       {/* Table */}
       <Box sx={{ flexGrow: 1, height: "calc(100vh - 200px)" }}>
