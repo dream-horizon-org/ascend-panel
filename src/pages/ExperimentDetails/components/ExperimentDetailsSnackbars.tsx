@@ -75,13 +75,11 @@ export default function ExperimentDetailsSnackbars({
       onCopySuccessClose,
       isConcludeSuccess,
       isConcludeError,
-      concludeError,
-      concludeMutation,
+      concludeError?.message,
       isTerminateSuccess,
       isTerminateError,
-      terminateError,
-      terminateMutation,
-    ],
+      terminateError?.message,
+    ]
   );
 
   return (

@@ -540,9 +540,9 @@ export default function VariantsFlow({
   });
   const isAssignCohortsDirectly = isAssignCohortsDirectlyField.value;
 
-  const handleParentModalOpen = () => {
+  const handleParentModalOpen = useCallback(() => {
     setParentModalOpen(true);
-  };
+  }, []);
 
   const handleChildModalOpen = () => {
     setChildModalOpen(true);
@@ -651,14 +651,17 @@ export default function VariantsFlow({
   );
 
   // Function to handle traffic split change with circular redistribution
-  const handleTrafficSplitChange = (index: number, value: string) => {
-    if (value !== "" && !/^\d+$/.test(value)) return;
+  const handleTrafficSplitChange = useCallback(
+    (index: number, value: string) => {
+      if (value !== "" && !/^\d+$/.test(value)) return;
 
-    const num = Math.min(100, Math.max(0, parseInt(value || "0")));
-    const variant = variantFields[index];
-    updateVariant(index, { ...variant, trafficSplit: num.toString() });
-    setIsTrafficEdited(true);
-  };
+      const num = Math.min(100, Math.max(0, parseInt(value || "0")));
+      const variant = variantFields[index];
+      updateVariant(index, { ...variant, trafficSplit: num.toString() });
+      setIsTrafficEdited(true);
+    },
+    [variantFields, updateVariant],
+  );
 
   // Generate nodes with onChange handlers (memoized for performance)
   const nodes = useMemo(() => {
@@ -837,7 +840,7 @@ export default function VariantsFlow({
     removeVariant,
     handleTrafficSplitChange,
     handleTrafficBlur,
-    isTrafficEdited,
+    handleParentModalOpen,
     isAssignCohortsDirectly,
   ]);
 
