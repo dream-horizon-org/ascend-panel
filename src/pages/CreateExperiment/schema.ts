@@ -26,9 +26,9 @@ export const experimentSchema = z.object({
       trafficSplit: z.string(),
       variables: z.array(
         z.object({
-          key: z.string(),
-          data_type: z.string(),
-          value: z.string(),
+          key: z.string().min(1, " "),
+          data_type: z.string().min(1, " "),
+          value: z.string().min(1, " "),
         }),
       ),
       cohorts: z.array(z.string()).optional(),

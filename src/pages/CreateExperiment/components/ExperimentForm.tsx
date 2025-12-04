@@ -45,10 +45,17 @@ const ExperimentForm = ({
     useState<string>("experiment-details");
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
-  const { control, handleSubmit, setValue, getValues, watch, reset } =
-    useForm<ExperimentFormData>({
-      resolver: zodResolver(experimentSchema),
-      mode: "onChange",
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    getValues,
+    watch,
+    reset,
+    formState: { isValid },
+  } = useForm<ExperimentFormData>({
+    resolver: zodResolver(experimentSchema),
+    mode: "onChange",
       defaultValues: defaultValues || {
         name: "",
         id: "",
@@ -539,7 +546,7 @@ const ExperimentForm = ({
               <Button
                 variant="contained"
                 onClick={handleSubmit(handleFormSubmit)}
-                disabled={isLoading || !hasChanges}
+                disabled={isLoading || !hasChanges || !isValid}
                 sx={{
                   backgroundColor: "#0060E5",
                   color: "white",
