@@ -38,11 +38,13 @@ export default function AppBar() {
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Box
+            component="img"
+            src="/Ascend-logo.png"
+            alt="Ascend Logo"
             sx={{
               width: theme.customComponents.appBar.logoSize,
               height: theme.customComponents.appBar.logoSize,
-              backgroundColor: theme.palette.neutral.light,
-              borderRadius: theme.customComponents.appBar.logoBorderRadius,
+              objectFit: "contain",
             }}
           />
           <Typography

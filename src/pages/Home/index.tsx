@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -27,10 +27,12 @@ import AscendMenuItem from "../../components/AscendMenuItem/AscendMenuItem";
 import {
   useTags,
   useExperiments,
+  useTerminateExperiment,
   Experiment,
   ExperimentFilters,
 } from "../../network";
 import CsvUploadModal from "../../components/CsvUploadModal/CsvUploadModal";
+import AscendSnackbar from "../../components/AscendSnackbar/AscendSnackbar";
 
 interface ColumnData {
   dataKey: keyof Experiment | "actions";
@@ -39,7 +41,7 @@ interface ColumnData {
 }
 
 const COLUMNS: ColumnData[] = [
-  { width: "15%", label: "#ID", dataKey: "experimentId" },
+  { width: "15%", label: "Experiment ID", dataKey: "experimentId" },
   { width: "35%", label: "Name", dataKey: "name" },
   { width: "10%", label: "Status", dataKey: "status" },
   { width: "25%", label: "Tags", dataKey: "tags" },
@@ -105,6 +107,18 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
+  // Terminate mutation
+  const terminateMutation = useTerminateExperiment();
+  const {
+    isPending: isTerminating,
+    isError: isTerminateError,
+    error: terminateError,
+    isSuccess: isTerminateSuccess,
+  } = terminateMutation;
+
+  // Check if experiment can be terminated (not already terminated or concluded)
+  const canTerminate = !["TERMINATED", "CONCLUDED"].includes(row.status);
+
   const handleClose = (e?: React.MouseEvent | {}) => {
     if (e && "stopPropagation" in e) {
       (e as React.MouseEvent).stopPropagation();
@@ -112,15 +126,27 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
     setAnchorEl(null);
   };
 
-  const handleAction = (action: string) => (e: React.MouseEvent) => {
+  const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log(`${action} experiment: ${row.experimentId}`);
+    setAnchorEl(e.currentTarget as HTMLElement);
+  };
+
+  const handleTerminate = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isTerminating && canTerminate) {
+      terminateMutation.mutate({
+        id: row.experimentId,
+        data: { status: "TERMINATED" },
+      });
+    }
     handleClose();
   };
 
-  const handleMenuClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent row click navigation
-    setAnchorEl(e.currentTarget as HTMLElement);
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log(`Delete experiment: ${row.experimentId}`);
+    // TODO: Implement delete functionality when API is available
+    handleClose();
   };
 
   return (
@@ -138,20 +164,17 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
           },
         }}
       >
+        {canTerminate && (
+          <AscendMenuItem
+            onClick={handleTerminate}
+            disabled={isTerminating}
+            sx={{ fontSize: "12px", fontWeight: 600 }}
+          >
+            {isTerminating ? "Terminating..." : "Terminate"}
+          </AscendMenuItem>
+        )}
         <AscendMenuItem
-          onClick={handleAction("Clone")}
-          sx={{ fontSize: "12px", fontWeight: 600 }}
-        >
-          Clone
-        </AscendMenuItem>
-        <AscendMenuItem
-          onClick={handleAction("Terminate")}
-          sx={{ fontSize: "12px", fontWeight: 600 }}
-        >
-          Terminate
-        </AscendMenuItem>
-        <AscendMenuItem
-          onClick={handleAction("Delete")}
+          onClick={handleDelete}
           sx={{
             fontSize: "12px",
             fontWeight: 600,
@@ -161,6 +184,20 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
           Delete
         </AscendMenuItem>
       </AscendMenu>
+
+      {/* Snackbars for terminate action */}
+      <AscendSnackbar
+        open={isTerminateSuccess}
+        message="Experiment terminated successfully"
+        severity="success"
+        onClose={() => terminateMutation.reset()}
+      />
+      <AscendSnackbar
+        open={isTerminateError}
+        message={terminateError?.message || "Failed to terminate experiment"}
+        severity="error"
+        onClose={() => terminateMutation.reset()}
+      />
     </>
   );
 };
@@ -387,6 +424,10 @@ const Home: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState<boolean>(false);
 
+  // Accumulated experiments for infinite scroll
+  const [allExperiments, setAllExperiments] = useState<Experiment[]>([]);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+
   // Fetch tags from API
   const { data: tagsData, isLoading: isTagsLoading } = useTags();
   const tagOptions = tagsData ?? [];
@@ -419,11 +460,40 @@ const Home: React.FC = () => {
   const {
     data: experimentsData,
     isLoading,
+    isFetching,
     isError,
     error,
   } = useExperiments(filterParams);
 
-  const experiments = experimentsData?.experiments ?? [];
+  // Reset accumulated experiments when filters change
+  useEffect(() => {
+    setAllExperiments([]);
+    setCurrentPage(1);
+    setHasMore(true);
+  }, [searchText, statusFilter, tagsFilter]);
+
+  // Append new experiments when data arrives
+  useEffect(() => {
+    if (experimentsData?.experiments) {
+      if (currentPage === 1) {
+        // First page - replace all experiments
+        setAllExperiments(experimentsData.experiments);
+      } else {
+        // Subsequent pages - append experiments
+        setAllExperiments((prev) => {
+          // Avoid duplicates by checking experimentId
+          const existingIds = new Set(prev.map((e) => e.experimentId));
+          const newExperiments = experimentsData.experiments.filter(
+            (e) => !existingIds.has(e.experimentId),
+          );
+          return [...prev, ...newExperiments];
+        });
+      }
+      // Update hasMore based on pagination
+      setHasMore(experimentsData.pagination?.hasNext ?? false);
+    }
+  }, [experimentsData, currentPage]);
+
   const pagination = experimentsData?.pagination;
 
   const hasFilters =
@@ -436,6 +506,8 @@ const Home: React.FC = () => {
     setStatusFilter([]);
     setTagsFilter([]);
     setCurrentPage(1);
+    setAllExperiments([]);
+    setHasMore(true);
   };
 
   const handleCreateExperiment = () => {
@@ -444,17 +516,14 @@ const Home: React.FC = () => {
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(event.target.value);
-    setCurrentPage(1); // Reset to first page on search
   };
 
   const handleStatusChange = (value: string | string[]) => {
     setStatusFilter(value as string[]);
-    setCurrentPage(1); // Reset to first page on filter change
   };
 
   const handleTagsChange = (value: string | string[]) => {
     setTagsFilter(value as string[]);
-    setCurrentPage(1); // Reset to first page on filter change
   };
 
   const handleRowClick = (experiment: Experiment) => {
@@ -465,6 +534,13 @@ const Home: React.FC = () => {
       },
     });
   };
+
+  // Load more experiments when scrolling to the end
+  const loadMore = useCallback(() => {
+    if (!isFetching && hasMore) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  }, [isFetching, hasMore]);
 
   // Memoize table components to prevent unnecessary re-renders
   const tableComponents = useMemo(
@@ -479,12 +555,16 @@ const Home: React.FC = () => {
         gap: "24px",
         display: "flex",
         flexDirection: "column",
+        height: "100%",
+        overflow: "hidden",
       }}
     >
       {/* Header */}
       <Box
         sx={{
           height: "35px",
+          minHeight: "35px",
+          flexShrink: 0,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -558,7 +638,7 @@ const Home: React.FC = () => {
       />
 
       {/* Table */}
-      <Box sx={{ flexGrow: 1, height: "calc(100vh - 200px)" }}>
+      <Box sx={{ flexGrow: 1, minHeight: 0, overflow: "hidden" }}>
         {isLoading ? (
           <Box
             sx={{
@@ -591,7 +671,7 @@ const Home: React.FC = () => {
               Retry
             </AscendButton>
           </Box>
-        ) : experiments.length === 0 ? (
+        ) : allExperiments.length === 0 && !isFetching ? (
           <Box
             sx={{
               display: "flex",
@@ -614,48 +694,56 @@ const Home: React.FC = () => {
             )}
           </Box>
         ) : (
-          <>
-            <TableVirtuoso
-              data={experiments}
-              components={tableComponents}
-              fixedHeaderContent={TableHeader}
-              itemContent={createRowContent(theme)}
-            />
-            {pagination && (
+          <Box
+            sx={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            }}
+          >
+            <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+              <TableVirtuoso
+                style={{ height: "100%" }}
+                data={allExperiments}
+                components={tableComponents}
+                fixedHeaderContent={TableHeader}
+                itemContent={createRowContent(theme)}
+                endReached={loadMore}
+                overscan={200}
+              />
+            </Box>
+            {/* Loading indicator for infinite scroll */}
+            {isFetching && currentPage > 1 && (
               <Box
                 sx={{
                   display: "flex",
-                  justifyContent: "space-between",
+                  justifyContent: "center",
                   alignItems: "center",
-                  mt: 2,
-                  px: 1,
+                  py: 1,
+                  flexShrink: 0,
                 }}
               >
-                <Typography variant="body2" color="text.secondary">
-                  Showing {experiments.length} of {pagination.totalCount}{" "}
-                  experiments
+                <CircularProgress size={20} />
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ ml: 1 }}
+                >
+                  Loading more...
                 </Typography>
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  <AscendButton
-                    variant="outlined"
-                    size="small"
-                    disabled={currentPage <= 1}
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  >
-                    Previous
-                  </AscendButton>
-                  <AscendButton
-                    variant="outlined"
-                    size="small"
-                    disabled={!pagination.hasNext}
-                    onClick={() => setCurrentPage((p) => p + 1)}
-                  >
-                    Next
-                  </AscendButton>
-                </Box>
               </Box>
             )}
-          </>
+            {/* Show total count */}
+            {pagination && (
+              <Box sx={{ py: 1, px: 1, flexShrink: 0 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Showing {allExperiments.length} of {pagination.totalCount}{" "}
+                  experiments
+                </Typography>
+              </Box>
+            )}
+          </Box>
         )}
       </Box>
     </Box>
