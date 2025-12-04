@@ -1167,7 +1167,9 @@ function CreateExperimentTargetingParentModal({
                       displayEmpty: true,
                       renderValue: (selected: unknown) => {
                         if (!selected || selected === "") {
-                          return <Box sx={{ color: "#999999" }}>Select field</Box>;
+                          return (
+                            <Box sx={{ color: "#999999" }}>Select field</Box>
+                          );
                         }
                         const displayNames: Record<string, string> = {
                           user_id: "User ID",
@@ -1183,7 +1185,10 @@ function CreateExperimentTargetingParentModal({
                           current_location_state: "Current Location State",
                           current_location_country: "Current Location Country",
                         };
-                        return displayNames[selected as string] || (selected as string);
+                        return (
+                          displayNames[selected as string] ||
+                          (selected as string)
+                        );
                       },
                     }}
                     onChange={(e) => {
@@ -1277,9 +1282,15 @@ function CreateExperimentTargetingParentModal({
                         displayEmpty: true,
                         renderValue: (selected: unknown) => {
                           if (!selected || selected === "") {
-                            return <Box sx={{ color: "#999999" }}>Select operator</Box>;
+                            return (
+                              <Box sx={{ color: "#999999" }}>
+                                Select operator
+                              </Box>
+                            );
                           }
-                          const option = options.find((opt) => opt.value === selected);
+                          const option = options.find(
+                            (opt) => opt.value === selected,
+                          );
                           return option?.label || (selected as string);
                         },
                       }}

@@ -54,45 +54,45 @@ const ExperimentForm = ({
     reset,
     formState: { isValid },
   } = useForm<ExperimentFormData>({
-      resolver: zodResolver(experimentSchema),
-      mode: "onChange",
-      defaultValues: defaultValues || {
-        name: "",
-        id: "",
-        hypothesis: "",
-        description: "",
-        tags: [],
-        rateLimit: "100",
-        maxUsers: "",
-        variants: [
+    resolver: zodResolver(experimentSchema),
+    mode: "onChange",
+    defaultValues: defaultValues || {
+      name: "",
+      id: "",
+      hypothesis: "",
+      description: "",
+      tags: [],
+      rateLimit: "100",
+      maxUsers: "",
+      variants: [
+        {
+          name: "Control Group",
+          trafficSplit: "50",
+          variables: [{ key: "", data_type: "", value: "" }],
+          cohorts: [],
+        },
+        {
+          name: "Variant 1",
+          trafficSplit: "50",
+          variables: [{ key: "", data_type: "", value: "" }],
+          cohorts: [],
+        },
+      ],
+      targeting: {
+        filters: [
           {
-            name: "Control Group",
-            trafficSplit: "50",
-            variables: [{ key: "", data_type: "", value: "" }],
-            cohorts: [],
-          },
-          {
-            name: "Variant 1",
-            trafficSplit: "50",
-            variables: [{ key: "", data_type: "", value: "" }],
-            cohorts: [],
+            operand: "",
+            operandDataType: "",
+            operator: "",
+            value: "",
+            condition: "IF",
           },
         ],
-        targeting: {
-          filters: [
-            {
-              operand: "",
-              operandDataType: "",
-              operator: "",
-              value: "",
-              condition: "IF",
-            },
-          ],
-          cohorts: [],
-          isAssignCohortsDirectly: false,
-        },
+        cohorts: [],
+        isAssignCohortsDirectly: false,
       },
-    });
+    },
+  });
 
   // Watch form fields for change detection
   const watchedName = watch("name");
