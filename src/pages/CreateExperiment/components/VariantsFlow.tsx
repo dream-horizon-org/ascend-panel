@@ -744,8 +744,14 @@ export default function VariantsFlow({
             onDeleteVariant: () => {
               // Only allow delete if more than two variants exist
               if (variantFields.length > 2) {
-                removeVariant(i);
-                setIsTrafficEdited(true); // Mark as edited since we're changing the distribution
+                if (isTrafficEdited) {
+                  // If traffic has been manually edited, just remove the variant
+                  removeVariant(i);
+                } else {
+                  // If not edited, remove variant and set flag to redistribute equally
+                  shouldRedistribute.current = true;
+                  removeVariant(i);
+                }
               }
             },
             onVariableChange: (index: number, field: string, value: string) => {
