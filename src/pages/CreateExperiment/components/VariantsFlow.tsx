@@ -958,6 +958,7 @@ export default function VariantsFlow({
           preventScrolling={false}
           minZoom={1}
           maxZoom={1}
+          proOptions={{ hideAttribution: true }}
         ></ReactFlow>
       </Box>
       {!isEditMode && (
