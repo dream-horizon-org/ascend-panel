@@ -54,8 +54,8 @@ const ExperimentForm = ({
     reset,
     formState: { isValid },
   } = useForm<ExperimentFormData>({
-    resolver: zodResolver(experimentSchema),
-    mode: "onChange",
+      resolver: zodResolver(experimentSchema),
+      mode: "onChange",
       defaultValues: defaultValues || {
         name: "",
         id: "",
@@ -81,10 +81,10 @@ const ExperimentForm = ({
         targeting: {
           filters: [
             {
-              operand: "app_version",
-              operandDataType: "STRING",
-              operator: "!=",
-              value: "12.3",
+              operand: "",
+              operandDataType: "",
+              operator: "",
+              value: "",
               condition: "IF",
             },
           ],
