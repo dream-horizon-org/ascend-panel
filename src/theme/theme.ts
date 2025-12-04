@@ -181,7 +181,7 @@ export const theme = createTheme({
     appBar: {
       height: "56px",
       padding: "12px",
-      logoSize: "24px",
+      logoSize: "18px",
       logoBorderRadius: "4px",
       titleFontSize: "18px",
       titleFontWeight: 600,
