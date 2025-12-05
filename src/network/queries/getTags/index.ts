@@ -4,10 +4,11 @@ import { endpoints } from "../../endpoints";
 import { experimentKeys } from "../sharedKeys";
 import type { TagsApiResponse, TagsResponse } from "./types";
 import { parseTagsResponse } from "./parser";
+import { SERVICE_NAME } from "../../../utils/contants";
 
 // Fetch tags function
 export const fetchTags = async (): Promise<TagsResponse> => {
-  const response = await api.get<TagsApiResponse>(endpoints.experiments.tags);
+  const response = await api.get<TagsApiResponse>(endpoints.experiments.tags,{headers: {service: SERVICE_NAME.EXPERIMENT}});
   return parseTagsResponse(response.data);
 };
 

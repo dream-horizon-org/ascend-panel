@@ -10,4 +10,6 @@ services:
       - '9000:80'
     environment:
       API_BASE_URL: 'http://localhost:8000'
+      AUDIENCE_API_BASE_URL: 'http://localhost:8250'
+      EXPERIMENT_API_BASE_URL: 'http://localhost:8100'
     restart: unless-stopped

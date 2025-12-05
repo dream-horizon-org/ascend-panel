@@ -8,16 +8,20 @@ import type {
   ExperimentsApiResponse,
 } from "./types";
 import { parseExperimentsResponse } from "./parser";
+import { SERVICE_NAME } from "../../../utils/contants";
 
 // Fetch experiments function
 export const fetchExperiments = async (
-  params?: ExperimentFilters,
+  params?: ExperimentFilters
 ): Promise<ExperimentsResponse> => {
   const response = await api.get<ExperimentsApiResponse>(
     endpoints.experiments.list,
     {
       params,
-    },
+      headers: {
+        service: SERVICE_NAME.EXPERIMENT,
+      },
+    }
   );
   return parseExperimentsResponse(response.data);
 };

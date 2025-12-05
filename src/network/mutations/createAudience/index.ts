@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
-import { audienceApi } from "../../apiClient";
+import apiClient from "../../apiClient";
 import { endpoints } from "../../endpoints";
+import { SERVICE_NAME } from "../../../utils/contants";
 
 export interface CreateAudienceRequest {
   name: string;
@@ -24,11 +25,12 @@ const transformRequest = (data: CreateAudienceRequest) => ({
 });
 
 export const createAudience = async (
-  data: CreateAudienceRequest,
+  data: CreateAudienceRequest
 ): Promise<CreateAudienceResponse> => {
-  const response = await audienceApi.post<CreateAudienceResponse>(
+  const response = await apiClient.post<CreateAudienceResponse>(
     endpoints.audiences.create,
     transformRequest(data),
+    {headers: {service: SERVICE_NAME.AUDIENCE}}
   );
   return response.data;
 };
