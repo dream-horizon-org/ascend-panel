@@ -25,12 +25,12 @@ const transformRequest = (data: CreateAudienceRequest) => ({
 });
 
 export const createAudience = async (
-  data: CreateAudienceRequest
+  data: CreateAudienceRequest,
 ): Promise<CreateAudienceResponse> => {
   const response = await apiClient.post<CreateAudienceResponse>(
     endpoints.audiences.create,
     transformRequest(data),
-    {headers: {service: SERVICE_NAME.AUDIENCE}}
+    { headers: { service: SERVICE_NAME.AUDIENCE } },
   );
   return response.data;
 };

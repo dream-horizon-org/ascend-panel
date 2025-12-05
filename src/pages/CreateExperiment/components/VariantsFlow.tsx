@@ -1082,7 +1082,9 @@ function CreateExperimentTargetingParentModal({
 
   const cohortList = useMemo(() => {
     if (!audiencesData?.audiences) return [];
-    return audiencesData.audiences.map((audience: any) => audience.name || String(audience.id || ""));
+    return audiencesData.audiences.map(
+      (audience: any) => audience.name || String(audience.id || ""),
+    );
   }, [audiencesData]);
 
   // Helper to get data type based on operand

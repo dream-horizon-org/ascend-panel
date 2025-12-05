@@ -7,17 +7,14 @@ import { parseAudiencesResponse } from "./parser";
 import { SERVICE_NAME } from "../../../utils/contants";
 
 export const fetchAudiences = async (
-  params?: AudienceFilters
+  params?: AudienceFilters,
 ): Promise<AudiencesResponse> => {
-  const response = await api.get<any>(
-    endpoints.audiences.list,
-    {
-      params,
-      headers: {
-        service: SERVICE_NAME.AUDIENCE,
-      },
-    }
-  );
+  const response = await api.get<any>(endpoints.audiences.list, {
+    params,
+    headers: {
+      service: SERVICE_NAME.AUDIENCE,
+    },
+  });
   return parseAudiencesResponse(response.data);
 };
 
@@ -31,4 +28,3 @@ export const useAudiences = (params?: AudienceFilters) => {
 };
 
 export type { AudiencesResponse, AudienceFilters } from "./types";
-

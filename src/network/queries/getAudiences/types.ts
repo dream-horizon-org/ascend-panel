@@ -10,4 +10,3 @@ export interface AudiencesResponse {
   audiences: any[];
   pagination: any;
 }
-

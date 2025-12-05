@@ -4,10 +4,7 @@
  */
 
 // API Clients
-export {
-  default as apiClient,
-  api,
-} from "./apiClient";
+export { default as apiClient, api } from "./apiClient";
 
 // Endpoints
 export { endpoints } from "./endpoints";

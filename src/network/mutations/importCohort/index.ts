@@ -16,7 +16,7 @@ export interface ImportCohortResponse {
 // Mutation function
 export const importCohort = async (
   audienceId: string | number,
-  data: ImportCohortRequest
+  data: ImportCohortRequest,
 ): Promise<ImportCohortResponse> => {
   const formData = new FormData();
   formData.append("file", data.file);

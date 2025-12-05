@@ -1,8 +1,4 @@
-import {
-  AppBar as MuiAppBar,
-  Box,
-  Typography,
-} from "@mui/material";
+import { AppBar as MuiAppBar, Box, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router";
 

@@ -37,11 +37,5 @@ export { fetchTags, useTags } from "./getTags";
 export type { TagsResponse } from "./getTags";
 
 // Get Audiences List
-export {
-  fetchAudiences,
-  useAudiences,
-} from "./getAudiences";
-export type {
-  AudiencesResponse,
-  AudienceFilters,
-} from "./getAudiences";
+export { fetchAudiences, useAudiences } from "./getAudiences";
+export type { AudiencesResponse, AudienceFilters } from "./getAudiences";
