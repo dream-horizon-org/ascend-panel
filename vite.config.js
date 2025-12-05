@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      // Audience API on port 8250
+      // Audience API on port 8000
       '/v1/audiences': {
         target: 'http://localhost:8250',
         changeOrigin: true,
@@ -25,7 +25,7 @@ export default defineConfig({
       },
       // Main API on port 8080
       '/v1': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8100',
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {

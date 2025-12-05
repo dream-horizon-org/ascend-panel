@@ -3,8 +3,15 @@
  * Central export point for all network-related functionality
  */
 
-// API Client
-export { default as apiClient, api } from "./apiClient";
+// API Clients
+export {
+  default as apiClient,
+  api,
+  experimentApiClient,
+  audienceApiClient,
+  experimentApi,
+  audienceApi,
+} from "./apiClient";
 
 // Endpoints
 export { endpoints } from "./endpoints";
