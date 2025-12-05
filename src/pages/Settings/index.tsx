@@ -11,7 +11,7 @@ export default function Settings() {
     "Not configured";
     
   const projectApi =
-    window.__ENV__?.PROJECT_API?.trim() ||
+    window.__ENV__?.PROJECT_KEY?.trim() ||
     (import.meta.env.VITE_API_KEY ? String(import.meta.env.VITE_API_KEY).trim() : "") ||
     "Not configured";
 
