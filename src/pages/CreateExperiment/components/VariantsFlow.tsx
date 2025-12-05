@@ -674,7 +674,7 @@ export default function VariantsFlow({
       const MIN_SPACING = 80;
       const START_X = 5;
       const START_Y = 0;
-      const ROW_HEIGHT = isEditMode ? 0 : 48;
+      const ROW_HEIGHT = 48;
       const BASE_HEIGHT = 64;
       const TARGETING_HEIGHT = 100;
 
@@ -697,7 +697,7 @@ export default function VariantsFlow({
       nodes.push({
         id: "targeting",
         type: "targeting",
-        position: { x: START_X, y: targetingY + 20 },
+        position: { x: START_X, y: targetingY + -(isEditMode ? 50 : -20) },
         data: { label: "Everyone", onClick: handleParentModalOpen, isEditMode },
       });
 
@@ -705,7 +705,10 @@ export default function VariantsFlow({
 
       variantsConfig.forEach((config, i) => {
         const variablesLength = config.variables?.length || 1;
-        const cardHeight = BASE_HEIGHT + variablesLength * ROW_HEIGHT;
+        const cardHeight =
+          BASE_HEIGHT +
+          variablesLength * ROW_HEIGHT -
+          (isEditMode ? ROW_HEIGHT : 0);
 
         if (!isAssignCohortsDirectly) {
           nodes.push({
