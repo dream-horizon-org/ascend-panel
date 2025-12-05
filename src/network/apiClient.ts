@@ -58,6 +58,7 @@ apiClient.interceptors.request.use(
     }
 
     const service = config.headers.service;
+    delete  config?.headers?.['service']
 
     const baseURL = getBaseURL(service);
     config.baseURL = baseURL;
