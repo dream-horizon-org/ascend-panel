@@ -27,7 +27,7 @@ interface FormTargeting {
 export interface ExperimentFormData {
   name: string;
   id: string;
-  hypothesis: string;
+  hypothesis?: string;
   description?: string;
   tags?: string[];
   rateLimit?: string;
@@ -86,12 +86,19 @@ export const transformToRequestBody = (
   });
 
   // Transform filters to rule_attributes - direct 1:1 mapping
+  // Filter out any filters where any required field is empty
+  const validFilters =
+    data.targeting?.filters?.filter(
+      ({ operand, operandDataType, operator, value }) =>
+        operand && operandDataType && operator && value,
+    ) || [];
+
   const rule_attributes =
-    data.targeting?.filters && data.targeting.filters.length > 0
+    validFilters.length > 0
       ? [
           {
             name: "Targeting Rule",
-            conditions: data.targeting.filters.map(
+            conditions: validFilters.map(
               ({ operand, operandDataType, operator, value }) => ({
                 operand,
                 operandDataType,
@@ -110,7 +117,7 @@ export const transformToRequestBody = (
     name: data.name,
     experiment_key: data.id,
     description: data.description || "",
-    hypothesis: data.hypothesis,
+    hypothesis: data.hypothesis || "",
     status: "LIVE",
     assignment_domain: assignmentType,
     distribution_strategy: "RANDOM",

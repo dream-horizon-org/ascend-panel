@@ -1,4 +1,4 @@
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, Tooltip } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,52 +45,58 @@ const ExperimentForm = ({
     useState<string>("experiment-details");
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
-  const { control, handleSubmit, setValue, getValues, watch, reset } =
-    useForm<ExperimentFormData>({
-      resolver: zodResolver(experimentSchema),
-      mode: "onSubmit",
-      defaultValues: defaultValues || {
-        name: "",
-        id: "",
-        hypothesis: "",
-        description: "",
-        tags: [],
-        rateLimit: "100",
-        maxUsers: "",
-        variants: [
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    getValues,
+    watch,
+    reset,
+    formState: { isValid },
+  } = useForm<ExperimentFormData>({
+    resolver: zodResolver(experimentSchema),
+    mode: "onChange",
+    defaultValues: defaultValues || {
+      name: "",
+      id: "",
+      hypothesis: "",
+      description: "",
+      tags: [],
+      rateLimit: "100",
+      maxUsers: "",
+      variants: [
+        {
+          name: "Control Group",
+          trafficSplit: "50",
+          variables: [{ key: "", data_type: "", value: "" }],
+          cohorts: [],
+        },
+        {
+          name: "Variant 1",
+          trafficSplit: "50",
+          variables: [{ key: "", data_type: "", value: "" }],
+          cohorts: [],
+        },
+      ],
+      targeting: {
+        filters: [
           {
-            name: "Control Group",
-            trafficSplit: "50",
-            variables: [{ key: "", data_type: "", value: "" }],
-            cohorts: [],
-          },
-          {
-            name: "Variant 1",
-            trafficSplit: "50",
-            variables: [{ key: "", data_type: "", value: "" }],
-            cohorts: [],
+            operand: "",
+            operandDataType: "",
+            operator: "",
+            value: "",
+            condition: "IF",
           },
         ],
-        targeting: {
-          filters: [
-            {
-              operand: "app_version",
-              operandDataType: "STRING",
-              operator: "!=",
-              value: "12.3",
-              condition: "IF",
-            },
-          ],
-          cohorts: [],
-          isAssignCohortsDirectly: false,
-        },
+        cohorts: [],
+        isAssignCohortsDirectly: false,
       },
-    });
+    },
+  });
 
   // Watch form fields for change detection
   const watchedName = watch("name");
   const watchedId = watch("id");
-  const watchedHypothesis = watch("hypothesis");
   const watchedDescription = watch("description");
   const watchedRateLimit = watch("rateLimit");
   const watchedMaxUsers = watch("maxUsers");
@@ -126,18 +132,15 @@ const ExperimentForm = ({
       // The form starts with default variants, so we only need to check required fields
       const hasName = watchedName && watchedName.trim() !== "";
       const hasId = watchedId && watchedId.trim() !== "";
-      const hasHypothesis =
-        watchedHypothesis && watchedHypothesis.trim() !== "";
 
       // Form has changes if all required fields are filled
-      return hasName && hasId && hasHypothesis;
+      return hasName && hasId;
     }
   }, [
     isEditMode,
     defaultValues,
     watchedName,
     watchedId,
-    watchedHypothesis,
     watchedDescription,
     watchedRateLimit,
     watchedMaxUsers,
@@ -199,7 +202,7 @@ const ExperimentForm = ({
     } else if (!isEditMode) {
       // Auto-generate id from name in create mode
       const generatedId = value.replace(/\s+/g, "_").toLowerCase();
-      setValue("id", generatedId, { shouldValidate: false });
+      setValue("id", generatedId, { shouldValidate: true });
     }
   };
 
@@ -297,13 +300,20 @@ const ExperimentForm = ({
             >
               Experiment Details
             </Typography>
-            <InfoOutlinedIcon
-              sx={{
-                width: "1rem",
-                height: "1rem",
-                color: "#DADADA",
-              }}
-            />
+            <Tooltip
+              title="Configure basic experiment information including name, key, hypothesis, description, and tags"
+              arrow
+              placement="top"
+            >
+              <InfoOutlinedIcon
+                sx={{
+                  width: "1rem",
+                  height: "1rem",
+                  color: "#DADADA",
+                  cursor: "pointer",
+                }}
+              />
+            </Tooltip>
           </Box>
 
           {/* Input Fields */}
@@ -316,6 +326,7 @@ const ExperimentForm = ({
               infoText="Provide a unique name for your experiment"
               onChangeCustom={handleNameChange}
               disabled={isEditMode}
+              required
             />
             <AscendTextFieldControlled
               name="id"
@@ -324,6 +335,7 @@ const ExperimentForm = ({
               placeholder="Enter experiment Key"
               infoText="Unique identifier for the experiment"
               disabled={isEditMode}
+              required
             />
           </Box>
 
@@ -344,7 +356,7 @@ const ExperimentForm = ({
             <AscendTextFieldControlled
               name="description"
               control={control}
-              label="Description (optional)"
+              label="Description"
               placeholder="Enter description"
               height="120px"
             />
@@ -356,7 +368,7 @@ const ExperimentForm = ({
               name="tags"
               freeSolo
               control={control}
-              label="Tags (optional)"
+              label="Tags"
               placeholder={isEditMode ? "" : "Select tags"}
               options={tags}
               multiple
@@ -408,13 +420,20 @@ const ExperimentForm = ({
             >
               Variants and Targeting
             </Typography>
-            <InfoOutlinedIcon
-              sx={{
-                width: "1rem",
-                height: "1rem",
-                color: "#DADADA",
-              }}
-            />
+            <Tooltip
+              title="Set up experiment variants with traffic splits and define targeting rules for user segmentation"
+              arrow
+              placement="top"
+            >
+              <InfoOutlinedIcon
+                sx={{
+                  width: "1rem",
+                  height: "1rem",
+                  color: "#DADADA",
+                  cursor: "pointer",
+                }}
+              />
+            </Tooltip>
           </Box>
 
           {/* Variants Flow */}
@@ -445,13 +464,20 @@ const ExperimentForm = ({
             >
               Advance Configuration
             </Typography>
-            <InfoOutlinedIcon
-              sx={{
-                width: "1rem",
-                height: "1rem",
-                color: "#DADADA",
-              }}
-            />
+            <Tooltip
+              title="Configure advanced settings like rate limiting and maximum users for the experiment"
+              arrow
+              placement="top"
+            >
+              <InfoOutlinedIcon
+                sx={{
+                  width: "1rem",
+                  height: "1rem",
+                  color: "#DADADA",
+                  cursor: "pointer",
+                }}
+              />
+            </Tooltip>
           </Box>
 
           {/* Rate Limiting Field */}
@@ -459,7 +485,7 @@ const ExperimentForm = ({
             <AscendTextFieldControlled
               name="rateLimit"
               control={control}
-              label="Rate Limiting (optional)"
+              label="Rate Limiting"
               placeholder="Enter rate"
               infoText="Set the maximum rate limit for this experiment"
               width="10%"
@@ -471,7 +497,7 @@ const ExperimentForm = ({
             <AscendTextFieldControlled
               name="maxUsers"
               control={control}
-              label="Maximum Users (optional)"
+              label="Maximum Users"
               placeholder="######"
               infoText="Set the maximum number of users for this experiment"
               width="10%"
@@ -541,7 +567,7 @@ const ExperimentForm = ({
               <Button
                 variant="contained"
                 onClick={handleSubmit(handleFormSubmit)}
-                disabled={isLoading || !hasChanges}
+                disabled={isLoading || !hasChanges || !isValid}
                 sx={{
                   backgroundColor: "#0060E5",
                   color: "white",

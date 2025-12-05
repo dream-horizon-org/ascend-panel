@@ -3,10 +3,7 @@ import { z } from "zod";
 export const experimentSchema = z.object({
   name: z.string().min(1, "Experiment name is required"),
   id: z.string().min(1, "Experiment Key is required"),
-  hypothesis: z
-    .string()
-    .min(1, "Hypothesis is required")
-    .max(120, "Maximum 120 characters allowed"),
+  hypothesis: z.string().max(120, "Maximum 120 characters allowed").optional(),
   description: z.string().max(300, "Maximum 300 characters allowed").optional(),
   tags: z.array(z.string()).optional(),
   rateLimit: z
@@ -29,9 +26,9 @@ export const experimentSchema = z.object({
       trafficSplit: z.string(),
       variables: z.array(
         z.object({
-          key: z.string(),
-          data_type: z.string(),
-          value: z.string(),
+          key: z.string().min(1, " "),
+          data_type: z.string().min(1, " "),
+          value: z.string().min(1, " "),
         }),
       ),
       cohorts: z.array(z.string()).optional(),

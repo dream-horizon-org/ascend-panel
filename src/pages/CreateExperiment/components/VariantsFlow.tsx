@@ -744,8 +744,14 @@ export default function VariantsFlow({
             onDeleteVariant: () => {
               // Only allow delete if more than two variants exist
               if (variantFields.length > 2) {
-                removeVariant(i);
-                setIsTrafficEdited(true); // Mark as edited since we're changing the distribution
+                if (isTrafficEdited) {
+                  // If traffic has been manually edited, just remove the variant
+                  removeVariant(i);
+                } else {
+                  // If not edited, remove variant and set flag to redistribute equally
+                  shouldRedistribute.current = true;
+                  removeVariant(i);
+                }
               }
             },
             onVariableChange: (index: number, field: string, value: string) => {
@@ -1086,11 +1092,11 @@ function CreateExperimentTargetingParentModal({
 
   const handleAddFilter = () => {
     appendFilter({
-      operand: "app_version",
-      operandDataType: "STRING",
-      operator: "!=",
-      value: "12.3",
-      condition: "AND",
+      operand: "",
+      operandDataType: "",
+      operator: "",
+      value: "",
+      condition: filters.length === 0 ? "IF" : "AND",
     });
   };
 
@@ -1157,6 +1163,34 @@ function CreateExperimentTargetingParentModal({
                     sx={{ minWidth: 150 }}
                     disabled={isEditMode}
                     {...field}
+                    SelectProps={{
+                      displayEmpty: true,
+                      renderValue: (selected: unknown) => {
+                        if (!selected || selected === "") {
+                          return (
+                            <Box sx={{ color: "#999999" }}>Select field</Box>
+                          );
+                        }
+                        const displayNames: Record<string, string> = {
+                          user_id: "User ID",
+                          guest_id: "Guest ID",
+                          model: "Model",
+                          device: "Device",
+                          app_name: "App Name",
+                          platform: "Platform",
+                          os_version: "OS Version",
+                          app_version: "App Version",
+                          build_number: "Build Number",
+                          current_location_city: "Current Location City",
+                          current_location_state: "Current Location State",
+                          current_location_country: "Current Location Country",
+                        };
+                        return (
+                          displayNames[selected as string] ||
+                          (selected as string)
+                        );
+                      },
+                    }}
                     onChange={(e) => {
                       if (!isEditMode) {
                         field.onChange(e);
@@ -1169,7 +1203,7 @@ function CreateExperimentTargetingParentModal({
                           ...currentFilter,
                           operand: e.target.value,
                           operandDataType: newDataType,
-                          operator: "=", // Reset to default operator
+                          operator: "", // Reset operator
                           value: "", // Clear value since data type changed
                         });
                       }
@@ -1236,12 +1270,6 @@ function CreateExperimentTargetingParentModal({
                   };
 
                   const options = getOperatorOptions();
-                  const validValues = options.map((opt) => opt.value);
-
-                  // Ensure current value is valid for the available options
-                  const currentValue = validValues.includes(field.value)
-                    ? field.value
-                    : "=";
 
                   return (
                     <TextField
@@ -1250,7 +1278,22 @@ function CreateExperimentTargetingParentModal({
                       sx={{ minWidth: 150 }}
                       disabled={isEditMode}
                       {...field}
-                      value={currentValue}
+                      SelectProps={{
+                        displayEmpty: true,
+                        renderValue: (selected: unknown) => {
+                          if (!selected || selected === "") {
+                            return (
+                              <Box sx={{ color: "#999999" }}>
+                                Select operator
+                              </Box>
+                            );
+                          }
+                          const option = options.find(
+                            (opt) => opt.value === selected,
+                          );
+                          return option?.label || (selected as string);
+                        },
+                      }}
                     >
                       {options.map((opt) => (
                         <MenuItem key={opt.value} value={opt.value}>
@@ -1277,6 +1320,15 @@ function CreateExperimentTargetingParentModal({
                         sx={{ width: 100 }}
                         disabled={isEditMode}
                         {...field}
+                        SelectProps={{
+                          displayEmpty: true,
+                          renderValue: (selected: unknown) => {
+                            if (!selected || selected === "") {
+                              return <Box sx={{ color: "#999999" }}>Value</Box>;
+                            }
+                            return selected as string;
+                          },
+                        }}
                       >
                         <MenuItem value="true">true</MenuItem>
                         <MenuItem value="false">false</MenuItem>
@@ -1290,6 +1342,7 @@ function CreateExperimentTargetingParentModal({
                       <TextField
                         size="small"
                         type="text"
+                        placeholder="Value"
                         sx={{ width: 100 }}
                         disabled={isEditMode}
                         {...field}
@@ -1312,6 +1365,7 @@ function CreateExperimentTargetingParentModal({
                       <TextField
                         size="small"
                         type="text"
+                        placeholder="Value"
                         sx={{ width: 100 }}
                         disabled={isEditMode}
                         {...field}
@@ -1332,6 +1386,7 @@ function CreateExperimentTargetingParentModal({
                   return (
                     <TextField
                       size="small"
+                      placeholder="Value"
                       sx={{ width: 100 }}
                       disabled={isEditMode}
                       {...field}
