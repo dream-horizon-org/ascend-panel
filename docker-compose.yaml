@@ -12,4 +12,9 @@ services:
       API_BASE_URL: 'http://localhost:8000'
       AUDIENCE_API_BASE_URL: 'http://localhost:8250'
       EXPERIMENT_API_BASE_URL: 'http://localhost:8100'
+      # These values come from command-line environment variables
+      # Example: PROJECT_NAME='My App' PROJECT_API='my-api-key' PROJECT_KEY='my-key' docker compose up -d
+      PROJECT_NAME: ${PROJECT_NAME}
+      PROJECT_KEY: ${PROJECT_KEY}
+      PROJECT_API: ${PROJECT_API}
     restart: unless-stopped

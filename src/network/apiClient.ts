@@ -13,6 +13,13 @@ declare global {
       API_BASE_URL?: string;
       AUDIENCE_API_BASE_URL?: string;
       EXPERIMENT_API_BASE_URL?: string;
+      PROJECT_NAME?: string;
+      PROJECT_KEY?: string;
+      PROJECT_API?: string;
+      // Backward compatibility
+      VITE_PROJECT_NAME?: string;
+      VITE_PROJECT_KEY?: string;
+      VITE_API_KEY?: string;
     };
   }
 }
@@ -26,7 +33,7 @@ const getBaseURL = (serviceName: string = SERVICE_NAME.EXPERIMENT) => {
       ? window.__ENV__?.AUDIENCE_API_BASE_URL
         ? window.__ENV__?.AUDIENCE_API_BASE_URL
         : window.__ENV__?.API_BASE_URL
-      : window.__ENV__?.EXPERIMENT_API_BASE_URL
+  : window.__ENV__?.EXPERIMENT_API_BASE_URL
         ? window.__ENV__?.EXPERIMENT_API_BASE_URL
         : window.__ENV__?.API_BASE_URL;
 
@@ -50,9 +57,13 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Add project key header (required for all requests)
-    // const projectKey =
-    //   import.meta.env.VITE_PROJECT_KEY || localStorage.getItem("projectKey");
-    const projectKey = "550e8400-e29b-41d4-a716-446655440001"; //Hardcoded project Key remove when merging
+    // Priority: Docker runtime env > build-time env > localStorage > fallback
+    const projectKey =
+      window.__ENV__?.PROJECT_KEY ||
+      window.__ENV__?.VITE_PROJECT_KEY ||
+      import.meta.env.VITE_PROJECT_KEY ||
+      localStorage.getItem("projectKey") ||
+      "550e8400-e29b-41d4-a716-446655440001"; // Fallback
     if (projectKey && config.headers) {
       config.headers["x-project-key"] = projectKey;
     }

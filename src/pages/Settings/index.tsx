@@ -4,9 +4,16 @@ import { useState } from "react";
 import AscendSnackbar from "../../components/AscendSnackbar/AscendSnackbar";
 
 export default function Settings() {
-  const projectName = import.meta.env.VITE_PROJECT_NAME as string;
-  const projectKey = import.meta.env.VITE_PROJECT_KEY as string;
-  const apiKey = import.meta.env.VITE_API_KEY as string;
+  // Priority: Docker runtime env (window.__ENV__) > build-time env > fallback
+  const projectName =
+    window.__ENV__?.PROJECT_NAME?.trim() ||
+    window.__ENV__?.VITE_PROJECT_NAME?.trim() ||
+    "Not configured";
+    
+  const projectApi =
+    window.__ENV__?.PROJECT_API?.trim() ||
+    (import.meta.env.VITE_API_KEY ? String(import.meta.env.VITE_API_KEY).trim() : "") ||
+    "Not configured";
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
@@ -62,11 +69,10 @@ export default function Settings() {
 
         <Box sx={{ padding: "24px" }}>
           <ConfigItem label="Project Name" value={projectName} />
-          <ConfigItem label="Project Key" value={projectKey} />
           <ConfigItem
-            label="API Key"
-            value={apiKey}
-            onCopy={() => handleCopy(apiKey)}
+            label="Project API"
+            value={projectApi}
+            onCopy={() => handleCopy(projectApi)}
             isLast
           />
         </Box>
@@ -76,7 +82,7 @@ export default function Settings() {
         open={snackbarOpen}
         autoHideDuration={2000}
         onClose={() => setSnackbarOpen(false)}
-        message="API Key copied to clipboard"
+        message="Project API copied to clipboard"
         severity="success"
       />
     </Box>
