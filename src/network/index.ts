@@ -7,10 +7,6 @@
 export {
   default as apiClient,
   api,
-  experimentApiClient,
-  audienceApiClient,
-  experimentApi,
-  audienceApi,
 } from "./apiClient";
 
 // Endpoints

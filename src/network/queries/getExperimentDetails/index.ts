@@ -4,13 +4,18 @@ import { endpoints } from "../../endpoints";
 import { experimentKeys } from "../sharedKeys";
 import { ExperimentResponse } from "./types";
 import { parseExperimentResponse } from "./parser";
+import { SERVICE_NAME } from "../../../utils/contants";
 
 // Fetch function
 export const fetchExperiment = async (
-  id: string | number,
+  id: string | number
 ): Promise<ExperimentResponse> => {
   // API returns snake_case response, parser will handle the transformation
-  const response = await api.get(endpoints.experiments.detail(id));
+  const response = await api.get(endpoints.experiments.detail(id), {
+    headers: {
+      service: SERVICE_NAME.EXPERIMENT,
+    },
+  });
   return parseExperimentResponse(response);
 };
 

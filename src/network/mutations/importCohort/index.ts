@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
-import { audienceApiClient } from "../../apiClient";
+import apiClient from "../../apiClient";
 import { endpoints } from "../../endpoints";
+import { SERVICE_NAME } from "../../../utils/contants";
 
 // Types
 export interface ImportCohortRequest {
@@ -15,7 +16,7 @@ export interface ImportCohortResponse {
 // Mutation function
 export const importCohort = async (
   audienceId: string | number,
-  data: ImportCohortRequest,
+  data: ImportCohortRequest
 ): Promise<ImportCohortResponse> => {
   const formData = new FormData();
   formData.append("file", data.file);
@@ -25,8 +26,9 @@ export const importCohort = async (
   console.log("[Import Cohort] Uploading to:", url);
   console.log("[Import Cohort] File:", data.file.name, "Size:", data.file.size);
 
-  const response = await audienceApiClient.post<ImportCohortResponse>(url, formData, {
+  const response = await apiClient.post<ImportCohortResponse>(url, formData, {
     headers: {
+      service: SERVICE_NAME.AUDIENCE,
       "Content-Type": "multipart/form-data",
       "X-Project-Id": "project1",
     },
