@@ -49,7 +49,6 @@ const ExperimentForm = ({
     control,
     handleSubmit,
     setValue,
-    getValues,
     watch,
     reset,
     formState: { isValid },

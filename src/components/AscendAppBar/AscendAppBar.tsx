@@ -2,10 +2,8 @@ import {
   AppBar as MuiAppBar,
   Box,
   Typography,
-  IconButton,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { PowerSettingsNew as PowerSettingsNewIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router";
 
 export default function AppBar() {

@@ -27,7 +27,6 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
   onCopyId,
   onMenuClick,
   onConcludeClick,
-  onCloneExperiment,
   onTerminateExperiment,
   onDeclareWinner,
   className = "",
@@ -68,12 +67,6 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
     setConcludeAnchorEl(null);
   };
 
-  const handleCloneExperiment = () => {
-    handleMenuClose();
-    if (onCloneExperiment) {
-      onCloneExperiment();
-    }
-  };
 
   const handleTerminateExperiment = () => {
     handleMenuClose();
