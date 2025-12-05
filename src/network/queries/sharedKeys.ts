@@ -8,3 +8,10 @@ export const experimentKeys = {
   detail: (id: string | number) => [...experimentKeys.details(), id] as const,
   tags: () => [...experimentKeys.all, "tags"] as const,
 };
+
+export const audienceKeys = {
+  all: ["audiences"] as const,
+  lists: () => [...audienceKeys.all, "list"] as const,
+  list: (filters?: Record<string, any>) =>
+    [...audienceKeys.lists(), filters] as const,
+};

@@ -67,7 +67,6 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
     setConcludeAnchorEl(null);
   };
 
-
   const handleTerminateExperiment = () => {
     handleMenuClose();
     if (onTerminateExperiment) {

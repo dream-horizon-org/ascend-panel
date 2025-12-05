@@ -27,6 +27,7 @@ import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import AscendModal from "../../../components/AscendModal/AscendModal";
 import CloseIcon from "@mui/icons-material/Close";
 import AscendDropdown from "../../../components/AscendDropdown/AscendDropdown";
+import { useAudiences } from "../../../network/queries";
 
 // Custom node for Targeting
 const TargetingNode = ({ data }: any) => {
@@ -1074,6 +1075,18 @@ function CreateExperimentTargetingParentModal({
   const cohorts = cohortsField.value;
   const isAssignCohortsDirectly = isAssignCohortsDirectlyField.value;
 
+  const { data: audiencesData, isLoading: isAudiencesLoading } = useAudiences({
+    pageSize: 100,
+    page: 0,
+  });
+
+  const cohortList = useMemo(() => {
+    if (!audiencesData?.audiences) return [];
+    return audiencesData.audiences.map(
+      (audience: any) => audience.name || String(audience.id || ""),
+    );
+  }, [audiencesData]);
+
   // Helper to get data type based on operand
   const getDataTypeForOperand = (operand: string): string => {
     const dataTypeMap: Record<string, string> = {
@@ -1427,13 +1440,13 @@ function CreateExperimentTargetingParentModal({
         {!isAssignCohortsDirectly ? (
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
             <AscendDropdown
-              placeholder="Select Cohorts"
+              placeholder={"Select Cohorts"}
               variant="multi-chip"
-              options={[]}
+              options={cohortList}
               value={cohorts}
               fullWidth
               size="lg"
-              disabled={isEditMode}
+              disabled={isEditMode || isAudiencesLoading}
               onChange={(value) => {
                 if (!isEditMode) {
                   cohortsField.onChange(value);
@@ -1467,11 +1480,11 @@ function CreateExperimentTargetingParentModal({
                       <AscendDropdown
                         placeholder="Select Cohorts"
                         variant="multi-chip"
-                        options={[]}
+                        options={cohortList}
                         value={field.value || []}
                         fullWidth
                         size="lg"
-                        disabled={isEditMode}
+                        disabled={isEditMode || isAudiencesLoading}
                         onChange={(value) => {
                           if (!isEditMode) {
                             field.onChange(value);
