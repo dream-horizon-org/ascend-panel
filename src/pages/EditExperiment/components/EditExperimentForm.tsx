@@ -93,7 +93,7 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
                 name: "Control Group",
                 trafficSplit: "50",
                 variables: [{ key: "", data_type: "", value: "" }],
-                cohorts: [],
+                cohorts: "",
               },
             ],
       targeting: {
@@ -104,7 +104,10 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
           value: f.value || "",
           condition: "IF",
         })),
-        cohorts: exp.cohorts || [],
+        cohorts:
+          Array.isArray(exp.cohorts) && exp.cohorts.length > 0
+            ? exp.cohorts[0]
+            : "",
         isAssignCohortsDirectly: isAssignCohortsDirectly,
       },
     };
@@ -455,12 +458,12 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
           name: "Control Group",
           trafficSplit: "50",
           variables: [{ key: "", data_type: "", value: "" }],
-          cohorts: [],
+          cohorts: "",
         },
       ],
       targeting: {
         filters: [],
-        cohorts: [],
+        cohorts: "",
         isAssignCohortsDirectly: false,
       },
     };

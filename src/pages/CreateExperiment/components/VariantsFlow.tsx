@@ -22,6 +22,7 @@ import {
   useFieldArray,
   useController,
   Controller,
+  useWatch,
 } from "react-hook-form";
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import AscendModal from "../../../components/AscendModal/AscendModal";
@@ -562,14 +563,17 @@ export default function VariantsFlow({
     name: "variants",
   });
 
+  // Watch variants to get current form values (needed to preserve cohorts when updating)
+  const watchedVariants = useWatch({ control, name: "variants" }) || [];
+
   const variantsConfig = useMemo(() => {
-    const config = variantFields.map((v: any) => ({
-      name: v.name,
-      trafficSplit: v.trafficSplit,
-      variables: v.variables,
+    const config = variantFields.map((v: any, idx: number) => ({
+      name: watchedVariants[idx]?.name ?? v.name,
+      trafficSplit: watchedVariants[idx]?.trafficSplit ?? v.trafficSplit,
+      variables: watchedVariants[idx]?.variables ?? v.variables,
     }));
     return config;
-  }, [variantFields]);
+  }, [variantFields, watchedVariants]);
 
   // Function to redistribute traffic equally among all variants
   const redistributeEqually = useCallback(() => {
@@ -578,7 +582,7 @@ export default function VariantsFlow({
     const remainder = 100 % totalVariants;
 
     for (let i = 0; i < totalVariants; i++) {
-      const currentVariant: any = variantFields[i];
+      const currentVariant = watchedVariants[i];
       if (!currentVariant) {
         console.error(`Variant at index ${i} is undefined!`);
         continue;
@@ -587,7 +591,7 @@ export default function VariantsFlow({
       const split = i < remainder ? equalSplit + 1 : equalSplit;
       updateVariant(i, { ...currentVariant, trafficSplit: split.toString() });
     }
-  }, [variantFields, updateVariant]);
+  }, [variantFields.length, watchedVariants, updateVariant]);
 
   // Effect to redistribute traffic when a new variant is added (only if not manually edited)
   useEffect(() => {
@@ -600,10 +604,10 @@ export default function VariantsFlow({
   // Circular compensation adjusting algorithm
   const adjustSplitCircular = useCallback(
     (editedIndex: number) => {
-      const splits = variantFields.map((v: any) =>
-        parseInt(v.trafficSplit || "0", 10),
+      const splits = watchedVariants.map((v: any) =>
+        parseInt(v?.trafficSplit || "0", 10),
       );
-      const total = splits.reduce((a, b) => a + b, 0);
+      const total = splits.reduce((a: number, b: number) => a + b, 0);
 
       if (total === 100) return;
 
@@ -635,12 +639,12 @@ export default function VariantsFlow({
       }
 
       // Final update after redistribution
-      splits.forEach((v, i) => {
-        const variant = variantFields[i];
+      splits.forEach((v: number, i: number) => {
+        const variant = watchedVariants[i];
         updateVariant(i, { ...variant, trafficSplit: v.toString() });
       });
     },
-    [variantFields, updateVariant],
+    [watchedVariants, updateVariant],
   );
 
   const handleTrafficBlur = useCallback(
@@ -656,11 +660,11 @@ export default function VariantsFlow({
       if (value !== "" && !/^\d+$/.test(value)) return;
 
       const num = Math.min(100, Math.max(0, parseInt(value || "0")));
-      const variant = variantFields[index];
+      const variant = watchedVariants[index];
       updateVariant(index, { ...variant, trafficSplit: num.toString() });
       setIsTrafficEdited(true);
     },
-    [variantFields, updateVariant],
+    [watchedVariants, updateVariant],
   );
 
   // Generate nodes with onChange handlers (memoized for performance)
@@ -741,7 +745,7 @@ export default function VariantsFlow({
             canDelete: variantFields.length > 2,
             isEditMode,
             onNameChange: (value: string) => {
-              const currentVariant: any = variantFields[i];
+              const currentVariant = watchedVariants[i];
               updateVariant(i, { ...currentVariant, name: value });
             },
             onDeleteVariant: () => {
@@ -760,32 +764,34 @@ export default function VariantsFlow({
             onVariableChange: (index: number, field: string, value: string) => {
               if (field === "key" || field === "data_type") {
                 // If changing key or data_type, sync across ALL variants
-                variantFields.forEach((variant: any, variantIndex: number) => {
-                  const newVariables = [...(variant.variables || [])];
-                  if (newVariables[index]) {
-                    // If changing the data_type, reset the value field for all variants
-                    if (field === "data_type") {
-                      newVariables[index] = {
-                        ...newVariables[index],
-                        [field]: value,
-                        value: "",
-                      };
-                    } else {
-                      newVariables[index] = {
-                        ...newVariables[index],
-                        [field]: value,
-                      };
+                watchedVariants.forEach(
+                  (variant: any, variantIndex: number) => {
+                    const newVariables = [...(variant?.variables || [])];
+                    if (newVariables[index]) {
+                      // If changing the data_type, reset the value field for all variants
+                      if (field === "data_type") {
+                        newVariables[index] = {
+                          ...newVariables[index],
+                          [field]: value,
+                          value: "",
+                        };
+                      } else {
+                        newVariables[index] = {
+                          ...newVariables[index],
+                          [field]: value,
+                        };
+                      }
+                      updateVariant(variantIndex, {
+                        ...variant,
+                        variables: newVariables,
+                      });
                     }
-                    updateVariant(variantIndex, {
-                      ...variant,
-                      variables: newVariables,
-                    });
-                  }
-                });
+                  },
+                );
               } else {
                 // If changing value, only update current variant
-                const currentVariant: any = variantFields[i];
-                const newVariables = [...(currentVariant.variables || [])];
+                const currentVariant = watchedVariants[i];
+                const newVariables = [...(currentVariant?.variables || [])];
                 newVariables[index] = {
                   ...newVariables[index],
                   [field]: value,
@@ -798,8 +804,8 @@ export default function VariantsFlow({
             },
             onAddVariable: (afterIndex: number) => {
               // Add parameter to ALL variants at the same position
-              variantFields.forEach((variant: any, variantIndex: number) => {
-                const newVariables = [...(variant.variables || [])];
+              watchedVariants.forEach((variant: any, variantIndex: number) => {
+                const newVariables = [...(variant?.variables || [])];
                 newVariables.splice(afterIndex + 1, 0, {
                   key: "",
                   data_type: "",
@@ -814,18 +820,20 @@ export default function VariantsFlow({
             onDeleteVariable: (index: number) => {
               // Delete parameter from ALL variants at the same position
               // Only allow delete if more than one variable
-              const currentVariant: any = variantFields[i];
-              if ((currentVariant.variables || []).length > 1) {
-                variantFields.forEach((variant: any, variantIndex: number) => {
-                  const newVariables = [...(variant.variables || [])];
-                  if (newVariables.length > 1) {
-                    newVariables.splice(index, 1);
-                    updateVariant(variantIndex, {
-                      ...variant,
-                      variables: newVariables,
-                    });
-                  }
-                });
+              const currentVariant = watchedVariants[i];
+              if ((currentVariant?.variables || []).length > 1) {
+                watchedVariants.forEach(
+                  (variant: any, variantIndex: number) => {
+                    const newVariables = [...(variant?.variables || [])];
+                    if (newVariables.length > 1) {
+                      newVariables.splice(index, 1);
+                      updateVariant(variantIndex, {
+                        ...variant,
+                        variables: newVariables,
+                      });
+                    }
+                  },
+                );
               }
             },
           },
@@ -845,6 +853,7 @@ export default function VariantsFlow({
   }, [
     variantsConfig,
     variantFields,
+    watchedVariants,
     updateVariant,
     removeVariant,
     handleTrafficSplitChange,
@@ -995,7 +1004,7 @@ export default function VariantsFlow({
                 name: `Variant ${newVariantNumber}`,
                 trafficSplit: "0",
                 variables: variablesTemplate,
-                cohorts: [],
+                cohorts: "",
               };
 
               if (isTrafficEdited) {
@@ -1054,7 +1063,7 @@ function CreateExperimentTargetingParentModal({
   const { field: cohortsField } = useController({
     control,
     name: "targeting.cohorts",
-    defaultValue: [],
+    defaultValue: "",
   });
 
   // Use react-hook-form field array for variants
@@ -1062,6 +1071,19 @@ function CreateExperimentTargetingParentModal({
     control,
     name: "variants",
   });
+
+  // Watch variants to get selected cohorts for filtering
+  const watchedVariantCohorts = useWatch({ control, name: "variants" }) || [];
+
+  // Get cohorts already selected by other variants
+  const getAvailableCohortOptions = (currentIndex: number) => {
+    const allOptions = ["keyword", "category", "product"];
+    const selectedByOthers = watchedVariantCohorts
+      .filter((_: any, idx: number) => idx !== currentIndex)
+      .map((v: any) => v?.cohorts)
+      .filter((c: string) => c && c !== "");
+    return allOptions.filter((opt) => !selectedByOthers.includes(opt));
+  };
 
   const filters = filterFields as Array<{
     id: string;
@@ -1428,15 +1450,15 @@ function CreateExperimentTargetingParentModal({
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
             <AscendDropdown
               placeholder="Select Cohorts"
-              variant="multi-chip"
-              options={[]}
-              value={cohorts}
+              variant="single"
+              options={["keyword", "category", "product"]}
+              value={cohorts || ""}
               fullWidth
               size="lg"
               disabled={isEditMode}
               onChange={(value) => {
                 if (!isEditMode) {
-                  cohortsField.onChange(value);
+                  cohortsField.onChange(value as string);
                 }
               }}
             />
@@ -1466,15 +1488,15 @@ function CreateExperimentTargetingParentModal({
                     render={({ field }) => (
                       <AscendDropdown
                         placeholder="Select Cohorts"
-                        variant="multi-chip"
-                        options={[]}
-                        value={field.value || []}
+                        variant="single"
+                        options={getAvailableCohortOptions(index)}
+                        value={field.value || ""}
                         fullWidth
                         size="lg"
                         disabled={isEditMode}
                         onChange={(value) => {
                           if (!isEditMode) {
-                            field.onChange(value);
+                            field.onChange(value as string);
                           }
                         }}
                       />

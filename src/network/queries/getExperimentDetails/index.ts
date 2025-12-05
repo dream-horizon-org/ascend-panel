@@ -8,7 +8,7 @@ import { SERVICE_NAME } from "../../../utils/contants";
 
 // Fetch function
 export const fetchExperiment = async (
-  id: string | number
+  id: string | number,
 ): Promise<ExperimentResponse> => {
   // API returns snake_case response, parser will handle the transformation
   const response = await api.get(endpoints.experiments.detail(id), {

@@ -9,10 +9,12 @@ export default function Settings() {
     window.__ENV__?.PROJECT_NAME?.trim() ||
     window.__ENV__?.VITE_PROJECT_NAME?.trim() ||
     "Not configured";
-    
+
   const projectApi =
     window.__ENV__?.PROJECT_API?.trim() ||
-    (import.meta.env.VITE_API_KEY ? String(import.meta.env.VITE_API_KEY).trim() : "") ||
+    (import.meta.env.VITE_API_KEY
+      ? String(import.meta.env.VITE_API_KEY).trim()
+      : "") ||
     "Not configured";
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
