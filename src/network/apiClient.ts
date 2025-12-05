@@ -171,13 +171,13 @@ const createApiClient = (baseURL: string, clientName: string): AxiosInstance => 
 // Create API clients for different services
 // Experiments API - Port 8080
 export const experimentApiClient = createApiClient(
-  getBaseURL("EXPERIMENT_API_BASE_URL", 8080),
+  getBaseURL("EXPERIMENT_API_BASE_URL", 8100),
   "Experiments",
 );
 
 // Audiences API - Port 8000
 export const audienceApiClient = createApiClient(
-  getBaseURL("AUDIENCE_API_BASE_URL", 8000),
+  getBaseURL("AUDIENCE_API_BASE_URL", 8250),
   "Audiences",
 );
 
