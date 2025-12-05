@@ -5,18 +5,31 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 
+// Declare window.__ENV__ type
+declare global {
+  interface Window {
+    __ENV__?: {
+      API_BASE_URL?: string;
+    };
+  }
+}
+
 // Create axios instance with base configuration
-// In development, use relative URL to go through Vite proxy
-// In production, use the full API URL
+// Priority: runtime env (Docker) > build-time env > dev proxy > fallback
 const getBaseURL = () => {
+  // 1. Runtime env (injected by Docker at container startup)
+  if (window.__ENV__?.API_BASE_URL) {
+    return `${window.__ENV__.API_BASE_URL}/v1`;
+  }
+  // 2. Build-time env (Vite)
   if (import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL;
   }
-  // In development, use relative URL to leverage Vite proxy
+  // 3. Development - use relative URL to leverage Vite proxy
   if (import.meta.env.DEV) {
     return "/v1";
   }
-  // Fallback for production
+  // 4. Fallback for production
   return "http://localhost:8080/v1";
 };
 
