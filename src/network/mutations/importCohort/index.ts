@@ -30,7 +30,6 @@ export const importCohort = async (
     headers: {
       service: SERVICE_NAME.AUDIENCE,
       "Content-Type": "multipart/form-data",
-      "X-Project-Id": "project1",
     },
   });
   return response.data;

@@ -28,6 +28,7 @@ import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import AscendModal from "../../../components/AscendModal/AscendModal";
 import CloseIcon from "@mui/icons-material/Close";
 import AscendDropdown from "../../../components/AscendDropdown/AscendDropdown";
+import { useAudiences } from "../../../network/queries";
 
 // Custom node for Targeting
 const TargetingNode = ({ data }: any) => {
@@ -1077,7 +1078,7 @@ function CreateExperimentTargetingParentModal({
 
   // Get cohorts already selected by other variants
   const getAvailableCohortOptions = (currentIndex: number) => {
-    const allOptions = ["keyword", "category", "product"];
+    const allOptions = cohortList;
     const selectedByOthers = watchedVariantCohorts
       .filter((_: any, idx: number) => idx !== currentIndex)
       .map((v: any) => v?.cohorts)
@@ -1095,6 +1096,18 @@ function CreateExperimentTargetingParentModal({
   }>;
   const cohorts = cohortsField.value;
   const isAssignCohortsDirectly = isAssignCohortsDirectlyField.value;
+
+  const { data: audiencesData, isLoading: isAudiencesLoading } = useAudiences({
+    pageSize: 100,
+    page: 0,
+  });
+
+  const cohortList = useMemo(() => {
+    if (!audiencesData?.audiences) return [];
+    return audiencesData.audiences.map(
+      (audience: any) => audience.name || String(audience.id || ""),
+    );
+  }, [audiencesData]);
 
   // Helper to get data type based on operand
   const getDataTypeForOperand = (operand: string): string => {
@@ -1451,11 +1464,11 @@ function CreateExperimentTargetingParentModal({
             <AscendDropdown
               placeholder="Select Cohorts"
               variant="single"
-              options={["keyword", "category", "product"]}
+              options={cohortList}
               value={cohorts || ""}
               fullWidth
               size="lg"
-              disabled={isEditMode}
+              disabled={isEditMode || isAudiencesLoading}
               onChange={(value) => {
                 if (!isEditMode) {
                   cohortsField.onChange(value as string);
@@ -1493,7 +1506,7 @@ function CreateExperimentTargetingParentModal({
                         value={field.value || ""}
                         fullWidth
                         size="lg"
-                        disabled={isEditMode}
+                        disabled={isEditMode || isAudiencesLoading}
                         onChange={(value) => {
                           if (!isEditMode) {
                             field.onChange(value as string);

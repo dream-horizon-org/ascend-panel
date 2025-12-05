@@ -4,7 +4,7 @@
  */
 
 // Shared keys (used by mutations)
-export { experimentKeys } from "./sharedKeys";
+export { experimentKeys, audienceKeys } from "./sharedKeys";
 
 // Get Experiments List
 export {
@@ -35,3 +35,7 @@ export type {
 // Get Tags
 export { fetchTags, useTags } from "./getTags";
 export type { TagsResponse } from "./getTags";
+
+// Get Audiences List
+export { fetchAudiences, useAudiences } from "./getAudiences";
+export type { AudiencesResponse, AudienceFilters } from "./getAudiences";
