@@ -1,5 +1,5 @@
 import { Box, Tabs, Tab, CircularProgress } from "@mui/material";
-import { useParams } from "react-router";
+import { useParams, useLocation } from "react-router";
 import { useState } from "react";
 import { useExperiment } from "../../network/queries";
 import ExperimentDetailsHeader from "../ExperimentDetails/ExperimentDetailsHeader";
@@ -10,22 +10,32 @@ import ErrorPage from "../ExperimentDetails/components/ErrorPage";
 import {
   useConcludeExperiment,
   useTerminateExperiment,
+  usePauseExperiment,
+  useRestartExperiment,
 } from "../../network/mutations";
 import { ChartDataPoint, Variant } from "../ExperimentDetails/types";
 import SetupTab from "./components/SetupTab";
 
 export default function ExperimentOverview() {
   const { id } = useParams<{ id: string }>();
-  const [activeTab, setActiveTab] = useState<"setup" | "results">("setup");
+  const location = useLocation();
+  const defaultTab = (location.state as { defaultTab?: "setup" | "results" })?.defaultTab;
+  const [activeTab, setActiveTab] = useState<"setup" | "results">(
+    defaultTab || "setup"
+  );
 
   const { data: experiment, isLoading, error } = useExperiment(id || null);
   const concludeMutation = useConcludeExperiment();
   const terminateMutation = useTerminateExperiment();
+  const pauseMutation = usePauseExperiment();
+  const restartMutation = useRestartExperiment();
 
   const [copySuccessOpen, setCopySuccessOpen] = useState(false);
 
   const { isPending: isConcluding } = concludeMutation;
   const { isPending: isTerminating } = terminateMutation;
+  const { isPending: isPausing } = pauseMutation;
+  const { isPending: isRestarting } = restartMutation;
 
   const chartData: ChartDataPoint[] = [];
 
@@ -71,6 +81,24 @@ export default function ExperimentOverview() {
     }
   };
 
+  const handlePauseExperiment = () => {
+    if (id && !isPausing) {
+      pauseMutation.mutate({
+        id,
+        data: { status: "PAUSED" },
+      });
+    }
+  };
+
+  const handleRestartExperiment = () => {
+    if (id && !isRestarting) {
+      restartMutation.mutate({
+        id,
+        data: { status: "LIVE" },
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <Box
@@ -97,26 +125,37 @@ export default function ExperimentOverview() {
   const statusInfo = mapStatus(experiment.status);
 
   return (
-    <Box>
-      <ExperimentDetailsHeader
-        title={experiment.name}
-        status={statusInfo}
-        experimentId={`#${experiment.experimentId}`}
-        experimentStatus={experiment.status}
-        variants={experiment.variants}
-        onBack={() => window.history.back()}
-        onCopyId={handleCopyId}
-        onTerminateExperiment={handleTerminateExperiment}
-        onDeclareWinner={handleDeclareWinner}
-      />
-
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <Box
         sx={{
-          borderBottom: 1,
-          borderColor: "divider",
+          position: "sticky",
+          top: 0,
+          zIndex: (theme) => theme.zIndex.appBar - 1,
           backgroundColor: "background.paper",
+          flexShrink: 0,
         }}
       >
+        <ExperimentDetailsHeader
+          title={experiment.name}
+          status={statusInfo}
+          experimentId={`#${experiment.experimentId}`}
+          experimentStatus={experiment.status}
+          variants={experiment.variants}
+          onBack={() => window.history.back()}
+          onCopyId={handleCopyId}
+          onTerminateExperiment={handleTerminateExperiment}
+          onDeclareWinner={handleDeclareWinner}
+          onPauseExperiment={handlePauseExperiment}
+          onRestartExperiment={handleRestartExperiment}
+        />
+
+        <Box
+          sx={{
+            borderBottom: 1,
+            borderColor: "divider",
+            backgroundColor: "background.paper",
+          }}
+        >
         <Tabs
           value={activeTab === "setup" ? 0 : 1}
           onChange={handleTabChange}
@@ -141,9 +180,10 @@ export default function ExperimentOverview() {
           <Tab label="Setup" />
           <Tab label="Results" />
         </Tabs>
+        </Box>
       </Box>
 
-      <Box sx={{ flex: 1, overflowY: "auto" }}>
+      <Box sx={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
         {activeTab === "setup" ? (
           <SetupTab experimentId={id || ""} />
         ) : (

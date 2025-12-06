@@ -61,6 +61,11 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
       const weight = exp.variantWeights?.weights?.[key];
       const trafficSplit = typeof weight === "number" ? weight.toString() : "0";
 
+      let cohortsValue = "";
+      if (weight && Array.isArray(weight) && weight.length > 0) {
+        cohortsValue = String(weight[0]);
+      }
+
       return {
         name: variant.display_name || key,
         trafficSplit: trafficSplit,
@@ -69,8 +74,7 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
           data_type: v.dataType || v.data_type || "",
           value: v.value || "",
         })),
-        cohorts:
-          typeof weight === "object" && Array.isArray(weight) ? weight : [],
+        cohorts: cohortsValue,
       };
     });
 

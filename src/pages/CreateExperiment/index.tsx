@@ -30,7 +30,10 @@ const CreateExperiment = () => {
       onSuccess: (response) => {
         setShowCreatingSnackbar(false);
         setTimeout(() => {
-          navigate(`/experiment/${response.experiment_id}`, { replace: true });
+          navigate(`/experiment/${response.experiment_id}`, { 
+            replace: true,
+            state: { defaultTab: "results" }
+          });
         }, 2000);
       },
       onError: () => {

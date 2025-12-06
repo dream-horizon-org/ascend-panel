@@ -34,6 +34,8 @@ import {
   useTags,
   useExperiments,
   useTerminateExperiment,
+  usePauseExperiment,
+  useRestartExperiment,
   Experiment,
   ExperimentFilters,
 } from "../../network";
@@ -124,8 +126,28 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
     isSuccess: isTerminateSuccess,
   } = terminateMutation;
 
+  // Pause mutation
+  const pauseMutation = usePauseExperiment();
+  const {
+    isPending: isPausing,
+    isError: isPauseError,
+    error: pauseError,
+    isSuccess: isPauseSuccess,
+  } = pauseMutation;
+
+  // Restart mutation
+  const restartMutation = useRestartExperiment();
+  const {
+    isPending: isRestarting,
+    isError: isRestartError,
+    error: restartError,
+    isSuccess: isRestartSuccess,
+  } = restartMutation;
+
   // Check if experiment can be terminated (not already terminated or concluded)
   const canTerminate = !["TERMINATED", "CONCLUDED"].includes(row.status);
+  const canPause = row.status === "LIVE" && !["TERMINATED", "CONCLUDED"].includes(row.status);
+  const canRestart = row.status === "PAUSED" && !["TERMINATED", "CONCLUDED"].includes(row.status);
 
   const handleClose = (e?: React.MouseEvent | {}) => {
     if (e && "stopPropagation" in e) {
@@ -150,6 +172,28 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
     handleClose();
   };
 
+  const handlePause = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isPausing && canPause) {
+      pauseMutation.mutate({
+        id: row.experimentId,
+        data: { status: "PAUSED" },
+      });
+    }
+    handleClose();
+  };
+
+  const handleRestart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isRestarting && canRestart) {
+      restartMutation.mutate({
+        id: row.experimentId,
+        data: { status: "LIVE" },
+      });
+    }
+    handleClose();
+  };
+
   return (
     <>
       <IconButton size="small" onClick={handleMenuClick}>
@@ -165,6 +209,24 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
           },
         }}
       >
+        {canPause && (
+          <AscendMenuItem
+            onClick={handlePause}
+            disabled={isPausing}
+            sx={{ fontSize: "12px", fontWeight: 600 }}
+          >
+            {isPausing ? "Pausing..." : "Pause Experiment"}
+          </AscendMenuItem>
+        )}
+        {canRestart && (
+          <AscendMenuItem
+            onClick={handleRestart}
+            disabled={isRestarting}
+            sx={{ fontSize: "12px", fontWeight: 600 }}
+          >
+            {isRestarting ? "Restarting..." : "Restart Experiment"}
+          </AscendMenuItem>
+        )}
         {canTerminate && (
           <AscendMenuItem
             onClick={handleTerminate}
@@ -188,6 +250,34 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
         message={terminateError?.message || "Failed to terminate experiment"}
         severity="error"
         onClose={() => terminateMutation.reset()}
+      />
+
+      {/* Snackbars for pause action */}
+      <AscendSnackbar
+        open={isPauseSuccess}
+        message="Experiment paused successfully"
+        severity="success"
+        onClose={() => pauseMutation.reset()}
+      />
+      <AscendSnackbar
+        open={isPauseError}
+        message={pauseError?.message || "Failed to pause experiment"}
+        severity="error"
+        onClose={() => pauseMutation.reset()}
+      />
+
+      {/* Snackbars for restart action */}
+      <AscendSnackbar
+        open={isRestartSuccess}
+        message="Experiment restarted successfully"
+        severity="success"
+        onClose={() => restartMutation.reset()}
+      />
+      <AscendSnackbar
+        open={isRestartError}
+        message={restartError?.message || "Failed to restart experiment"}
+        severity="error"
+        onClose={() => restartMutation.reset()}
       />
     </>
   );

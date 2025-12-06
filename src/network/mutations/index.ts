@@ -38,6 +38,26 @@ export type {
   TerminateExperimentResponse,
 } from "./terminateExperiment";
 
+// Pause Experiment
+export {
+  pauseExperiment,
+  usePauseExperiment,
+} from "./pauseExperiment";
+export type {
+  PauseExperimentRequest,
+  PauseExperimentResponse,
+} from "./pauseExperiment";
+
+// Restart Experiment
+export {
+  restartExperiment,
+  useRestartExperiment,
+} from "./restartExperiment";
+export type {
+  RestartExperimentRequest,
+  RestartExperimentResponse,
+} from "./restartExperiment";
+
 // Import Cohort
 export { importCohort, useImportCohort } from "./importCohort";
 export type { ImportCohortRequest, ImportCohortResponse } from "./importCohort";

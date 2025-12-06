@@ -29,19 +29,24 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
   onConcludeClick,
   onTerminateExperiment,
   onDeclareWinner,
+  onPauseExperiment,
+  onRestartExperiment,
   className = "",
 }) => {
   // Determine visibility based on experiment status
   const isTerminated = experimentStatus === "TERMINATED";
   const isConcluded = experimentStatus === "CONCLUDED";
+  const isPaused = experimentStatus === "PAUSED";
+  const isLive = experimentStatus === "LIVE";
   const shouldShowConcludeButton = !isTerminated && !isConcluded;
   const shouldShowTerminateMenuItem = !isTerminated;
+  const shouldShowPauseMenuItem = isLive && !isTerminated && !isConcluded;
+  const shouldShowRestartMenuItem = isPaused && !isTerminated && !isConcluded;
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [concludeAnchorEl, setConcludeAnchorEl] = useState<null | HTMLElement>(
     null,
   );
-  console.log("experiment");
   const open = Boolean(anchorEl);
   const concludeOpen = Boolean(concludeAnchorEl);
 
@@ -71,6 +76,20 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
     handleMenuClose();
     if (onTerminateExperiment) {
       onTerminateExperiment();
+    }
+  };
+
+  const handlePauseExperiment = () => {
+    handleMenuClose();
+    if (onPauseExperiment) {
+      onPauseExperiment();
+    }
+  };
+
+  const handleRestartExperiment = () => {
+    handleMenuClose();
+    if (onRestartExperiment) {
+      onRestartExperiment();
     }
   };
 
@@ -236,6 +255,16 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
         open={open}
         onClose={handleMenuClose}
       >
+        {shouldShowPauseMenuItem && (
+          <AscendMenuItem onClick={handlePauseExperiment}>
+            Pause Experiment
+          </AscendMenuItem>
+        )}
+        {shouldShowRestartMenuItem && (
+          <AscendMenuItem onClick={handleRestartExperiment}>
+            Restart Experiment
+          </AscendMenuItem>
+        )}
         {shouldShowTerminateMenuItem && (
           <AscendMenuItem onClick={handleTerminateExperiment}>
             Terminate Experiment

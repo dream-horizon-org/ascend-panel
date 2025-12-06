@@ -254,7 +254,6 @@ const VariantNode = ({ data }: any) => {
                 NUMBER: "Number",
                 DECIMAL: "Decimal",
                 STRING: "String",
-                SEMVER_STRING: "Semver",
                 OBJECT: "Object",
                 LIST: "List",
               };
@@ -266,7 +265,6 @@ const VariantNode = ({ data }: any) => {
             <MenuItem value="NUMBER">Number</MenuItem>
             <MenuItem value="DECIMAL">Decimal</MenuItem>
             <MenuItem value="STRING">String</MenuItem>
-            <MenuItem value="SEMVER_STRING">Semver</MenuItem>
             <MenuItem value="OBJECT">Object</MenuItem>
             <MenuItem value="LIST">List</MenuItem>
           </Select>
@@ -959,7 +957,7 @@ export default function VariantsFlow({
           height: `${canvasHeight}px`,
           width: "100%",
           overflow: "auto",
-          mb: 0,
+          mb: 0
         }}
       >
         <ReactFlow
@@ -1119,7 +1117,7 @@ function CreateExperimentTargetingParentModal({
       app_name: "STRING",
       platform: "STRING",
       os_version: "STRING",
-      app_version: "SEMVER_STRING",
+      app_version: "STRING",
       build_number: "NUMBER",
       current_location_city: "STRING",
       current_location_state: "STRING",
@@ -1143,8 +1141,7 @@ function CreateExperimentTargetingParentModal({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      {/* Header with Title and Close Button */}
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3}}>
       <Box
         sx={{
           display: "flex",
@@ -1286,8 +1283,7 @@ function CreateExperimentTargetingParentModal({
 
                     if (
                       dataType === "NUMBER" ||
-                      dataType === "DECIMAL" ||
-                      dataType === "SEMVER_STRING"
+                      dataType === "DECIMAL"
                     ) {
                       return [
                         { value: "=", label: "Is equal to" },
@@ -1420,7 +1416,7 @@ function CreateExperimentTargetingParentModal({
                     );
                   }
 
-                  // Default to string input (includes STRING and SEMVER_STRING)
+                  // Default to string input
                   return (
                     <TextField
                       size="small"
