@@ -2,6 +2,7 @@ import { Box, Typography, IconButton } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useState } from "react";
 import AscendSnackbar from "../../components/AscendSnackbar/AscendSnackbar";
+import ImplementationInstructions from "./ImplementationInstructions";
 
 export default function Settings() {
   // Priority: Docker runtime env (window.__ENV__) > build-time env > fallback
@@ -18,9 +19,11 @@ export default function Settings() {
     "Not configured";
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  const handleCopy = (value: string) => {
+  const handleCopy = (value: string, label?: string) => {
     navigator.clipboard.writeText(value);
+    setSnackbarMessage(label ? `${label} copied to clipboard` : "Copied to clipboard");
     setSnackbarOpen(true);
   };
 
@@ -74,17 +77,19 @@ export default function Settings() {
           <ConfigItem
             label="Project API"
             value={projectApi}
-            onCopy={() => handleCopy(projectApi)}
+            onCopy={() => handleCopy(projectApi, "Project API")}
             isLast
           />
         </Box>
       </Box>
 
+      <ImplementationInstructions onCopy={handleCopy} />
+
       <AscendSnackbar
         open={snackbarOpen}
         autoHideDuration={2000}
         onClose={() => setSnackbarOpen(false)}
-        message="Project API copied to clipboard"
+        message={snackbarMessage || "Copied to clipboard"}
         severity="success"
       />
     </Box>
