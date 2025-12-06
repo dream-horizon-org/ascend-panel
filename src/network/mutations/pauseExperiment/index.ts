@@ -41,8 +41,4 @@ export const usePauseExperiment = () => {
 };
 
 // Export types
-export type {
-  PauseExperimentRequest,
-  PauseExperimentResponse,
-} from "./types";
-
+export type { PauseExperimentRequest, PauseExperimentResponse } from "./types";

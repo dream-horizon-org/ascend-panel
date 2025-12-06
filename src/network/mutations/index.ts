@@ -39,20 +39,14 @@ export type {
 } from "./terminateExperiment";
 
 // Pause Experiment
-export {
-  pauseExperiment,
-  usePauseExperiment,
-} from "./pauseExperiment";
+export { pauseExperiment, usePauseExperiment } from "./pauseExperiment";
 export type {
   PauseExperimentRequest,
   PauseExperimentResponse,
 } from "./pauseExperiment";
 
 // Restart Experiment
-export {
-  restartExperiment,
-  useRestartExperiment,
-} from "./restartExperiment";
+export { restartExperiment, useRestartExperiment } from "./restartExperiment";
 export type {
   RestartExperimentRequest,
   RestartExperimentResponse,

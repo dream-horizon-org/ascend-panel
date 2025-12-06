@@ -23,7 +23,9 @@ export default function Settings() {
 
   const handleCopy = (value: string, label?: string) => {
     navigator.clipboard.writeText(value);
-    setSnackbarMessage(label ? `${label} copied to clipboard` : "Copied to clipboard");
+    setSnackbarMessage(
+      label ? `${label} copied to clipboard` : "Copied to clipboard",
+    );
     setSnackbarOpen(true);
   };
 

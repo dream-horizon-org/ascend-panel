@@ -11,7 +11,9 @@ interface ImplementationInstructionsProps {
 export default function ImplementationInstructions({
   onCopy,
 }: ImplementationInstructionsProps) {
-  const [selectedLanguage, setSelectedLanguage] = useState<"reactnative" | "swift" | "kotlin">("reactnative");
+  const [selectedLanguage, setSelectedLanguage] = useState<
+    "reactnative" | "swift" | "kotlin"
+  >("reactnative");
   const [configExpanded, setConfigExpanded] = useState(true);
 
   // Get API configuration
@@ -65,8 +67,10 @@ export default function ImplementationInstructions({
 
       <Box sx={{ padding: "24px" }}>
         {/* Language Selection */}
-        <Box sx={{ display: "flex", gap: 2, marginBottom: 3, flexWrap: "wrap" }}>
-        <Button
+        <Box
+          sx={{ display: "flex", gap: 2, marginBottom: 3, flexWrap: "wrap" }}
+        >
+          <Button
             variant={selectedLanguage === "kotlin" ? "contained" : "outlined"}
             onClick={() => setSelectedLanguage("kotlin")}
             sx={{
@@ -135,7 +139,9 @@ export default function ImplementationInstructions({
             Swift
           </Button>
           <Button
-            variant={selectedLanguage === "reactnative" ? "contained" : "outlined"}
+            variant={
+              selectedLanguage === "reactnative" ? "contained" : "outlined"
+            }
             onClick={() => setSelectedLanguage("reactnative")}
             sx={{
               textTransform: "none",
@@ -180,7 +186,6 @@ export default function ImplementationInstructions({
           }}
         >
           Below is some starter code to integrate Ascend into your app.
-
         </Typography>
 
         <Box
@@ -219,9 +224,13 @@ export default function ImplementationInstructions({
             </Typography>
             <IconButton size="small" sx={{ padding: "4px" }}>
               {configExpanded ? (
-                <KeyboardArrowUpIcon sx={{ fontSize: "20px", color: "#666666" }} />
+                <KeyboardArrowUpIcon
+                  sx={{ fontSize: "20px", color: "#666666" }}
+                />
               ) : (
-                <KeyboardArrowDownIcon sx={{ fontSize: "20px", color: "#666666" }} />
+                <KeyboardArrowDownIcon
+                  sx={{ fontSize: "20px", color: "#666666" }}
+                />
               )}
             </IconButton>
           </Box>
@@ -345,4 +354,3 @@ function ConfigSettingItem({
     </Box>
   );
 }
-

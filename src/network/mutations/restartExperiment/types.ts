@@ -5,4 +5,3 @@ export interface RestartExperimentRequest {
 
 // Response type - reuse Experiment from queries
 export type { Experiment as RestartExperimentResponse } from "../../queries/getExperimentDetails/types";
-

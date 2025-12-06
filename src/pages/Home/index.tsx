@@ -148,8 +148,11 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
   const isTerminated = row.status === "TERMINATED";
   const isConcluded = row.status === "CONCLUDED";
   const canTerminate = !["TERMINATED", "CONCLUDED"].includes(row.status);
-  const canPause = row.status === "LIVE" && !["TERMINATED", "CONCLUDED"].includes(row.status);
-  const canRestart = row.status === "PAUSED" && !["TERMINATED", "CONCLUDED"].includes(row.status);
+  const canPause =
+    row.status === "LIVE" && !["TERMINATED", "CONCLUDED"].includes(row.status);
+  const canRestart =
+    row.status === "PAUSED" &&
+    !["TERMINATED", "CONCLUDED"].includes(row.status);
 
   const handleClose = (e?: React.MouseEvent | {}) => {
     if (e && "stopPropagation" in e) {

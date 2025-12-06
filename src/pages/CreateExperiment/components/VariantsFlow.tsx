@@ -290,9 +290,7 @@ const VariantNode = ({ data }: any) => {
             <TextField
               size="small"
               placeholder={
-                variable.data_type === "OBJECT"
-                  ? "Add JSON"
-                  : "Value"
+                variable.data_type === "OBJECT" ? "Add JSON" : "Value"
               }
               type="text"
               value={
@@ -336,10 +334,7 @@ const VariantNode = ({ data }: any) => {
                     </InputAdornment>
                   ) : null,
                 sx: {
-                  cursor:
-                    variable.data_type === "OBJECT"
-                      ? "pointer"
-                      : "text",
+                  cursor: variable.data_type === "OBJECT" ? "pointer" : "text",
                 },
               }}
               sx={{
@@ -353,10 +348,10 @@ const VariantNode = ({ data }: any) => {
                 }),
                 ...(variable.data_type === "OBJECT" &&
                   variable.value && {
-                  "& .MuiInputBase-input": {
-                    color: "#828592",
-                  },
-                }),
+                    "& .MuiInputBase-input": {
+                      color: "#828592",
+                    },
+                  }),
               }}
             />
           )}
@@ -881,15 +876,15 @@ export default function VariantsFlow({
           showCloseButton: false,
           nestedModal: !isEditMode
             ? {
-              width: 400,
-              showCloseButton: false,
-              children: (
-                <CreateExperimentTargetingChildModal
-                  handleChildModalCancel={handleChildModalCancel}
-                  handleChildModalExit={handleChildModalExit}
-                />
-              ),
-            }
+                width: 400,
+                showCloseButton: false,
+                children: (
+                  <CreateExperimentTargetingChildModal
+                    handleChildModalCancel={handleChildModalCancel}
+                    handleChildModalExit={handleChildModalExit}
+                  />
+                ),
+              }
             : undefined,
           actions: !isEditMode ? (
             <Box
@@ -934,7 +929,7 @@ export default function VariantsFlow({
           height: `${canvasHeight}px`,
           width: "100%",
           overflow: "auto",
-          mb: 0
+          mb: 0,
         }}
       >
         <ReactFlow
@@ -1183,7 +1178,7 @@ function CreateExperimentTargetingParentModal({
                           current_location_country: "Current Location Country",
                           user_id: "User ID",
                           package_name: "Package Name",
-                          stable_id: "Stable Id"
+                          stable_id: "Stable Id",
                         };
                         return (
                           displayNames[selected as string] ||

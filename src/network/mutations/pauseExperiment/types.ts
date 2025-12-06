@@ -5,4 +5,3 @@ export interface PauseExperimentRequest {
 
 // Response type - reuse Experiment from queries
 export type { Experiment as PauseExperimentResponse } from "../../queries/getExperimentDetails/types";
-

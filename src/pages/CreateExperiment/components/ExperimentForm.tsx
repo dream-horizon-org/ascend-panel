@@ -210,7 +210,9 @@ const ExperimentForm = ({
   };
 
   return (
-    <Box sx={{ display: "flex", position: "relative", alignItems: "flex-start" }}>
+    <Box
+      sx={{ display: "flex", position: "relative", alignItems: "flex-start" }}
+    >
       {/* Sidebar */}
       <Box
         sx={{

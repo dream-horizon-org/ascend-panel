@@ -19,9 +19,10 @@ import SetupTab from "./components/SetupTab";
 export default function ExperimentOverview() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const defaultTab = (location.state as { defaultTab?: "setup" | "results" })?.defaultTab;
+  const defaultTab = (location.state as { defaultTab?: "setup" | "results" })
+    ?.defaultTab;
   const [activeTab, setActiveTab] = useState<"setup" | "results">(
-    defaultTab || "setup"
+    defaultTab || "setup",
   );
 
   const { data: experiment, isLoading, error } = useExperiment(id || null);
@@ -156,30 +157,30 @@ export default function ExperimentOverview() {
             backgroundColor: "background.paper",
           }}
         >
-        <Tabs
-          value={activeTab === "setup" ? 0 : 1}
-          onChange={handleTabChange}
-          sx={{
-            "& .MuiTabs-indicator": {
-              backgroundColor: "#0060E5",
-            },
-            "& .MuiTab-root": {
-              textTransform: "none",
-              fontFamily: "Inter",
-              fontWeight: 600,
-              fontSize: "0.875rem",
-              color: "#666666",
-              padding: "1rem 1.5rem",
-              minHeight: "auto",
-              "&.Mui-selected": {
-                color: "#0060E5",
+          <Tabs
+            value={activeTab === "setup" ? 0 : 1}
+            onChange={handleTabChange}
+            sx={{
+              "& .MuiTabs-indicator": {
+                backgroundColor: "#0060E5",
               },
-            },
-          }}
-        >
-          <Tab label="Setup" />
-          <Tab label="Results" />
-        </Tabs>
+              "& .MuiTab-root": {
+                textTransform: "none",
+                fontFamily: "Inter",
+                fontWeight: 600,
+                fontSize: "0.875rem",
+                color: "#666666",
+                padding: "1rem 1.5rem",
+                minHeight: "auto",
+                "&.Mui-selected": {
+                  color: "#0060E5",
+                },
+              },
+            }}
+          >
+            <Tab label="Setup" />
+            <Tab label="Results" />
+          </Tabs>
         </Box>
       </Box>
 
