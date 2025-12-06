@@ -252,10 +252,8 @@ const VariantNode = ({ data }: any) => {
               const displayNames: Record<string, string> = {
                 BOOL: "Boolean",
                 NUMBER: "Number",
-                DECIMAL: "Decimal",
                 STRING: "String",
                 OBJECT: "Object",
-                LIST: "List",
               };
               return displayNames[selected] || selected;
             }}
@@ -263,10 +261,8 @@ const VariantNode = ({ data }: any) => {
           >
             <MenuItem value="BOOL">Boolean</MenuItem>
             <MenuItem value="NUMBER">Number</MenuItem>
-            <MenuItem value="DECIMAL">Decimal</MenuItem>
             <MenuItem value="STRING">String</MenuItem>
             <MenuItem value="OBJECT">Object</MenuItem>
-            <MenuItem value="LIST">List</MenuItem>
           </Select>
           {variable.data_type === "BOOL" ? (
             <Select
@@ -294,18 +290,14 @@ const VariantNode = ({ data }: any) => {
             <TextField
               size="small"
               placeholder={
-                variable.data_type === "OBJECT" || variable.data_type === "LIST"
+                variable.data_type === "OBJECT"
                   ? "Add JSON"
                   : "Value"
               }
               type="text"
               value={
-                (variable.data_type === "OBJECT" ||
-                  variable.data_type === "LIST") &&
-                variable.value
-                  ? variable.data_type === "LIST"
-                    ? "[JSON array preview]"
-                    : "{JSON object preview}"
+                variable.data_type === "OBJECT" && variable.value
+                  ? "{JSON object preview}"
                   : variable.value || ""
               }
               onChange={(e) => {
@@ -316,12 +308,6 @@ const VariantNode = ({ data }: any) => {
                     if (value === "" || /^-?\d*$/.test(value)) {
                       data.onVariableChange?.(index, "value", value);
                     }
-                  }
-                  // For DECIMAL type, allow float numbers
-                  else if (variable.data_type === "DECIMAL") {
-                    if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
-                      data.onVariableChange?.(index, "value", value);
-                    }
                   } else {
                     data.onVariableChange?.(index, "value", value);
                   }
@@ -329,20 +315,14 @@ const VariantNode = ({ data }: any) => {
               }}
               disabled={isEditMode}
               onClick={
-                !isEditMode &&
-                (variable.data_type === "OBJECT" ||
-                  variable.data_type === "LIST")
+                !isEditMode && variable.data_type === "OBJECT"
                   ? () => handleOpenJsonModal(index, variable.value)
                   : undefined
               }
               InputProps={{
-                readOnly:
-                  variable.data_type === "OBJECT" ||
-                  variable.data_type === "LIST",
+                readOnly: variable.data_type === "OBJECT",
                 endAdornment:
-                  (variable.data_type === "OBJECT" ||
-                    variable.data_type === "LIST") &&
-                  variable.value ? (
+                  variable.data_type === "OBJECT" && variable.value ? (
                     <InputAdornment position="end">
                       <IconButton
                         size="small"
@@ -357,8 +337,7 @@ const VariantNode = ({ data }: any) => {
                   ) : null,
                 sx: {
                   cursor:
-                    variable.data_type === "OBJECT" ||
-                    variable.data_type === "LIST"
+                    variable.data_type === "OBJECT"
                       ? "pointer"
                       : "text",
                 },
@@ -366,20 +345,18 @@ const VariantNode = ({ data }: any) => {
               sx={{
                 flex: 2,
                 "& .MuiOutlinedInput-root": { borderRadius: "0.25rem" },
-                ...((variable.data_type === "OBJECT" ||
-                  variable.data_type === "LIST") && {
+                ...(variable.data_type === "OBJECT" && {
                   "& .MuiInputBase-input::placeholder": {
                     color: "#0060E5",
                     opacity: 1,
                   },
                 }),
-                ...((variable.data_type === "OBJECT" ||
-                  variable.data_type === "LIST") &&
+                ...(variable.data_type === "OBJECT" &&
                   variable.value && {
-                    "& .MuiInputBase-input": {
-                      color: "#828592",
-                    },
-                  }),
+                  "& .MuiInputBase-input": {
+                    color: "#828592",
+                  },
+                }),
               }}
             />
           )}
@@ -406,7 +383,7 @@ const VariantNode = ({ data }: any) => {
               open={jsonModalOpen === index}
               onClose={handleCancelJson}
               config={{
-                title: `${variable.data_type === "LIST" ? "JSON Array" : "JSON Object"} for ${data.name || "Variant"} - ${variable.key || "key"}`,
+                title: `JSON Object for ${data.name || "Variant"} - ${variable.key || "key"}`,
                 width: 600,
                 maxHeight: "80vh",
                 content: (
@@ -904,15 +881,15 @@ export default function VariantsFlow({
           showCloseButton: false,
           nestedModal: !isEditMode
             ? {
-                width: 400,
-                showCloseButton: false,
-                children: (
-                  <CreateExperimentTargetingChildModal
-                    handleChildModalCancel={handleChildModalCancel}
-                    handleChildModalExit={handleChildModalExit}
-                  />
-                ),
-              }
+              width: 400,
+              showCloseButton: false,
+              children: (
+                <CreateExperimentTargetingChildModal
+                  handleChildModalCancel={handleChildModalCancel}
+                  handleChildModalExit={handleChildModalExit}
+                />
+              ),
+            }
             : undefined,
           actions: !isEditMode ? (
             <Box
@@ -1110,18 +1087,11 @@ function CreateExperimentTargetingParentModal({
   // Helper to get data type based on operand
   const getDataTypeForOperand = (operand: string): string => {
     const dataTypeMap: Record<string, string> = {
-      user_id: "STRING",
-      guest_id: "STRING",
-      model: "STRING",
-      device: "STRING",
-      app_name: "STRING",
       platform: "STRING",
-      os_version: "STRING",
-      app_version: "STRING",
+      app_version: "SEMVER_STRING",
       build_number: "NUMBER",
-      current_location_city: "STRING",
-      current_location_state: "STRING",
       current_location_country: "STRING",
+      package_name: "STRING",
     };
     return dataTypeMap[operand] || "STRING";
   };
@@ -1141,7 +1111,7 @@ function CreateExperimentTargetingParentModal({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 3}}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <Box
         sx={{
           display: "flex",
@@ -1207,18 +1177,13 @@ function CreateExperimentTargetingParentModal({
                           );
                         }
                         const displayNames: Record<string, string> = {
-                          user_id: "User ID",
-                          guest_id: "Guest ID",
-                          model: "Model",
-                          device: "Device",
-                          app_name: "App Name",
                           platform: "Platform",
-                          os_version: "OS Version",
                           app_version: "App Version",
                           build_number: "Build Number",
-                          current_location_city: "Current Location City",
-                          current_location_state: "Current Location State",
                           current_location_country: "Current Location Country",
+                          user_id: "User ID",
+                          package_name: "Package Name",
+                          stable_id: "Stable Id"
                         };
                         return (
                           displayNames[selected as string] ||
@@ -1244,21 +1209,9 @@ function CreateExperimentTargetingParentModal({
                       }
                     }}
                   >
-                    <MenuItem value="user_id">User ID</MenuItem>
-                    <MenuItem value="guest_id">Guest ID</MenuItem>
-                    <MenuItem value="model">Model</MenuItem>
-                    <MenuItem value="device">Device</MenuItem>
-                    <MenuItem value="app_name">App Name</MenuItem>
                     <MenuItem value="platform">Platform</MenuItem>
-                    <MenuItem value="os_version">OS Version</MenuItem>
                     <MenuItem value="app_version">App Version</MenuItem>
                     <MenuItem value="build_number">Build Number</MenuItem>
-                    <MenuItem value="current_location_city">
-                      Current Location City
-                    </MenuItem>
-                    <MenuItem value="current_location_state">
-                      Current Location State
-                    </MenuItem>
                     <MenuItem value="current_location_country">
                       Current Location Country
                     </MenuItem>
@@ -1281,10 +1234,7 @@ function CreateExperimentTargetingParentModal({
                       ];
                     }
 
-                    if (
-                      dataType === "NUMBER" ||
-                      dataType === "DECIMAL"
-                    ) {
+                    if (dataType === "NUMBER") {
                       return [
                         { value: "=", label: "Is equal to" },
                         { value: "!=", label: "Is not equal to" },
@@ -1299,7 +1249,7 @@ function CreateExperimentTargetingParentModal({
                     return [
                       { value: "=", label: "Is equal to" },
                       { value: "!=", label: "Is not equal to" },
-                      { value: "CONTAINS", label: "Contains" },
+                      { value: "contains", label: "Contains" },
                     ];
                   };
 
@@ -1385,29 +1335,6 @@ function CreateExperimentTargetingParentModal({
                             const value = e.target.value;
                             // Allow empty string and integers only
                             if (value === "" || /^-?\d*$/.test(value)) {
-                              field.onChange(value);
-                            }
-                          }
-                        }}
-                      />
-                    );
-                  }
-
-                  // For DECIMAL type (float numbers)
-                  if (dataType === "DECIMAL") {
-                    return (
-                      <TextField
-                        size="small"
-                        type="text"
-                        placeholder="Value"
-                        sx={{ width: 100 }}
-                        disabled={isEditMode}
-                        {...field}
-                        onChange={(e) => {
-                          if (!isEditMode) {
-                            const value = e.target.value;
-                            // Allow empty string, numbers, and decimal point
-                            if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
                               field.onChange(value);
                             }
                           }

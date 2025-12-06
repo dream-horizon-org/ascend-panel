@@ -42,6 +42,7 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
   const shouldShowTerminateMenuItem = !isTerminated;
   const shouldShowPauseMenuItem = isLive && !isTerminated && !isConcluded;
   const shouldShowRestartMenuItem = isPaused && !isTerminated && !isConcluded;
+  const shouldShowMenuButton = !isTerminated && !isConcluded;
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [concludeAnchorEl, setConcludeAnchorEl] = useState<null | HTMLElement>(
@@ -229,48 +230,52 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
       <Box sx={{ flexGrow: 1 }} />
 
       {/* Menu Button */}
-      <IconButton
-        onClick={handleMenuClick}
-        aria-label="more options"
-        aria-controls={open ? "experiment-menu" : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? "true" : undefined}
-        sx={{
-          padding: "0.5rem",
-          color: theme.palette.text.secondary,
-          backgroundColor: theme.palette.background.default,
-          borderRadius: "0.5rem",
-          "&:hover": {
-            backgroundColor: theme.palette.divider,
-          },
-        }}
-      >
-        <MoreVertIcon sx={{ fontSize: "1.25rem" }} />
-      </IconButton>
+      {shouldShowMenuButton && (
+        <>
+          <IconButton
+            onClick={handleMenuClick}
+            aria-label="more options"
+            aria-controls={open ? "experiment-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? "true" : undefined}
+            sx={{
+              padding: "0.5rem",
+              color: theme.palette.text.secondary,
+              backgroundColor: theme.palette.background.default,
+              borderRadius: "0.5rem",
+              "&:hover": {
+                backgroundColor: theme.palette.divider,
+              },
+            }}
+          >
+            <MoreVertIcon sx={{ fontSize: "1.25rem" }} />
+          </IconButton>
 
-      {/* Dropdown Menu */}
-      <AscendMenu
-        id="experiment-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleMenuClose}
-      >
-        {shouldShowPauseMenuItem && (
-          <AscendMenuItem onClick={handlePauseExperiment}>
-            Pause Experiment
-          </AscendMenuItem>
-        )}
-        {shouldShowRestartMenuItem && (
-          <AscendMenuItem onClick={handleRestartExperiment}>
-            Restart Experiment
-          </AscendMenuItem>
-        )}
-        {shouldShowTerminateMenuItem && (
-          <AscendMenuItem onClick={handleTerminateExperiment}>
-            Terminate Experiment
-          </AscendMenuItem>
-        )}
-      </AscendMenu>
+          {/* Dropdown Menu */}
+          <AscendMenu
+            id="experiment-menu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleMenuClose}
+          >
+            {shouldShowPauseMenuItem && (
+              <AscendMenuItem onClick={handlePauseExperiment}>
+                Pause Experiment
+              </AscendMenuItem>
+            )}
+            {shouldShowRestartMenuItem && (
+              <AscendMenuItem onClick={handleRestartExperiment}>
+                Restart Experiment
+              </AscendMenuItem>
+            )}
+            {shouldShowTerminateMenuItem && (
+              <AscendMenuItem onClick={handleTerminateExperiment}>
+                Terminate Experiment
+              </AscendMenuItem>
+            )}
+          </AscendMenu>
+        </>
+      )}
 
       {/* Conclude Button */}
       {shouldShowConcludeButton && (

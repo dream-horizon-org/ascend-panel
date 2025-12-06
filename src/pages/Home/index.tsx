@@ -145,6 +145,8 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
   } = restartMutation;
 
   // Check if experiment can be terminated (not already terminated or concluded)
+  const isTerminated = row.status === "TERMINATED";
+  const isConcluded = row.status === "CONCLUDED";
   const canTerminate = !["TERMINATED", "CONCLUDED"].includes(row.status);
   const canPause = row.status === "LIVE" && !["TERMINATED", "CONCLUDED"].includes(row.status);
   const canRestart = row.status === "PAUSED" && !["TERMINATED", "CONCLUDED"].includes(row.status);
@@ -193,6 +195,11 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
     }
     handleClose();
   };
+
+  // Don't render menu button for terminated or concluded experiments
+  if (isTerminated || isConcluded) {
+    return null;
+  }
 
   return (
     <>
