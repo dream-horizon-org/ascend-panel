@@ -42,7 +42,7 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
   const shouldShowTerminateMenuItem = !isTerminated;
   const shouldShowPauseMenuItem = isLive && !isTerminated && !isConcluded;
   const shouldShowRestartMenuItem = isPaused && !isTerminated && !isConcluded;
-  const shouldShowMenuButton = !isTerminated && !isConcluded;
+  const shouldShowMenuButton = !isTerminated;
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [concludeAnchorEl, setConcludeAnchorEl] = useState<null | HTMLElement>(
@@ -101,29 +101,14 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
     }
   };
 
-  const getStatusColor = (color?: string) => {
-    switch (color) {
-      case "active":
-        return {
-          backgroundColor: "#4CAF50",
-          color: "#FFFFFF",
-        };
-      case "inactive":
-        return {
-          backgroundColor: "#9E9E9E",
-          color: "#FFFFFF",
-        };
-      case "draft":
-        return {
-          backgroundColor: "#FF9800",
-          color: "#FFFFFF",
-        };
-      default:
-        return {
-          backgroundColor: "#4CAF50",
-          color: "#FFFFFF",
-        };
-    }
+  const getStatusColor = () => {
+    // Use theme's status colors based on experimentStatus (same as Home page)
+    const statusKey = experimentStatus?.toLowerCase() as keyof typeof theme.customComponents.status;
+    const config = theme.customComponents.status[statusKey] || theme.customComponents.status.draft;
+    return {
+      backgroundColor: config.background,
+      color: config.color,
+    };
   };
 
   const handleCopy = () => {
@@ -168,18 +153,18 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
       </Typography>
 
       {/* Status Badge */}
-      {status && (
+      {experimentStatus && (
         <Chip
-          label={status.label}
+          label={experimentStatus}
           size="small"
           sx={{
-            ...getStatusColor(status.color),
+            ...getStatusColor(),
             fontFamily: "Inter",
             fontWeight: 500,
             fontSize: "0.75rem",
-            height: "1.5rem",
-            borderRadius: "9999px",
-            padding: "0 0.75rem",
+            height: "28px",
+            borderRadius: "4px",
+            padding: "0 12px",
           }}
         />
       )}

@@ -42,6 +42,7 @@ import {
 import CsvUploadModal from "../../components/CsvUploadModal/CsvUploadModal";
 import CreateAudienceModal from "../../components/CreateAudienceModal/CreateAudienceModal";
 import AscendSnackbar from "../../components/AscendSnackbar/AscendSnackbar";
+import AscendModal from "../../components/AscendModal/AscendModal";
 import { useDebounce } from "../../utils/useDebounce";
 
 interface ColumnData {
@@ -59,7 +60,7 @@ const COLUMNS: ColumnData[] = [
   { width: "5%", label: "", dataKey: "actions" },
 ];
 
-const STATUS_OPTIONS = ["LIVE", "PAUSED", "DRAFT", "CONCLUDED", "TERMINATED"];
+const STATUS_OPTIONS = ["LIVE", "PAUSED", "CONCLUDED", "TERMINATED"];
 const DEFAULT_PAGE_SIZE = 20;
 
 const createTableComponents = (
@@ -116,6 +117,7 @@ const createTableComponents = (
 const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [showTerminateConfirm, setShowTerminateConfirm] = useState(false);
 
   // Terminate mutation
   const terminateMutation = useTerminateExperiment();
@@ -147,7 +149,7 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
   // Check if experiment can be terminated (not already terminated or concluded)
   const isTerminated = row.status === "TERMINATED";
   const isConcluded = row.status === "CONCLUDED";
-  const canTerminate = !["TERMINATED", "CONCLUDED"].includes(row.status);
+  const canTerminate = !["TERMINATED",].includes(row.status);
   const canPause =
     row.status === "LIVE" && !["TERMINATED", "CONCLUDED"].includes(row.status);
   const canRestart =
@@ -166,15 +168,24 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
     setAnchorEl(e.currentTarget as HTMLElement);
   };
 
-  const handleTerminate = (e: React.MouseEvent) => {
+  const handleTerminateClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isTerminating && canTerminate) {
-      terminateMutation.mutate({
-        id: row.experimentId,
-        data: { status: "TERMINATED" },
-      });
-    }
     handleClose();
+    if (!isTerminating && canTerminate) {
+      setShowTerminateConfirm(true);
+    }
+  };
+
+  const handleConfirmTerminate = () => {
+    terminateMutation.mutate({
+      id: row.experimentId,
+      data: { status: "TERMINATED" },
+    });
+    setShowTerminateConfirm(false);
+  };
+
+  const handleCancelTerminate = () => {
+    setShowTerminateConfirm(false);
   };
 
   const handlePause = (e: React.MouseEvent) => {
@@ -200,7 +211,7 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
   };
 
   // Don't render menu button for terminated or concluded experiments
-  if (isTerminated || isConcluded) {
+  if (isTerminated) {
     return null;
   }
 
@@ -239,7 +250,7 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
         )}
         {canTerminate && (
           <AscendMenuItem
-            onClick={handleTerminate}
+            onClick={handleTerminateClick}
             disabled={isTerminating}
             sx={{ fontSize: "12px", fontWeight: 600 }}
           >
@@ -247,6 +258,37 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
           </AscendMenuItem>
         )}
       </AscendMenu>
+
+      {/* Terminate Confirmation Modal */}
+      <AscendModal
+        open={showTerminateConfirm}
+        onClose={handleCancelTerminate}
+        config={{
+          title: "Terminate Experiment",
+          description: `Are you sure you want to terminate experiment "${row.name}"? This action cannot be undone.`,
+          showCloseButton: false,
+          width: 450,
+          actions: (
+            <>
+              <AscendButton
+                variant="outlined"
+                onClick={handleCancelTerminate}
+                sx={{ mr: 1 }}
+              >
+                Cancel
+              </AscendButton>
+              <AscendButton
+                variant="contained"
+                color="error"
+                onClick={handleConfirmTerminate}
+                disabled={isTerminating}
+              >
+                {isTerminating ? "Terminating..." : "Terminate"}
+              </AscendButton>
+            </>
+          ),
+        }}
+      />
 
       {/* Snackbars for terminate action */}
       <AscendSnackbar

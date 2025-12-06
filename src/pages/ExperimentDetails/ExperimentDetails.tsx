@@ -13,6 +13,8 @@ import {
 } from "../../network/mutations";
 import { convertVariantsToDisplay, mapStatus } from "../../utils/helpers";
 import ErrorPage from "./components/ErrorPage";
+import AscendModal from "../../components/AscendModal/AscendModal";
+import AscendButton from "../../components/AscendButton/AscendButton";
 
 export default function ExperimentDetails() {
   const navigate = useNavigate();
@@ -25,6 +27,9 @@ export default function ExperimentDetails() {
 
   // State for copy ID snackbar
   const [copySuccessOpen, setCopySuccessOpen] = useState(false);
+  
+  // State for terminate confirmation modal
+  const [showTerminateConfirm, setShowTerminateConfirm] = useState(false);
 
   // Extract states from mutations
   const { isPending: isConcluding } = concludeMutation;
@@ -52,13 +57,24 @@ export default function ExperimentDetails() {
     }
   };
 
-  const handleTerminateExperiment = () => {
+  const handleTerminateClick = () => {
     if (id && !isTerminating) {
+      setShowTerminateConfirm(true);
+    }
+  };
+
+  const handleConfirmTerminate = () => {
+    if (id) {
       terminateMutation.mutate({
         id,
         data: { status: "TERMINATED" },
       });
     }
+    setShowTerminateConfirm(false);
+  };
+
+  const handleCancelTerminate = () => {
+    setShowTerminateConfirm(false);
   };
 
   const handleDeclareWinner = (variantKey: string) => {
@@ -110,7 +126,7 @@ export default function ExperimentDetails() {
         variants={experiment.variants}
         onBack={handleBack}
         onCopyId={handleCopyId}
-        onTerminateExperiment={handleTerminateExperiment}
+        onTerminateExperiment={handleTerminateClick}
         onDeclareWinner={handleDeclareWinner}
       />
       <ExperimentDetailsContent
@@ -123,6 +139,37 @@ export default function ExperimentDetails() {
         onCopySuccessClose={() => setCopySuccessOpen(false)}
         concludeMutation={concludeMutation}
         terminateMutation={terminateMutation}
+      />
+
+      {/* Terminate Confirmation Modal */}
+      <AscendModal
+        open={showTerminateConfirm}
+        onClose={handleCancelTerminate}
+        config={{
+          title: "Terminate Experiment",
+          description: `Are you sure you want to terminate experiment "${experiment.name}"? This action cannot be undone.`,
+          showCloseButton: false,
+          width: 450,
+          actions: (
+            <>
+              <AscendButton
+                variant="outlined"
+                onClick={handleCancelTerminate}
+                sx={{ mr: 1 }}
+              >
+                Cancel
+              </AscendButton>
+              <AscendButton
+                variant="contained"
+                color="error"
+                onClick={handleConfirmTerminate}
+                disabled={isTerminating}
+              >
+                {isTerminating ? "Terminating..." : "Terminate"}
+              </AscendButton>
+            </>
+          ),
+        }}
       />
     </Box>
   );
