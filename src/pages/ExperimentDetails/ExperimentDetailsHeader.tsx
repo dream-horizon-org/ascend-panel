@@ -103,8 +103,11 @@ const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
 
   const getStatusColor = () => {
     // Use theme's status colors based on experimentStatus (same as Home page)
-    const statusKey = experimentStatus?.toLowerCase() as keyof typeof theme.customComponents.status;
-    const config = theme.customComponents.status[statusKey] || theme.customComponents.status.draft;
+    const statusKey =
+      experimentStatus?.toLowerCase() as keyof typeof theme.customComponents.status;
+    const config =
+      theme.customComponents.status[statusKey] ||
+      theme.customComponents.status.draft;
     return {
       backgroundColor: config.background,
       color: config.color,

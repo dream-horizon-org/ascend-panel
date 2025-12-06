@@ -149,7 +149,7 @@ const RowActionsMenu: React.FC<{ row: Experiment }> = ({ row }) => {
   // Check if experiment can be terminated (not already terminated or concluded)
   const isTerminated = row.status === "TERMINATED";
   const isConcluded = row.status === "CONCLUDED";
-  const canTerminate = !["TERMINATED",].includes(row.status);
+  const canTerminate = !["TERMINATED"].includes(row.status);
   const canPause =
     row.status === "LIVE" && !["TERMINATED", "CONCLUDED"].includes(row.status);
   const canRestart =

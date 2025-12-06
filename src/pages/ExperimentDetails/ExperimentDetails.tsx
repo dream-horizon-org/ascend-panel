@@ -27,7 +27,7 @@ export default function ExperimentDetails() {
 
   // State for copy ID snackbar
   const [copySuccessOpen, setCopySuccessOpen] = useState(false);
-  
+
   // State for terminate confirmation modal
   const [showTerminateConfirm, setShowTerminateConfirm] = useState(false);
 
