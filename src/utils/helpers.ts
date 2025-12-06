@@ -28,7 +28,7 @@ export const formatNumber = (num?: number): string => {
 export const calculateDays = (startTime?: number, endTime?: number): number => {
   if (!startTime) return 0;
   try {
-    const start = startTime ; // Convert to milliseconds
+    const start = startTime; // Convert to milliseconds
     const end = endTime ? endTime : Date.now();
     const diffTime = Math.abs(end - start);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
