@@ -31,7 +31,7 @@ export const experimentSchema = z.object({
           value: z.string().min(1, " "),
         }),
       ),
-      cohorts: z.array(z.string()).optional(),
+      cohorts: z.string().optional(),
     }),
   ),
   targeting: z
@@ -45,7 +45,7 @@ export const experimentSchema = z.object({
           condition: z.string(),
         }),
       ),
-      cohorts: z.array(z.string()),
+      cohorts: z.string(),
       isAssignCohortsDirectly: z.boolean(),
     })
     .optional(),

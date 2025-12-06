@@ -9,7 +9,7 @@ interface FormVariant {
     data_type: string;
     value: string;
   }[];
-  cohorts?: string[];
+  cohorts?: string; // Stored as string in form, converted to array for API
 }
 
 interface FormTargeting {
@@ -20,7 +20,7 @@ interface FormTargeting {
     value: string;
     condition: string;
   }[];
-  cohorts: string[];
+  cohorts: string; // Stored as string in form, converted to array for API
   isAssignCohortsDirectly: boolean;
 }
 
@@ -52,8 +52,8 @@ export const transformToRequestBody = (
   data.variants.forEach((variant, index) => {
     const key = index === 0 ? "control" : `variant${index}`;
     if (assignmentType === "STRATIFIED") {
-      // For STRATIFIED, use variant's cohorts array
-      weights[key] = variant.cohorts || [];
+      // For STRATIFIED, use variant's cohorts - convert string to array
+      weights[key] = variant.cohorts ? [variant.cohorts] : [];
     } else {
       // For COHORT, use trafficSplit percentage
       weights[key] = parseInt(variant.trafficSplit) || 0;
@@ -110,8 +110,8 @@ export const transformToRequestBody = (
         ]
       : [];
 
-  // Extract cohorts from targeting
-  const cohorts = data.targeting?.cohorts || [];
+  // Extract cohorts from targeting - convert string to array
+  const cohorts = data.targeting?.cohorts ? [data.targeting.cohorts] : [];
 
   return {
     name: data.name,
