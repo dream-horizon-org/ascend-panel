@@ -646,6 +646,7 @@ const Home: React.FC = () => {
       state: {
         experimentId: experiment.experimentId,
         projectKey: experiment.projectKey,
+        defaultTab: "results",
       },
     });
   };
