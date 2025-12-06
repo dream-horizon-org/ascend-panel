@@ -1,0 +1,4 @@
+export const SERVICE_NAME = {
+  AUDIENCE: "AUDIENCE",
+  EXPERIMENT: "EXPERIMENT",
+};
