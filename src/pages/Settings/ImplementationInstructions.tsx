@@ -269,7 +269,7 @@ export default function ImplementationInstructions({
           For installation, use this{" "}
           <Typography
             component="a"
-            href="https://dream-horizon-org.github.io/ascend/sdks/"
+            href="https://dream-horizon-org.github.io/ascend/sdks/kotlin/installation/"
             target="_blank"
             rel="noopener noreferrer"
             sx={{

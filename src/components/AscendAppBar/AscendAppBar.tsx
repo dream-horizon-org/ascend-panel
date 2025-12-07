@@ -72,12 +72,18 @@ export default function AppBar() {
           }}
         >
           <Typography
+            component="a"
+            href="https://dream-horizon-org.github.io/ascend/"
+            target="_blank"
+            rel="noopener noreferrer"
             sx={{
               cursor: "pointer",
               fontSize: theme.customComponents.appBar.linkFontSize,
               fontWeight: theme.customComponents.appBar.linkFontWeight,
               lineHeight: theme.customComponents.appBar.innerHeight,
               padding: theme.customComponents.appBar.linkPadding,
+              color: theme.palette.text.primary,
+              textDecoration: "none",
               "&:hover": { color: theme.palette.primary.main },
             }}
           >
