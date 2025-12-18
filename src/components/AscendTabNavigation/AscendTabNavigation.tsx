@@ -3,9 +3,10 @@ import { Tabs, Tab, Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate, useLocation } from "react-router";
 import ScienceIcon from "@mui/icons-material/Science";
+import PeopleIcon from "@mui/icons-material/People";
 import SettingsIcon from "@mui/icons-material/Settings";
 
-const tabRoutes = ["/", "/settings"];
+const tabRoutes = ["/", "/audience", "/settings"];
 
 export default function SideNavTabs() {
   const theme = useTheme();
@@ -14,7 +15,8 @@ export default function SideNavTabs() {
 
   // Determine active tab based on current path
   const getActiveTab = () => {
-    if (location.pathname === "/settings") return 1;
+    if (location.pathname === "/audience") return 1;
+    if (location.pathname === "/settings") return 2;
     return 0;
   };
 
@@ -71,6 +73,7 @@ export default function SideNavTabs() {
         }}
       >
         <Tab icon={<ScienceIcon />} aria-label="experiments" />
+        <Tab icon={<PeopleIcon />} aria-label="audience" />
         <Tab icon={<SettingsIcon />} aria-label="settings" />
       </Tabs>
     </Box>

@@ -5,6 +5,7 @@ import CreateExperiment from "./pages/CreateExperiment";
 import EditExperiment from "./pages/EditExperiment";
 import Settings from "./pages/Settings";
 import ExperimentOverview from "./pages/ExperimentOverview";
+import IframePage from "./pages/IframePage";
 
 function App() {
   return (
@@ -13,8 +14,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/create-experiment" element={<CreateExperiment />} />
         <Route path="/edit-experiment/:id" element={<EditExperiment />} />
-        <Route path="/settings" element={<Settings />} />
         <Route path="/experiment/:id" element={<ExperimentOverview />} />
+        <Route path="/audience" element={<IframePage />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </Layout>
   );
