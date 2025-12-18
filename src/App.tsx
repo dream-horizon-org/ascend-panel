@@ -15,7 +15,7 @@ function App() {
         <Route path="/create-experiment" element={<CreateExperiment />} />
         <Route path="/edit-experiment/:id" element={<EditExperiment />} />
         <Route path="/experiment/:id" element={<ExperimentOverview />} />
-        <Route path="/audience" element={<IframePage />} />
+        <Route path="/audience/*" element={<IframePage />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
     </Layout>

@@ -15,7 +15,7 @@ export default function SideNavTabs() {
 
   // Determine active tab based on current path
   const getActiveTab = () => {
-    if (location.pathname === "/audience") return 1;
+    if (location.pathname.startsWith("/audience")) return 1;
     if (location.pathname === "/settings") return 2;
     return 0;
   };
