@@ -3,6 +3,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useState } from "react";
 import AscendSnackbar from "../../components/AscendSnackbar/AscendSnackbar";
 import ImplementationInstructions from "./ImplementationInstructions";
+import TenantManagementSection from "./TenantManagementSection";
 
 export default function Settings() {
   // Priority: Docker runtime env (window.__ENV__) > build-time env > fallback
@@ -86,6 +87,8 @@ export default function Settings() {
       </Box>
 
       <ImplementationInstructions onCopy={handleCopy} />
+
+      <TenantManagementSection />
 
       <AscendSnackbar
         open={snackbarOpen}
