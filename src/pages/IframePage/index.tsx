@@ -1,52 +1,43 @@
 import { Box } from "@mui/material";
-import { useLocation, useNavigate } from "react-router";
 import { useEffect, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router";
 
-const IFRAME_BASE_URL = "http://localhost:5173";
+const IFRAME_BASE_URL = "http://localhost:9001";
 
 export default function IframePage() {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  const audiencePath = location.pathname.replace(/^\/audience\/?/, "");
-  const iframeSrc = `${IFRAME_BASE_URL}/${audiencePath}`;
-  const iframeOrigin = useMemo(() => new URL(IFRAME_BASE_URL).origin, []);
+
+  const iframeOrigin = useMemo(
+    () => new URL(IFRAME_BASE_URL).origin,
+    []
+  );
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== iframeOrigin) return;
-      
-      if (event.data.type === "ROUTE_CHANGE" && event.data.path) {
-        const newPanelPath = `/audience${event.data.path}`;
-        if (location.pathname !== newPanelPath) {
-          navigate(newPanelPath, { replace: true });
+
+      if (event.data?.type === "ROUTE_CHANGE") {
+        const newPath = `/audience${event.data.path}`;
+
+        if (location.pathname !== newPath) {
+          navigate(newPath, { replace: true });
         }
       }
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [location.pathname, navigate, iframeOrigin]);
+  }, [iframeOrigin, location.pathname, navigate]);
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        height: "100%",
-        overflow: "hidden",
-      }}
-    >
+    <Box sx={{ width: "100%", height: "100%" }}>
       <iframe
-        src={iframeSrc}
-        style={{
-          width: "100%",
-          height: "100%",
-          border: "none",
-        }}
-        title="External Content"
+        src={IFRAME_BASE_URL} // 🔑 LOAD ONCE
+        title="Audience"
+        style={{ width: "100%", height: "100%", border: "none" }}
         sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
       />
     </Box>
   );
 }
-
