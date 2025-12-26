@@ -1,4 +1,6 @@
-export type TenantStatus = "ACTIVE" | "INACTIVE";
+export type TenantStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
+export type ProjectStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
+export type ApiKeyStatus = "ACTIVE" | "INACTIVE" | "REVOKED";
 
 export interface SuccessResponseWrapper<T> {
   data: T;
@@ -47,17 +49,30 @@ export interface ProjectCreateRequest {
 
 export interface ProjectSummary {
   project_id: string;
+  tenant_id: string;
   project_key: string;
   name: string;
+  status: ProjectStatus;
   created_at: string;
   updated_at: string;
+  api_key?: string;
+  api_key_id?: string;
+  api_key_name?: string;
+  api_key_status?: ApiKeyStatus;
+  last_rotated_at?: string | null;
+  last_used_at?: string | null;
+  api_key_created_at?: string;
 }
 
 export interface ProjectCreateResponse {
   tenant_id: string;
+  project_id: string;
   project_key: string;
   name: string;
-  status: TenantStatus;
+  status: ProjectStatus;
+  api_key: string;
+  api_key_id: string;
+  api_key_name: string;
 }
 
 export interface ProjectsListResponse {
@@ -103,9 +118,9 @@ export interface ApiKeyMetadataResponse {
   project_id: string;
   project_key: string;
   name: string;
-  status: TenantStatus;
+  status: ApiKeyStatus;
   created_at: string;
-  last_rotated_at: string;
+  last_rotated_at: string | null;
 }
 
 type StoredTenant = TenantDetails;
