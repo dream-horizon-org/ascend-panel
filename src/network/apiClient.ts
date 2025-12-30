@@ -72,10 +72,10 @@ apiClient.interceptors.request.use(
     // Tenant management calls don't need project_key in headers
     if (service !== SERVICE_NAME.TENANT_MANAGEMENT) {
       // project_key is the primary identifier stored in localStorage
-      const projectKey = localStorage.getItem(STORAGE_KEYS.PROJECT_KEY);
+      const projectApiKey = localStorage.getItem(STORAGE_KEYS.PROJECT_API_KEY);
 
-      if (projectKey && config.headers) {
-        config.headers["x-project-key"] = projectKey;
+      if (projectApiKey && config.headers) {
+        config.headers["x-api-key"] = projectApiKey;
       }
     }
 

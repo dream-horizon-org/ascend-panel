@@ -43,6 +43,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         // Update localStorage to reflect the actual selected project
         if (projectToSelect) {
           localStorage.setItem(STORAGE_KEYS.PROJECT_KEY, projectToSelect.project_key);
+          localStorage.setItem(STORAGE_KEYS.PROJECT_API_KEY, projectToSelect.api_key ?? "");
         }
       }
       
@@ -67,6 +68,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     // Always update localStorage immediately (source of truth)
     // Only store project_key - it's the only identifier we need
     localStorage.setItem(STORAGE_KEYS.PROJECT_KEY, project.project_key);
+    localStorage.setItem(STORAGE_KEYS.PROJECT_API_KEY, project.api_key ?? "");
   };
 
   return (
