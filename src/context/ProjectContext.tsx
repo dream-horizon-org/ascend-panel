@@ -27,30 +27,25 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (projects.length > 0) {
       const storedProjectKey = localStorage.getItem(STORAGE_KEYS.PROJECT_KEY);
-      
+
       let projectToSelect: ProjectSummary | undefined;
-      
+
       // Restore from localStorage using project_key (source of truth)
       if (storedProjectKey) {
         projectToSelect = projects.find(
           (p) => p.project_key === storedProjectKey
         );
       }
-      
-      // If stored project doesn't exist in current projects list, use first available
+
       if (!projectToSelect) {
         projectToSelect = projects[0];
-        // Update localStorage to reflect the actual selected project
-        if (projectToSelect) {
-          localStorage.setItem(STORAGE_KEYS.PROJECT_KEY, projectToSelect.project_key);
-          localStorage.setItem(STORAGE_KEYS.PROJECT_API_KEY, projectToSelect.api_key ?? "");
-        }
       }
-      
-      // Always ensure a project is selected (never null once projects are loaded)
+
       if (projectToSelect) {
-        // Only update if it's different from current selection
-        if (!selectedProject || selectedProject.project_key !== projectToSelect.project_key) {
+        if (
+          !selectedProject ||
+          selectedProject.project_key !== projectToSelect.project_key
+        ) {
           setSelectedProjectState(projectToSelect);
         }
       }
@@ -58,18 +53,27 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projects]);
 
+  console.log("selectedProject", selectedProject);
+
   // Save selected project key to localStorage
   // localStorage is always kept in sync - it's the source of truth
   // Only stores project_key (not project_id)
   const setSelectedProject = (project: ProjectSummary) => {
-    // Update state
     setSelectedProjectState(project);
-
-    // Always update localStorage immediately (source of truth)
-    // Only store project_key - it's the only identifier we need
-    localStorage.setItem(STORAGE_KEYS.PROJECT_KEY, project.project_key);
-    localStorage.setItem(STORAGE_KEYS.PROJECT_API_KEY, project.api_key ?? "");
   };
+
+  useEffect(() => {
+    if (selectedProject) {
+      localStorage.setItem(
+        STORAGE_KEYS.PROJECT_KEY,
+        selectedProject.project_key
+      );
+      localStorage.setItem(
+        STORAGE_KEYS.PROJECT_API_KEY,
+        selectedProject.api_key ?? ""
+      );
+    }
+  }, [selectedProject]);
 
   return (
     <ProjectContext.Provider

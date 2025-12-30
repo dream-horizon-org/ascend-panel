@@ -25,25 +25,20 @@ declare global {
   }
 }
 
-// Create axios instance with base configuration
-// All services use the same API gateway URL
-// Priority: runtime env (Docker) > build-time env > fallback
 const getBaseURL = () => {
-  return "http://localhost:8000/v1"
-  // Use API_BASE_URL for all services (API gateway handles routing)
   const apiBaseURL =
-    window.__ENV__?.API_BASE_URL ||
-    import.meta.env.VITE_API_BASE_URL;
+    window.__ENV__?.API_BASE_URL || import.meta.env.VITE_API_BASE_URL;
 
   if (!apiBaseURL) {
     // Fallback to localhost (for development)
-    return "http://localhost:8000/v1";
+    return "http://localhost:8000";
   }
 
   // Ensure the URL ends with /v1
   if (apiBaseURL.endsWith("/v1")) {
     return apiBaseURL;
   }
+
   return `${apiBaseURL}/v1`;
 };
 
@@ -68,10 +63,9 @@ apiClient.interceptors.request.use(
     const baseURL = getBaseURL();
     config.baseURL = baseURL;
 
-    // For experiment calls (non-tenant-management), add project_key header
-    // Tenant management calls don't need project_key in headers
+    // For experiment calls (non-tenant-management), add x-api-key header
+    // Tenant management calls don't need x-api-key in headers
     if (service !== SERVICE_NAME.TENANT_MANAGEMENT) {
-      // project_key is the primary identifier stored in localStorage
       const projectApiKey = localStorage.getItem(STORAGE_KEYS.PROJECT_API_KEY);
 
       if (projectApiKey && config.headers) {

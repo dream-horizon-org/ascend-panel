@@ -4,7 +4,6 @@ import { useTheme } from "@mui/material/styles";
 import { useNavigate, useLocation } from "react-router";
 import ScienceIcon from "@mui/icons-material/Science";
 import SettingsIcon from "@mui/icons-material/Settings";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useProject } from "../../context/ProjectContext";
 import { tenantManagementApi } from "../../network/tenantManagement/api";
 
@@ -104,8 +103,10 @@ export default function SideNavTabs() {
       <Box
         sx={{
           width: "100%",
-          padding: "12px 16px",
+          padding: "8px",
           borderBottom: `1px solid ${theme.palette.divider}`,
+          display: "flex",
+          justifyContent: "center",
         }}
       >
         {selectedProject ? (
@@ -114,9 +115,10 @@ export default function SideNavTabs() {
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 1,
+              justifyContent: "center",
               cursor: "pointer",
-              padding: "8px 12px",
+              width: "48px",
+              height: "48px",
               borderRadius: "6px",
               backgroundColor: getProjectColor(selectedProject.name),
               "&:hover": {
@@ -133,7 +135,6 @@ export default function SideNavTabs() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                flexShrink: 0,
               }}
             >
               <Typography
@@ -146,20 +147,6 @@ export default function SideNavTabs() {
                 {getProjectInitials(selectedProject.name)}
               </Typography>
             </Box>
-            <Typography
-              sx={{
-                fontSize: "14px",
-                fontWeight: 500,
-                color: "#FFFFFF",
-                flex: 1,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {selectedProject.name}
-            </Typography>
-            <KeyboardArrowDownIcon sx={{ fontSize: 16, color: "#FFFFFF", flexShrink: 0 }} />
           </Box>
         ) : (
           <Box
@@ -167,9 +154,10 @@ export default function SideNavTabs() {
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 1,
+              justifyContent: "center",
               cursor: "pointer",
-              padding: "8px 12px",
+              width: "48px",
+              height: "48px",
               borderRadius: "6px",
               backgroundColor: theme.palette.grey[200],
               "&:hover": {
@@ -179,14 +167,13 @@ export default function SideNavTabs() {
           >
             <Typography
               sx={{
-                fontSize: "14px",
+                fontSize: "12px",
                 fontWeight: 500,
                 color: theme.palette.text.secondary,
               }}
             >
-              {projects.length > 0 ? "Select Project" : "No Projects"}
+              ?
             </Typography>
-            <KeyboardArrowDownIcon sx={{ fontSize: 16, color: theme.palette.text.secondary }} />
           </Box>
         )}
 
@@ -294,18 +281,21 @@ export default function SideNavTabs() {
             minWidth: "auto",
             width: "100%",
             height: "48px",
-            padding: "12px 16px",
+            padding: 0,
             minHeight: "48px",
             display: "flex",
-            flexDirection: "row",
-            justifyContent: "flex-start",
+            flexDirection: "column",
+            justifyContent: "center",
             alignItems: "center",
-            gap: "12px",
+            gap: 0,
             position: "relative",
             textTransform: "none",
             fontSize: "14px",
             fontWeight: 500,
             color: theme.palette.neutral.main,
+          },
+          "& .MuiTab-root .MuiTab-iconWrapper": {
+            margin: 0,
           },
           "& .Mui-selected": {
             backgroundColor: theme.palette.primary.light,
@@ -320,8 +310,8 @@ export default function SideNavTabs() {
           },
         }}
       >
-        <Tab icon={<ScienceIcon />} label="Experiments" aria-label="experiments" />
-        <Tab icon={<SettingsIcon />} label="Settings" aria-label="settings" />
+        <Tab icon={<ScienceIcon />} aria-label="experiments" />
+        <Tab icon={<SettingsIcon />} aria-label="settings" />
       </Tabs>
     </Box>
   );

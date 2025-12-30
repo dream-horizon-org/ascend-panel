@@ -174,7 +174,7 @@ export const theme = createTheme({
   },
   customSpacing: {
     appBarHeight: "56px",
-    sidebarWidth: "240px",
+    sidebarWidth: "64px",
     contentPadding: "20px",
   },
   customComponents: {
