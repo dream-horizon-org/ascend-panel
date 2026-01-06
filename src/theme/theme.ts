@@ -174,7 +174,7 @@ export const theme = createTheme({
   },
   customSpacing: {
     appBarHeight: "56px",
-    sidebarWidth: "48px",
+    sidebarWidth: "64px",
     contentPadding: "20px",
   },
   customComponents: {
@@ -191,7 +191,7 @@ export const theme = createTheme({
       innerHeight: "24px",
     },
     sidebar: {
-      width: "48px",
+      width: "240px",
       tabSize: "48px",
       tabPadding: "12px",
       indicatorWidth: "4px",

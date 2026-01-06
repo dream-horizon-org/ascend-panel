@@ -10,6 +10,7 @@ import { store } from "./store/store.ts";
 import { theme } from "./theme/theme.ts";
 import { queryClient } from "./network/queryClient.ts";
 import { BrowserRouter } from "react-router";
+import { ProjectProvider } from "./context/ProjectContext";
 
 const rootElement = document.getElementById("root");
 
@@ -24,7 +25,9 @@ createRoot(rootElement).render(
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <BrowserRouter>
-            <App />
+            <ProjectProvider>
+              <App />
+            </ProjectProvider>
           </BrowserRouter>
         </ThemeProvider>
       </QueryClientProvider>

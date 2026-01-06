@@ -4,7 +4,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from "axios";
-import { SERVICE_NAME } from "../utils/contants";
+import { SERVICE_NAME, STORAGE_KEYS } from "../utils/contants";
 
 // Declare window.__ENV__ type
 declare global {
@@ -13,6 +13,7 @@ declare global {
       API_BASE_URL?: string;
       AUDIENCE_API_BASE_URL?: string;
       EXPERIMENT_API_BASE_URL?: string;
+      TENANT_MANAGEMENT_API_BASE_URL?: string;
       PROJECT_NAME?: string;
       PROJECT_KEY?: string;
       PROJECT_API?: string;
@@ -24,22 +25,18 @@ declare global {
   }
 }
 
-// Create axios instance with base configuration
-// Priority: runtime env (Docker) > build-time env > dev proxy > fallback
-const getBaseURL = (serviceName: string = SERVICE_NAME.EXPERIMENT) => {
-  // 1. Runtime env (injected by Docker at container startup)
+const getBaseURL = () => {
   const apiBaseURL =
-    serviceName === SERVICE_NAME.AUDIENCE
-      ? window.__ENV__?.AUDIENCE_API_BASE_URL
-        ? window.__ENV__?.AUDIENCE_API_BASE_URL
-        : window.__ENV__?.API_BASE_URL
-      : window.__ENV__?.EXPERIMENT_API_BASE_URL
-        ? window.__ENV__?.EXPERIMENT_API_BASE_URL
-        : window.__ENV__?.API_BASE_URL;
+    window.__ENV__?.API_BASE_URL || import.meta.env.VITE_API_BASE_URL;
 
   if (!apiBaseURL) {
-    //fallback url
-    return "http://localhost:8080/v1";
+    // Fallback to localhost (for development)
+    return "http://localhost:8000";
+  }
+
+  // Ensure the URL ends with /v1
+  if (apiBaseURL.endsWith("/v1")) {
+    return apiBaseURL;
   }
 
   return `${apiBaseURL}/v1`;
@@ -56,42 +53,24 @@ const apiClient: AxiosInstance = axios.create({
 // Request interceptor
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Add project key header (required for all requests)
-    // Priority: Docker runtime env > build-time env > localStorage > fallback
-    const projectKey =
-      window.__ENV__?.PROJECT_KEY ||
-      window.__ENV__?.VITE_PROJECT_KEY ||
-      import.meta.env.VITE_PROJECT_KEY ||
-      localStorage.getItem("projectKey") ||
-      "550e8400-e29b-41d4-a716-446655440001"; // Fallback
-    if (projectKey && config.headers) {
-      config.headers["x-project-key"] = projectKey;
+    // Check for service header (used for determining headers, not base URL)
+    const service = (config?.headers as any)?.service as string | undefined;
+    if (service) {
+      delete (config.headers as any).service;
     }
 
-    const service = config.headers.service;
-    delete config?.headers?.["service"];
-
-    const baseURL = getBaseURL(service);
+    // All services use the same base URL (API gateway handles routing)
+    const baseURL = getBaseURL();
     config.baseURL = baseURL;
 
-    // Add auth token if available
-    const token = localStorage.getItem("authToken");
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // For experiment calls (non-tenant-management), add x-api-key header
+    // Tenant management calls don't need x-api-key in headers
+    if (service !== SERVICE_NAME.TENANT_MANAGEMENT) {
+      const projectApiKey = localStorage.getItem(STORAGE_KEYS.PROJECT_API_KEY);
 
-    // Log request in development
-    if (import.meta.env.DEV) {
-      console.log(
-        `[API Request] ${config.method?.toUpperCase()} ${config.url}`,
-        {
-          data: config.data,
-          params: config.params,
-          headers: {
-            "x-project-key": projectKey ? "***" : "missing",
-          },
-        },
-      );
+      if (projectApiKey && config.headers) {
+        config.headers["x-api-key"] = projectApiKey;
+      }
     }
 
     return config;
@@ -99,7 +78,7 @@ apiClient.interceptors.request.use(
   (error) => {
     console.error("[API Request Error]", error);
     return Promise.reject(error);
-  },
+  }
 );
 
 // Response interceptor
@@ -112,7 +91,7 @@ apiClient.interceptors.response.use(
         {
           status: response.status,
           data: response.data,
-        },
+        }
       );
     }
 
@@ -143,7 +122,7 @@ apiClient.interceptors.response.use(
         default:
           console.error(
             `[API Error] ${status}:`,
-            data?.message || error.message,
+            data?.message || error.message
           );
       }
     } else if (error.request) {
@@ -155,7 +134,7 @@ apiClient.interceptors.response.use(
           "[API] CORS Error detected. Make sure:",
           "\n1. The backend server is running",
           "\n2. The Vite proxy is configured correctly (vite.config.js)",
-          "\n3. The backend allows requests from the frontend origin",
+          "\n3. The backend allows requests from the frontend origin"
         );
       }
     } else {
@@ -164,14 +143,14 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  },
+  }
 );
 
 // Typed API methods
 export const api = {
   get: <T = any>(
     url: string,
-    config?: AxiosRequestConfig,
+    config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> => {
     return apiClient.get<T>(url, config);
   },
@@ -179,7 +158,7 @@ export const api = {
   post: <T = any>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig,
+    config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> => {
     return apiClient.post<T>(url, data, config);
   },
@@ -187,7 +166,7 @@ export const api = {
   put: <T = any>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig,
+    config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> => {
     return apiClient.put<T>(url, data, config);
   },
@@ -195,14 +174,14 @@ export const api = {
   patch: <T = any>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig,
+    config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> => {
     return apiClient.patch<T>(url, data, config);
   },
 
   delete: <T = any>(
     url: string,
-    config?: AxiosRequestConfig,
+    config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> => {
     return apiClient.delete<T>(url, config);
   },
