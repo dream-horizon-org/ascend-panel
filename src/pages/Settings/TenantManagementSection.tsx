@@ -63,7 +63,7 @@ export default function TenantManagementSection() {
   const [tenant, setTenant] = useState<TenantDetails | null>(null);
   const [tenantName, setTenantName] = useState("Acme Corp");
   const [tenantDescription, setTenantDescription] = useState(
-    "Primary account for Acme"
+    "Primary account for Acme",
   );
   const [tenantEmail, setTenantEmail] = useState("admin@acme.com");
 
@@ -123,7 +123,7 @@ export default function TenantManagementSection() {
         return;
       }
       const details = await tenantManagementApi.getTenantDetails(
-        first.tenant_id
+        first.tenant_id,
       );
       setTenant(details.data);
     } catch (e) {
@@ -201,7 +201,7 @@ export default function TenantManagementSection() {
         limit: 50,
       });
       const projectWithKey = projectsResp.data.projects.find(
-        (p) => p.project_id === projectId
+        (p) => p.project_id === projectId,
       );
 
       if (projectWithKey?.api_key_id && projectWithKey?.api_key) {
@@ -339,7 +339,7 @@ export default function TenantManagementSection() {
       const resp = await tenantManagementApi.rotateApiKey(
         tenantId,
         projectId,
-        keyId.trim()
+        keyId.trim(),
       );
       setRawApiKey(resp.data.api_key);
       setRawKeyId(resp.data.key_id);
@@ -454,8 +454,8 @@ export default function TenantManagementSection() {
               <Typography
                 sx={{ fontFamily: "'Inter', sans-serif", color: "#666" }}
               >
-                This allows creating <b>only 1 tenant</b>. Create it once,
-                then manage projects under it.
+                This allows creating <b>only 1 tenant</b>. Create it once, then
+                manage projects under it.
               </Typography>
 
               <Box
@@ -669,9 +669,7 @@ export default function TenantManagementSection() {
                               },
                             }}
                           >
-                            <TableCell
-                              sx={{ fontWeight: 600, color: "#333" }}
-                            >
+                            <TableCell sx={{ fontWeight: 600, color: "#333" }}>
                               {p.name}
                             </TableCell>
                             <TableCell

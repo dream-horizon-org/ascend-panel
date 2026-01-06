@@ -78,7 +78,7 @@ apiClient.interceptors.request.use(
   (error) => {
     console.error("[API Request Error]", error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor
@@ -91,7 +91,7 @@ apiClient.interceptors.response.use(
         {
           status: response.status,
           data: response.data,
-        }
+        },
       );
     }
 
@@ -122,7 +122,7 @@ apiClient.interceptors.response.use(
         default:
           console.error(
             `[API Error] ${status}:`,
-            data?.message || error.message
+            data?.message || error.message,
           );
       }
     } else if (error.request) {
@@ -134,7 +134,7 @@ apiClient.interceptors.response.use(
           "[API] CORS Error detected. Make sure:",
           "\n1. The backend server is running",
           "\n2. The Vite proxy is configured correctly (vite.config.js)",
-          "\n3. The backend allows requests from the frontend origin"
+          "\n3. The backend allows requests from the frontend origin",
         );
       }
     } else {
@@ -143,14 +143,14 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // Typed API methods
 export const api = {
   get: <T = any>(
     url: string,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> => {
     return apiClient.get<T>(url, config);
   },
@@ -158,7 +158,7 @@ export const api = {
   post: <T = any>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> => {
     return apiClient.post<T>(url, data, config);
   },
@@ -166,7 +166,7 @@ export const api = {
   put: <T = any>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> => {
     return apiClient.put<T>(url, data, config);
   },
@@ -174,14 +174,14 @@ export const api = {
   patch: <T = any>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> => {
     return apiClient.patch<T>(url, data, config);
   },
 
   delete: <T = any>(
     url: string,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> => {
     return apiClient.delete<T>(url, config);
   },

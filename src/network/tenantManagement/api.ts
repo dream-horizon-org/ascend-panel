@@ -46,7 +46,7 @@ const handleApiError = (error: unknown): never => {
     const axiosError = error as AxiosError<ApiErrorResponse>;
     const status = axiosError.response?.status || 500;
     const errorData = axiosError.response?.data;
-    
+
     // Handle new error format: { error: { message, code, cause? } }
     if (errorData?.error) {
       throw new TenantApiError(
@@ -56,12 +56,10 @@ const handleApiError = (error: unknown): never => {
         errorData.error.cause,
       );
     }
-    
+
     // Fallback for old format or network errors
     const message =
-      errorData?.error?.message ||
-      axiosError.message ||
-      "An error occurred";
+      errorData?.error?.message || axiosError.message || "An error occurred";
     throw new TenantApiError(status, message);
   }
   throw new TenantApiError(500, "An unexpected error occurred");
@@ -78,9 +76,9 @@ const getTenantConfig = () => ({
  * Wrapper function for tenant management API calls
  * This implements the Higher-Order Function (HOF) / Wrapper pattern
  * to provide consistent error handling and service configuration
- * 
+ *
  * Automatically injects the tenant management service config into all API calls
- * 
+ *
  * @param apiCall - A function that accepts a config parameter and returns a Promise with the API response
  * @returns The unwrapped response data
  */
@@ -116,14 +114,16 @@ export const tenantManagementApi = {
     limit?: number;
   }): Promise<SuccessResponseWrapper<TenantsListResponse>> {
     return withTenantApi((config) =>
-      api.get<SuccessResponseWrapper<TenantsListResponse>>(
-        "/tenants",
-        { ...config, params },
-      ),
+      api.get<SuccessResponseWrapper<TenantsListResponse>>("/tenants", {
+        ...config,
+        params,
+      }),
     );
   },
 
-  async getTenantDetails(tenant_id: string): Promise<SuccessResponseWrapper<TenantDetails>> {
+  async getTenantDetails(
+    tenant_id: string,
+  ): Promise<SuccessResponseWrapper<TenantDetails>> {
     return withTenantApi((config) =>
       api.get<SuccessResponseWrapper<TenantDetails>>(
         `/tenants/${tenant_id}`,
@@ -246,4 +246,3 @@ export const tenantManagementApi = {
     );
   },
 };
-
