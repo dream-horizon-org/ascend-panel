@@ -408,7 +408,7 @@ export default function TenantManagementSection() {
             letterSpacing: "0.5px",
           }}
         >
-          Tenant / Project Management (Mock)
+          Tenant Management
         </Typography>
       </Box>
 
@@ -454,7 +454,7 @@ export default function TenantManagementSection() {
               <Typography
                 sx={{ fontFamily: "'Inter', sans-serif", color: "#666" }}
               >
-                This UI allows creating <b>only 1 tenant</b>. Create it once,
+                This allows creating <b>only 1 tenant</b>. Create it once,
                 then manage projects under it.
               </Typography>
 
