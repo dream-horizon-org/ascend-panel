@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 export default function AppBar() {
   const theme = useTheme();
   const navigate = useNavigate();
+
   return (
     <MuiAppBar
       position="static"
@@ -38,10 +39,7 @@ export default function AppBar() {
             gap: 1,
             cursor: "pointer",
           }}
-          onClick={() => {
-            navigate("/");
-            window.location.reload();
-          }}
+          onClick={() => navigate("/")}
         >
           <Box
             component="img"
