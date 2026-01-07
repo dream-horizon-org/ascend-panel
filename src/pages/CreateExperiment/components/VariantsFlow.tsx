@@ -673,7 +673,7 @@ export default function VariantsFlow({
         id: "targeting",
         type: "targeting",
         position: { x: START_X, y: targetingY + -(isEditMode ? 50 : -20) },
-        data: { label: "Everyone", onClick: handleParentModalOpen, isEditMode },
+        data: { label: "", onClick: handleParentModalOpen, isEditMode },
       });
 
       currentY = START_Y;
