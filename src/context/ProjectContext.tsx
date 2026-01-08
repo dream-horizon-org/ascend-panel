@@ -5,7 +5,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { ProjectSummary } from "../network/tenantManagement/mockApi";
+import { ProjectSummary } from "../network/tenantManagement/types";
 import { STORAGE_KEYS } from "../utils/contants";
 
 interface ProjectContextType {

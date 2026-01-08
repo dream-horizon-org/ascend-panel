@@ -19,7 +19,7 @@ import AscendSnackbar from "../../components/AscendSnackbar/AscendSnackbar";
 import {
   TenantDetails,
   ProjectSummary,
-} from "../../network/tenantManagement/mockApi";
+} from "../../network/tenantManagement/types";
 import {
   tenantManagementApi,
   TenantApiError,
@@ -63,7 +63,7 @@ export default function TenantManagementSection() {
   });
 
   // Single-tenant model
-  const [tenantLoading, setTenantLoading] = useState(false);
+  const [_tenantLoading, setTenantLoading] = useState(false);
   const [tenantCreating, setTenantCreating] = useState(false);
   const [tenant, setTenant] = useState<TenantDetails | null>(null);
   const [tenantName, setTenantName] = useState("Acme Corp");
@@ -76,7 +76,7 @@ export default function TenantManagementSection() {
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [projectCreating, setProjectCreating] = useState(false);
-  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [_projectsLoading, setProjectsLoading] = useState(false);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
 
   // Per-project API key (single)
@@ -102,7 +102,7 @@ export default function TenantManagementSection() {
   const [secretModalOpen, setSecretModalOpen] = useState(false);
   const [secretModalTitle, setSecretModalTitle] = useState("API Key");
   const [rawApiKey, setRawApiKey] = useState("");
-  const [rawKeyId, setRawKeyId] = useState("");
+  const [_rawKeyId, setRawKeyId] = useState("");
 
   const tenantId = tenant?.tenant_id || "";
 
