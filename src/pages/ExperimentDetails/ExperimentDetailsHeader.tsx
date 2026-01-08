@@ -19,7 +19,7 @@ import { ExperimentDetailsHeaderProps } from "./types";
 
 const ExperimentDetailsHeader: FC<ExperimentDetailsHeaderProps> = ({
   title,
-  status,
+  status: _status,
   experimentId,
   experimentStatus,
   variants,

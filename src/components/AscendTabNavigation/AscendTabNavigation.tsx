@@ -66,18 +66,28 @@ export default function SideNavTabs() {
   const handleProjectSelect = (project: typeof selectedProject) => {
     if (project) {
       setSelectedProject(project);
+      handleProjectClose();
+      // Navigate to homepage with full page refresh
+      window.location.href = "/";
+    } else {
+      handleProjectClose();
     }
-    handleProjectClose();
   };
 
   // Load projects and set default
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const resp = await tenantManagementApi.getTenants({ page: 1, limit: 1 });
+        const resp = await tenantManagementApi.getTenants({
+          page: 1,
+          limit: 1,
+        });
         if (resp.data.tenants.length > 0) {
           const tenantId = resp.data.tenants[0].tenant_id;
-          const projectsResp = await tenantManagementApi.getProjects(tenantId, { page: 1, limit: 50 });
+          const projectsResp = await tenantManagementApi.getProjects(tenantId, {
+            page: 1,
+            limit: 50,
+          });
           setProjects(projectsResp.data.projects);
           // Project selection is now handled in ProjectContext based on localStorage
         }
@@ -203,7 +213,8 @@ export default function SideNavTabs() {
         >
           {projects.length > 0 ? (
             projects.map((project) => {
-              const isSelected = selectedProject?.project_id === project.project_id;
+              const isSelected =
+                selectedProject?.project_id === project.project_id;
               const initials = getProjectInitials(project.name);
               const color = getProjectColor(project.name);
               return (
