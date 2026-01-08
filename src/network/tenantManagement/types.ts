@@ -128,4 +128,3 @@ export interface ApiKeyMetadataResponse {
   created_at: string;
   last_rotated_at: string | null;
 }
-
