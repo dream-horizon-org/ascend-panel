@@ -19,12 +19,13 @@ import AscendSnackbar from "../../components/AscendSnackbar/AscendSnackbar";
 import {
   TenantDetails,
   ProjectSummary,
-} from "../../network/tenantManagement/mockApi";
+} from "../../network/tenantManagement/types";
 import {
   tenantManagementApi,
   TenantApiError,
 } from "../../network/tenantManagement/api";
 import { useProject } from "../../context/ProjectContext";
+import { STORAGE_KEYS } from "../../utils/contants";
 
 type SnackbarState = {
   open: boolean;
@@ -50,7 +51,11 @@ function formatDate(iso: string) {
 
 export default function TenantManagementSection() {
   const theme = useTheme();
-  const { setProjects: setContextProjects, selectedProject } = useProject();
+  const {
+    setProjects: setContextProjects,
+    selectedProject,
+    setSelectedProject,
+  } = useProject();
   const [snackbar, setSnackbar] = useState<SnackbarState>({
     open: false,
     message: "",
@@ -58,7 +63,7 @@ export default function TenantManagementSection() {
   });
 
   // Single-tenant model
-  const [tenantLoading, setTenantLoading] = useState(false);
+  const [_tenantLoading, setTenantLoading] = useState(false);
   const [tenantCreating, setTenantCreating] = useState(false);
   const [tenant, setTenant] = useState<TenantDetails | null>(null);
   const [tenantName, setTenantName] = useState("Acme Corp");
@@ -71,7 +76,7 @@ export default function TenantManagementSection() {
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [projectCreating, setProjectCreating] = useState(false);
-  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [_projectsLoading, setProjectsLoading] = useState(false);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
 
   // Per-project API key (single)
@@ -97,7 +102,7 @@ export default function TenantManagementSection() {
   const [secretModalOpen, setSecretModalOpen] = useState(false);
   const [secretModalTitle, setSecretModalTitle] = useState("API Key");
   const [rawApiKey, setRawApiKey] = useState("");
-  const [rawKeyId, setRawKeyId] = useState("");
+  const [_rawKeyId, setRawKeyId] = useState("");
 
   const tenantId = tenant?.tenant_id || "";
 
@@ -294,7 +299,7 @@ export default function TenantManagementSection() {
         // Show the raw key in modal since it's auto-generated
         setRawApiKey(projectData.api_key);
         setRawKeyId(projectData.api_key_id);
-        setSecretModalTitle("API Key generated (shown once)");
+        setSecretModalTitle("API Key Generated");
         setSecretModalOpen(true);
 
         // Store the masked key
@@ -343,7 +348,7 @@ export default function TenantManagementSection() {
       );
       setRawApiKey(resp.data.api_key);
       setRawKeyId(resp.data.key_id);
-      setSecretModalTitle("API Key rotated (shown once)");
+      setSecretModalTitle("API Key Rotated");
       setSecretModalOpen(true);
       // Store the masked key
       const maskedKey = `${resp.data.api_key.slice(0, 10)}...${resp.data.api_key.slice(-4)}`;
@@ -359,6 +364,17 @@ export default function TenantManagementSection() {
           status: "ACTIVE",
         },
       }));
+
+      // Update localStorage and context if this is the selected project
+      if (selectedProject?.project_id === projectId) {
+        localStorage.setItem(STORAGE_KEYS.PROJECT_API_KEY, resp.data.api_key);
+        // Update the selected project context with new API key
+        setSelectedProject({
+          ...selectedProject,
+          api_key: resp.data.api_key,
+        });
+      }
+
       await refreshProjects(tenantId);
     } catch (e) {
       showError(e, "Failed to rotate API key");
@@ -835,42 +851,18 @@ export default function TenantManagementSection() {
         onClose={() => setSecretModalOpen(false)}
         config={{
           title: secretModalTitle,
-          description:
-            "For security, the raw api_key is shown only once. Copy it now and store it securely.",
           width: 640,
           content: (
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography
-                  sx={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
-                >
-                  key_id:
-                </Typography>
-                <Typography sx={{ fontFamily: "monospace", fontSize: "12px" }}>
-                  {rawKeyId || "—"}
-                </Typography>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    copyToClipboard(rawKeyId);
-                    setSnackbar({
-                      open: true,
-                      message: "key_id copied",
-                      severity: "success",
-                    });
-                  }}
-                  disabled={!rawKeyId}
-                >
-                  <ContentCopyIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              </Box>
-
               <Box
                 sx={{
                   border: "1px solid #E8E9ED",
                   borderRadius: "10px",
-                  padding: 2,
                   backgroundColor: "#F8F9FC",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  overflow: "hidden",
                 }}
               >
                 <Typography
@@ -878,27 +870,38 @@ export default function TenantManagementSection() {
                     fontFamily: "monospace",
                     fontSize: "13px",
                     wordBreak: "break-all",
+                    padding: 2,
+                    flex: 1,
                   }}
                 >
                   {rawApiKey || "—"}
                 </Typography>
-              </Box>
-
-              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-                <AscendButton
-                  variant="outlined"
+                <IconButton
                   onClick={() => {
                     copyToClipboard(rawApiKey);
                     setSnackbar({
                       open: true,
-                      message: "api_key copied",
+                      message: "API Key Copied",
                       severity: "success",
                     });
                   }}
                   disabled={!rawApiKey}
+                  sx={{
+                    borderRadius: "0",
+                    borderLeft: "1px solid #E8E9ED",
+                    padding: "10px 14px",
+                    color: "#828592",
+                    "&:hover": {
+                      backgroundColor: "#ECEDF1",
+                      color: "#33343E",
+                    },
+                  }}
                 >
-                  Copy api_key
-                </AscendButton>
+                  <ContentCopyIcon sx={{ fontSize: "18px" }} />
+                </IconButton>
+              </Box>
+
+              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
                 <AscendButton onClick={() => setSecretModalOpen(false)}>
                   Done
                 </AscendButton>

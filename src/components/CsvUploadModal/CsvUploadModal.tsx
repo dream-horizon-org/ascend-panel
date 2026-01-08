@@ -8,11 +8,13 @@ import {
   Box,
   Typography,
   IconButton,
+  Tooltip,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import CloseIcon from "@mui/icons-material/Close";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import AscendSnackbar from "../AscendSnackbar/AscendSnackbar";
 import { useImportCohort } from "../../network";
 
@@ -129,7 +131,21 @@ export default function CsvUploadModal({
           alignItems: "center",
         }}
       >
-        Upload CSV
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          Upload CSV
+          <Tooltip
+            title="The CSV file must contain no more than 100,000 UUIDs and must not exceed 5 MB in size."
+            arrow
+            placement="bottom"
+          >
+            <InfoOutlinedIcon
+              sx={{
+                fontSize: 20,
+                color: "text.secondary",
+              }}
+            />
+          </Tooltip>
+        </Box>
         <IconButton onClick={handleClose} size="small">
           <CloseIcon />
         </IconButton>

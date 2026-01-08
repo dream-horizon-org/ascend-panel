@@ -65,8 +65,12 @@ export default function SideNavTabs() {
   const handleProjectSelect = (project: typeof selectedProject) => {
     if (project) {
       setSelectedProject(project);
+      handleProjectClose();
+      // Navigate to homepage with full page refresh
+      window.location.href = "/";
+    } else {
+      handleProjectClose();
     }
-    handleProjectClose();
   };
 
   // Load projects and set default

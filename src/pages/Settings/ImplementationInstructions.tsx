@@ -3,6 +3,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { useState } from "react";
+import { useProject } from "../../context/ProjectContext";
 
 interface ImplementationInstructionsProps {
   onCopy: (value: string, label: string) => void;
@@ -15,20 +16,12 @@ export default function ImplementationInstructions({
     "reactnative" | "swift" | "kotlin"
   >("reactnative");
   const [configExpanded, setConfigExpanded] = useState(true);
+  const { selectedProject } = useProject();
 
   // Get API configuration
-  const apiBaseURL =
-    window.__ENV__?.EXPERIMENT_API_BASE_URL ||
-    window.__ENV__?.API_BASE_URL ||
-    "http://localhost:8100";
+  const apiBaseURL = window.__ENV__?.API_BASE_URL || "http://localhost:8000";
 
-  const clientKey =
-    window.__ENV__?.PROJECT_KEY?.trim() ||
-    window.__ENV__?.VITE_PROJECT_KEY?.trim() ||
-    (import.meta.env.VITE_PROJECT_KEY
-      ? String(import.meta.env.VITE_PROJECT_KEY).trim()
-      : "") ||
-    "550e8400-e29b-41d4-a716-446655440001";
+  const clientKey = selectedProject?.api_key || "";
 
   const fullApiEndpoint = `${apiBaseURL}/v1/allocations`;
 

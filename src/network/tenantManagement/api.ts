@@ -16,7 +16,7 @@ import {
   ApiKeyRotateResponse,
   ApiKeyMetadataResponse,
   SuccessResponseWrapper,
-} from "./mockApi";
+} from "./types";
 
 // Error response format from API
 interface ApiErrorResponse {
