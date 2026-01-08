@@ -29,6 +29,9 @@ import AscendModal from "../../../components/AscendModal/AscendModal";
 import CloseIcon from "@mui/icons-material/Close";
 import AscendDropdown from "../../../components/AscendDropdown/AscendDropdown";
 import { useAudiences } from "../../../network/queries";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import AscendAutoCompleteControlled from "../../../components/AscendAutoComplete/AscendAutoCompleteControlled";
 
 // Custom node for Targeting
 const TargetingNode = ({ data }: any) => {
@@ -870,7 +873,7 @@ export default function VariantsFlow({
     <Box>
       <AscendModal
         config={{
-          width: 600,
+          width: 800,
           closeOnBackdropClick: isEditMode,
           closeOnEscape: isEditMode,
           showCloseButton: false,
@@ -976,6 +979,7 @@ export default function VariantsFlow({
                 trafficSplit: "0",
                 variables: variablesTemplate,
                 cohorts: "",
+                overrideIds: [],
               };
 
               if (isTrafficEdited) {
@@ -1012,6 +1016,9 @@ function CreateExperimentTargetingParentModal({
   control: Control<any>;
   isEditMode?: boolean;
 }) {
+  const [isUserOverrideExpanded, setIsUserOverrideExpanded] = useState(false);
+  const [isCohortsExpanded, setIsCohortsExpanded] = useState(false);
+
   // Use react-hook-form for isAssignCohortsDirectly
   const { field: isAssignCohortsDirectlyField } = useController({
     control,
@@ -1374,97 +1381,267 @@ function CreateExperimentTargetingParentModal({
       </Box>
 
       <Box>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-          Cohorts
-        </Typography>
-        {!isAssignCohortsDirectly ? (
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
-            <AscendDropdown
-              placeholder="Select Cohorts"
-              variant="single"
-              options={cohortList}
-              value={cohorts || ""}
-              fullWidth
-              size="lg"
-              disabled={isEditMode || isAudiencesLoading}
-              onChange={(value) => {
-                if (!isEditMode) {
-                  cohortsField.onChange(value as string);
-                }
-              }}
-            />
-          </Box>
-        ) : (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}>
-            {variantFields.map((variant: any, index: number) => (
-              <Box
-                key={variant.id}
-                sx={{ display: "flex", alignItems: "center", gap: 2 }}
-              >
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 600,
-                    color: "#333333",
-                    minWidth: "120px",
-                    flexShrink: 0,
-                  }}
-                >
-                  {variant.name}
-                </Typography>
-                <Box sx={{ flex: 1 }}>
-                  <Controller
-                    name={`variants.${index}.cohorts`}
-                    control={control}
-                    render={({ field }) => (
-                      <AscendDropdown
-                        placeholder="Select Cohorts"
-                        variant="single"
-                        options={getAvailableCohortOptions(index)}
-                        value={field.value || ""}
-                        fullWidth
-                        size="lg"
-                        disabled={isEditMode || isAudiencesLoading}
-                        onChange={(value) => {
-                          if (!isEditMode) {
-                            field.onChange(value as string);
-                          }
-                        }}
-                      />
-                    )}
-                  />
-                </Box>
-              </Box>
-            ))}
-          </Box>
-        )}
         <Box
           sx={{
-            backgroundColor: "#EBF5FF",
-            padding: "8px",
-            borderRadius: "4px",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 1,
+            cursor: "pointer",
+            padding: "12px",
+            borderRadius: isCohortsExpanded ? "8px 8px 0 0" : "8px",
+            backgroundColor: "#F3F4F6",
+            border: "1px solid #E5E7EB",
+            borderBottom: isCohortsExpanded ? "none" : "1px solid #E5E7EB",
+            "&:hover": {
+              backgroundColor: "#E5E7EB",
+            },
           }}
+          onClick={() => setIsCohortsExpanded(!isCohortsExpanded)}
         >
-          <FormControlLabel
-            control={<Checkbox disabled={isEditMode} />}
-            label="Assign cohorts directly to variants"
-            checked={isAssignCohortsDirectly}
-            onChange={(e) => {
-              if (!isEditMode) {
-                isAssignCohortsDirectlyField.onChange(
-                  (e.target as HTMLInputElement).checked,
-                );
-              }
+          <Box sx={{ flex: 1 }}>
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: 600,
+                color: "#333333",
+                mb: 0.5,
+              }}
+            >
+              Cohorts
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#666666",
+                display: "block",
+              }}
+            >
+              Assign cohorts to control which user groups participate in the
+              experiment.
+            </Typography>
+          </Box>
+          {isCohortsExpanded ? (
+            <KeyboardArrowUpIcon sx={{ color: "#666666", mt: 0.5 }} />
+          ) : (
+            <KeyboardArrowDownIcon sx={{ color: "#666666", mt: 0.5 }} />
+          )}
+        </Box>
+
+        {isCohortsExpanded && (
+          <Box
+            sx={{
+              backgroundColor: "#F9FAFB",
+              padding: "12px",
+              borderRadius: "0px 0px 8px 8px",
+              border: "1px solid #E5E7EB",
+              borderTop: "none",
             }}
-          />
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: "block", mt: 1 }}
           >
-            Assigning cohorts will make it <strong>inaccurate and risky</strong>
-            . Make sure to verify each cohort.
-          </Typography>
+            {!isAssignCohortsDirectly ? (
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+                <AscendDropdown
+                  placeholder="Select Cohorts"
+                  variant="single"
+                  options={cohortList}
+                  value={cohorts || ""}
+                  fullWidth
+                  size="lg"
+                  disabled={isEditMode || isAudiencesLoading}
+                  onChange={(value) => {
+                    if (!isEditMode) {
+                      cohortsField.onChange(value as string);
+                    }
+                  }}
+                />
+              </Box>
+            ) : (
+              <Box
+                sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}
+              >
+                {variantFields.map((variant: any, index: number) => (
+                  <Box
+                    key={variant.id}
+                    sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 600,
+                        color: "#333333",
+                        minWidth: "120px",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {variant.name}
+                    </Typography>
+                    <Box sx={{ flex: 1 }}>
+                      <Controller
+                        name={`variants.${index}.cohorts`}
+                        control={control}
+                        render={({ field }) => (
+                          <AscendDropdown
+                            placeholder="Select Cohorts"
+                            variant="single"
+                            options={getAvailableCohortOptions(index)}
+                            value={field.value || ""}
+                            fullWidth
+                            size="lg"
+                            disabled={isEditMode || isAudiencesLoading}
+                            onChange={(value) => {
+                              if (!isEditMode) {
+                                field.onChange(value as string);
+                              }
+                            }}
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            )}
+            <Box
+              sx={{
+                backgroundColor: "#EBF5FF",
+                padding: "8px",
+                borderRadius: "4px",
+              }}
+            >
+              <FormControlLabel
+                control={<Checkbox disabled={isEditMode} />}
+                label="Assign cohorts directly to variants"
+                checked={isAssignCohortsDirectly}
+                onChange={(e) => {
+                  if (!isEditMode) {
+                    isAssignCohortsDirectlyField.onChange(
+                      (e.target as HTMLInputElement).checked,
+                    );
+                  }
+                }}
+              />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", mt: 1 }}
+              >
+                Assigning cohorts will make it{" "}
+                <strong>inaccurate and risky</strong>. Make sure to verify each
+                cohort.
+              </Typography>
+            </Box>
+          </Box>
+        )}
+        <Box sx={{ mt: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 1,
+              cursor: "pointer",
+              padding: "12px",
+              borderRadius: isUserOverrideExpanded ? "8px 8px 0 0" : "8px",
+              backgroundColor: "#F3F4F6",
+              border: "1px solid #E5E7EB",
+              borderBottom: isUserOverrideExpanded
+                ? "none"
+                : "1px solid #E5E7EB",
+              "&:hover": {
+                backgroundColor: "#E5E7EB",
+              },
+            }}
+            onClick={() => setIsUserOverrideExpanded(!isUserOverrideExpanded)}
+          >
+            <Box sx={{ flex: 1 }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: 600,
+                  color: "#333333",
+                  mb: 0.5,
+                }}
+              >
+                Pilot Users and ID Overrides (Optional)
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "#666666",
+                  display: "block",
+                }}
+              >
+                Test your experiment by rolling it out to a limited set of
+                internal users.
+              </Typography>
+            </Box>
+            {isUserOverrideExpanded ? (
+              <KeyboardArrowUpIcon sx={{ color: "#666666", mt: 0.5 }} />
+            ) : (
+              <KeyboardArrowDownIcon sx={{ color: "#666666", mt: 0.5 }} />
+            )}
+          </Box>
+
+          {isUserOverrideExpanded && (
+            <Box
+              sx={{
+                backgroundColor: "#F9FAFB",
+                padding: "12px",
+                borderRadius: "0px 0px 8px 8px",
+                border: "1px solid #E5E7EB",
+                borderTop: "none",
+              }}
+            >
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {variantFields.map((variant: any, index: number) => (
+                  <Box
+                    key={variant.id}
+                    sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 600,
+                        color: "#333333",
+                        minWidth: "120px",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {variant.name}
+                    </Typography>
+                    <Box sx={{ flex: 1 }}>
+                      <AscendAutoCompleteControlled
+                        name={`variants.${index}.overrideIds`}
+                        freeSolo
+                        control={control}
+                        placeholder={isEditMode ? "" : "Enter user IDs"}
+                        options={[]}
+                        multiple
+                        filterSelectedOptions
+                        disabled={isEditMode}
+                        chipStyles={{
+                          backgroundColor: "#E1E3EA",
+                          border: "none",
+                          borderRadius: 0,
+                          height: "24px",
+                          fontSize: "0.75rem",
+                          "& .MuiChip-label": {
+                            padding: "0 8px",
+                          },
+                          "& .MuiChip-deleteIcon": {
+                            color: "#666666",
+                            fontSize: "0.875rem",
+                            margin: "0 4px 0 -4px",
+                            "&:hover": {
+                              color: "#333333",
+                            },
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>

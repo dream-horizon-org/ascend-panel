@@ -52,7 +52,7 @@ export interface UpdateExperimentRequest {
   variant_weights?: UpdateExperimentVariantWeights;
   variants?: Record<string, UpdateExperimentVariant>;
   rule_attributes?: UpdateExperimentRuleAttribute[];
-  overrides?: string[];
+  overrides?: Record<string, string[]>;
   winning_variant?: UpdateExperimentWinningVariant;
   exposure?: number;
   threshold?: number;

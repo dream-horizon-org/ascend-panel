@@ -69,12 +69,14 @@ const ExperimentForm = ({
           trafficSplit: "50",
           variables: [{ key: "", data_type: "", value: "" }],
           cohorts: "",
+          overrideIds: [],
         },
         {
           name: "Variant 1",
           trafficSplit: "50",
           variables: [{ key: "", data_type: "", value: "" }],
           cohorts: "",
+          overrideIds: [],
         },
       ],
       targeting: {

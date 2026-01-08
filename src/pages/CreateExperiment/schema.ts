@@ -32,6 +32,7 @@ export const experimentSchema = z.object({
         }),
       ),
       cohorts: z.string().optional(),
+      overrideIds: z.array(z.string()).optional(),
     }),
   ),
   targeting: z

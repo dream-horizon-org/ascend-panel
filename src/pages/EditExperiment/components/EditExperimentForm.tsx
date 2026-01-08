@@ -66,6 +66,9 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
         cohortsValue = String(weight[0]);
       }
 
+      // Get override IDs for this variant
+      const overrideIds = exp.overrides?.override_ids?.[key] || [];
+
       return {
         name: variant.display_name || key,
         trafficSplit: trafficSplit,
@@ -75,6 +78,7 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
           value: v.value || "",
         })),
         cohorts: cohortsValue,
+        overrideIds: overrideIds,
       };
     });
 
@@ -98,6 +102,7 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
                 trafficSplit: "50",
                 variables: [{ key: "", data_type: "", value: "" }],
                 cohorts: "",
+                overrideIds: [],
               },
             ],
       targeting: {
@@ -463,6 +468,7 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
           trafficSplit: "50",
           variables: [{ key: "", data_type: "", value: "" }],
           cohorts: "",
+          overrideIds: [],
         },
       ],
       targeting: {
