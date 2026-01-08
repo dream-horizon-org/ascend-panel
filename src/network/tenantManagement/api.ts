@@ -245,7 +245,3 @@ export const tenantManagementApi = {
     );
   },
 };
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
