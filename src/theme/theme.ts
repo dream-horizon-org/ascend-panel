@@ -172,6 +172,72 @@ export const theme = createTheme({
       main: "#DADADD",
     },
   },
+  components: {
+    MuiSelect: {
+      styleOverrides: {
+        root: {
+          transition: "all 0.2s ease-in-out",
+          "&:hover": {
+            backgroundColor: "rgba(0, 96, 229, 0.04)",
+          },
+          "&.Mui-focused": {
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 0 0 3px #E3F2FD",
+          },
+        },
+        select: {
+          fontSize: "14px",
+          lineHeight: "1.5",
+          fontWeight: 500,
+          "&:focus": {
+            backgroundColor: "transparent",
+          },
+        },
+        icon: {
+          transition: "transform 0.2s ease-in-out, color 0.2s ease-in-out",
+          color: "#666",
+        },
+      },
+    },
+    MuiMenu: {
+      styleOverrides: {
+        paper: {
+          marginTop: "8px",
+          borderRadius: "12px",
+          boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08)",
+          border: "1px solid #DADADD",
+        },
+        list: {
+          padding: "8px",
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          borderRadius: "8px",
+          margin: "2px 0",
+          padding: "10px 12px",
+          fontSize: "14px",
+          transition: "all 0.15s ease-in-out",
+          "&:hover": {
+            backgroundColor: "#E3F2FD",
+            transform: "translateX(4px)",
+          },
+          "&.Mui-selected": {
+            backgroundColor: "#E3F2FD",
+            fontWeight: 500,
+            "&:hover": {
+              backgroundColor: "#E3F2FD",
+            },
+          },
+          "&.Mui-focusVisible": {
+            backgroundColor: "#E3F2FD",
+          },
+        },
+      },
+    },
+  },
   customSpacing: {
     appBarHeight: "56px",
     sidebarWidth: "64px",
@@ -221,17 +287,17 @@ export const theme = createTheme({
       },
     },
     dropdown: {
-      sm: "28px",
-      md: "32px",
+      sm: "32px",
+      md: "36px",
       lg: "40px",
-      chipSmallHeight: "20px",
-      chipMediumHeight: "24px",
+      chipSmallHeight: "22px",
+      chipMediumHeight: "26px",
       chipLimit1: 5,
       chipLimit2: 3,
       borderRadius: {
-        sm: "0px",
-        md: "12px",
-        lg: "999px",
+        sm: "6px",
+        md: "8px",
+        lg: "12px",
       },
     },
     table: {
