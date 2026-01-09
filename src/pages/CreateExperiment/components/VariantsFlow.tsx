@@ -17,7 +17,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Remove as RemoveIcon } from "@mui/icons-material";
-import CommitIcon from '@mui/icons-material/Commit';
+import CommitIcon from "@mui/icons-material/Commit";
 import {
   Control,
   useFieldArray,
@@ -1126,22 +1126,22 @@ function CreateExperimentTargetingParentModal({
         }}
       >
         <Box>
-          <Typography 
-            variant="h5" 
-            sx={{ 
+          <Typography
+            variant="h5"
+            sx={{
               fontWeight: 600,
               fontSize: "1.25rem",
               color: "#111827",
-              mb: 0.5
+              mb: 0.5,
             }}
           >
             Targeting Configuration
-        </Typography>
+          </Typography>
           <Typography
             variant="body2"
             sx={{
               color: "#6B7280",
-              fontSize: "0.875rem"
+              fontSize: "0.875rem",
             }}
           >
             Configure filters, cohorts, and user overrides for your experiment
@@ -1150,13 +1150,13 @@ function CreateExperimentTargetingParentModal({
         <IconButton
           size="small"
           onClick={handleParentModalClose}
-          sx={{ 
+          sx={{
             ml: "auto",
             color: "#6B7280",
             "&:hover": {
               backgroundColor: "#F3F4F6",
-              color: "#111827"
-            }
+              color: "#111827",
+            },
           }}
         >
           <CloseIcon />
@@ -1165,24 +1165,24 @@ function CreateExperimentTargetingParentModal({
 
       {/* Filters Section */}
       <Box>
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            mb: 0.5, 
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 0.5,
             fontWeight: 600,
             fontSize: "1rem",
-            color: "#1F2937"
+            color: "#1F2937",
           }}
         >
           Filters
         </Typography>
         <Typography
           variant="body2"
-          sx={{ 
-            mb: 2.5, 
+          sx={{
+            mb: 2.5,
             display: "block",
             color: "#6B7280",
-            fontSize: "0.875rem"
+            fontSize: "0.875rem",
           }}
         >
           Define conditions to filter users before cohort assignment
@@ -1451,8 +1451,8 @@ function CreateExperimentTargetingParentModal({
                 mb: 0.5,
               }}
             >
-          Cohorts
-        </Typography>
+              Cohorts
+            </Typography>
             <Typography
               variant="body2"
               sx={{
@@ -1462,7 +1462,8 @@ function CreateExperimentTargetingParentModal({
                 lineHeight: 1.5,
               }}
             >
-              Assign cohorts to control which user groups participate in the experiment
+              Assign cohorts to control which user groups participate in the
+              experiment
             </Typography>
           </Box>
           <Box
@@ -1478,9 +1479,13 @@ function CreateExperimentTargetingParentModal({
             }}
           >
             {isCohortsExpanded ? (
-              <KeyboardArrowUpIcon sx={{ color: "#4F46E5", fontSize: "1.25rem" }} />
+              <KeyboardArrowUpIcon
+                sx={{ color: "#4F46E5", fontSize: "1.25rem" }}
+              />
             ) : (
-              <KeyboardArrowDownIcon sx={{ color: "#6B7280", fontSize: "1.25rem" }} />
+              <KeyboardArrowDownIcon
+                sx={{ color: "#6B7280", fontSize: "1.25rem" }}
+              />
             )}
           </Box>
         </Box>
@@ -1495,98 +1500,98 @@ function CreateExperimentTargetingParentModal({
               borderTop: "none",
             }}
           >
-        {!isAssignCohortsDirectly ? (
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
-            <AscendDropdown
-              placeholder="Select Cohorts"
-              variant="single"
-              options={cohortList}
-              value={cohorts || ""}
-              fullWidth
-              size="lg"
-              disabled={isEditMode || isAudiencesLoading}
-              onChange={(value) => {
-                if (!isEditMode) {
-                  cohortsField.onChange(value as string);
-                }
-              }}
-            />
-          </Box>
-        ) : (
+            {!isAssignCohortsDirectly ? (
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+                <AscendDropdown
+                  placeholder="Select Cohorts"
+                  variant="single"
+                  options={cohortList}
+                  value={cohorts || ""}
+                  fullWidth
+                  size="lg"
+                  disabled={isEditMode || isAudiencesLoading}
+                  onChange={(value) => {
+                    if (!isEditMode) {
+                      cohortsField.onChange(value as string);
+                    }
+                  }}
+                />
+              </Box>
+            ) : (
               <Box
                 sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}
               >
-            {variantFields.map((variant: any, index: number) => (
-              <Box
-                key={variant.id}
-                sx={{ display: "flex", alignItems: "center", gap: 2 }}
-              >
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 600,
-                    color: "#333333",
-                    minWidth: "120px",
-                    flexShrink: 0,
-                  }}
-                >
-                  {variant.name}
-                </Typography>
-                <Box sx={{ flex: 1 }}>
-                  <Controller
-                    name={`variants.${index}.cohorts`}
-                    control={control}
-                    render={({ field }) => (
-                      <AscendDropdown
-                        placeholder="Select Cohorts"
-                        variant="single"
-                        options={getAvailableCohortOptions(index)}
-                        value={field.value || ""}
-                        fullWidth
-                        size="lg"
-                        disabled={isEditMode || isAudiencesLoading}
-                        onChange={(value) => {
-                          if (!isEditMode) {
-                            field.onChange(value as string);
-                          }
-                        }}
+                {variantFields.map((variant: any, index: number) => (
+                  <Box
+                    key={variant.id}
+                    sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 600,
+                        color: "#333333",
+                        minWidth: "120px",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {variant.name}
+                    </Typography>
+                    <Box sx={{ flex: 1 }}>
+                      <Controller
+                        name={`variants.${index}.cohorts`}
+                        control={control}
+                        render={({ field }) => (
+                          <AscendDropdown
+                            placeholder="Select Cohorts"
+                            variant="single"
+                            options={getAvailableCohortOptions(index)}
+                            value={field.value || ""}
+                            fullWidth
+                            size="lg"
+                            disabled={isEditMode || isAudiencesLoading}
+                            onChange={(value) => {
+                              if (!isEditMode) {
+                                field.onChange(value as string);
+                              }
+                            }}
+                          />
+                        )}
                       />
-                    )}
-                  />
-                </Box>
+                    </Box>
+                  </Box>
+                ))}
               </Box>
-            ))}
-          </Box>
-        )}
-        <Box
-          sx={{
-            backgroundColor: "#EBF5FF",
-            padding: "8px",
-            borderRadius: "4px",
-          }}
-        >
-          <FormControlLabel
-            control={<Checkbox disabled={isEditMode} />}
-            label="Assign cohorts directly to variants"
-            checked={isAssignCohortsDirectly}
-            onChange={(e) => {
-              if (!isEditMode) {
-                isAssignCohortsDirectlyField.onChange(
-                  (e.target as HTMLInputElement).checked,
-                );
-              }
-            }}
-          />
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: "block", mt: 1 }}
-          >
+            )}
+            <Box
+              sx={{
+                backgroundColor: "#EBF5FF",
+                padding: "8px",
+                borderRadius: "4px",
+              }}
+            >
+              <FormControlLabel
+                control={<Checkbox disabled={isEditMode} />}
+                label="Assign cohorts directly to variants"
+                checked={isAssignCohortsDirectly}
+                onChange={(e) => {
+                  if (!isEditMode) {
+                    isAssignCohortsDirectlyField.onChange(
+                      (e.target as HTMLInputElement).checked,
+                    );
+                  }
+                }}
+              />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", mt: 1 }}
+              >
                 Assigning cohorts will make it{" "}
                 <strong>inaccurate and risky</strong>. Make sure to verify each
                 cohort.
-          </Typography>
-        </Box>
+              </Typography>
+            </Box>
           </Box>
         )}
         <Box sx={{ mt: 3 }}>
@@ -1612,7 +1617,9 @@ function CreateExperimentTargetingParentModal({
             onClick={() => setIsUserOverrideExpanded(!isUserOverrideExpanded)}
           >
             <Box sx={{ flex: 1 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}
+              >
                 <Typography
                   variant="body1"
                   sx={{
@@ -1645,7 +1652,8 @@ function CreateExperimentTargetingParentModal({
                   lineHeight: 1.5,
                 }}
               >
-                Test your experiment by rolling it out to specific internal users before full launch
+                Test your experiment by rolling it out to specific internal
+                users before full launch
               </Typography>
             </Box>
             <Box
@@ -1656,14 +1664,20 @@ function CreateExperimentTargetingParentModal({
                 width: "32px",
                 height: "32px",
                 borderRadius: "6px",
-                backgroundColor: isUserOverrideExpanded ? "#EEF2FF" : "transparent",
+                backgroundColor: isUserOverrideExpanded
+                  ? "#EEF2FF"
+                  : "transparent",
                 transition: "all 0.2s ease",
               }}
             >
               {isUserOverrideExpanded ? (
-                <KeyboardArrowUpIcon sx={{ color: "#4F46E5", fontSize: "1.25rem" }} />
+                <KeyboardArrowUpIcon
+                  sx={{ color: "#4F46E5", fontSize: "1.25rem" }}
+                />
               ) : (
-                <KeyboardArrowDownIcon sx={{ color: "#6B7280", fontSize: "1.25rem" }} />
+                <KeyboardArrowDownIcon
+                  sx={{ color: "#6B7280", fontSize: "1.25rem" }}
+                />
               )}
             </Box>
           </Box>
@@ -1679,14 +1693,14 @@ function CreateExperimentTargetingParentModal({
               }}
             >
               {/* Column Headers */}
-              <Box 
-                sx={{ 
-                  display: "flex", 
-                  alignItems: "center", 
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
                   gap: 2,
                   mb: 2,
                   pb: 2,
-                  borderBottom: "1px solid #E5E7EB"
+                  borderBottom: "1px solid #E5E7EB",
                 }}
               >
                 <Box
@@ -1739,7 +1753,7 @@ function CreateExperimentTargetingParentModal({
                     "#6366F1", // Indigo
                   ];
                   const iconColor = variantColors[index % variantColors.length];
-                  
+
                   return (
                     <Box
                       key={variant.id}
@@ -1782,50 +1796,50 @@ function CreateExperimentTargetingParentModal({
                           {variant.name}
                         </Box>
                       </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <AscendAutoCompleteControlled
-                        name={`variants.${index}.overrideIds`}
-                        freeSolo
-                        control={control}
-                        placeholder={isEditMode ? "" : "Enter user IDs"}
-                        options={[]}
-                        multiple
-                        filterSelectedOptions
-                        disabled={isEditMode}
-                        chipStyles={{
-                          backgroundColor: "#3B82F6",
-                          color: "#FFFFFF",
-                          border: "1px solid #2563EB",
-                          borderRadius: "6px",
-                          height: "28px",
-                          fontSize: "0.8125rem",
-                          fontWeight: 500,
-                          boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-                          transition: "all 0.2s ease",
-                          "&:hover": {
-                            backgroundColor: "#2563EB",
-                            boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.1)",
-                          },
-                          "& .MuiChip-label": {
-                            padding: "0 10px",
-                            fontFamily: "Inter, monospace",
-                            letterSpacing: "0.01em",
-                          },
-                          "& .MuiChip-deleteIcon": {
+                      <Box sx={{ flex: 1 }}>
+                        <AscendAutoCompleteControlled
+                          name={`variants.${index}.overrideIds`}
+                          freeSolo
+                          control={control}
+                          placeholder={isEditMode ? "" : "Enter user IDs"}
+                          options={[]}
+                          multiple
+                          filterSelectedOptions
+                          disabled={isEditMode}
+                          chipStyles={{
+                            backgroundColor: "#3B82F6",
                             color: "#FFFFFF",
-                            fontSize: "1rem",
-                            margin: "0 4px 0 -2px",
-                            opacity: 0.8,
-                            transition: "opacity 0.2s ease",
+                            border: "1px solid #2563EB",
+                            borderRadius: "6px",
+                            height: "28px",
+                            fontSize: "0.8125rem",
+                            fontWeight: 500,
+                            boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+                            transition: "all 0.2s ease",
                             "&:hover": {
-                              color: "#FFFFFF",
-                              opacity: 1,
+                              backgroundColor: "#2563EB",
+                              boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.1)",
                             },
-                          },
-                        }}
-                      />
+                            "& .MuiChip-label": {
+                              padding: "0 10px",
+                              fontFamily: "Inter, monospace",
+                              letterSpacing: "0.01em",
+                            },
+                            "& .MuiChip-deleteIcon": {
+                              color: "#FFFFFF",
+                              fontSize: "1rem",
+                              margin: "0 4px 0 -2px",
+                              opacity: 0.8,
+                              transition: "opacity 0.2s ease",
+                              "&:hover": {
+                                color: "#FFFFFF",
+                                opacity: 1,
+                              },
+                            },
+                          }}
+                        />
+                      </Box>
                     </Box>
-                  </Box>
                   );
                 })}
               </Box>

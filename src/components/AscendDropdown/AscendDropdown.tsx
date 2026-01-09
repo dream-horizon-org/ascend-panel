@@ -38,7 +38,8 @@ const getMenuProps = (theme: any) => ({
       marginTop: "8px",
       maxHeight: 280,
       borderRadius: "12px",
-      boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08)",
+      boxShadow:
+        "0px 8px 24px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08)",
       border: `1px solid ${theme.palette.border.main}`,
     },
     sx: {
@@ -126,13 +127,19 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
     if (isEmpty) {
       if (variant === "multi-checkbox" && showCount) {
         return (
-          <Box component="span" sx={{ fontWeight: 400, color: theme.palette.text.secondary }}>
+          <Box
+            component="span"
+            sx={{ fontWeight: 400, color: theme.palette.text.secondary }}
+          >
             {label || placeholder}
           </Box>
         );
       }
       return (
-        <Box component="em" sx={{ fontStyle: "normal", color: theme.palette.text.secondary }}>
+        <Box
+          component="em"
+          sx={{ fontStyle: "normal", color: theme.palette.text.secondary }}
+        >
           {label || placeholder}
         </Box>
       );
@@ -140,7 +147,10 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
 
     if (!isMultiple) {
       return (
-        <Box component="span" sx={{ fontWeight: 500, color: theme.palette.text.primary }}>
+        <Box
+          component="span"
+          sx={{ fontWeight: 500, color: theme.palette.text.primary }}
+        >
           {selected as string}
         </Box>
       );
@@ -150,13 +160,19 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
       if (showCount) {
         const count = (selected as string[]).length;
         return (
-          <Box component="span" sx={{ fontWeight: 500, color: theme.palette.primary.main }}>
+          <Box
+            component="span"
+            sx={{ fontWeight: 500, color: theme.palette.primary.main }}
+          >
             {`${label || placeholder} (${count})`}
           </Box>
         );
       }
       return (
-        <Box component="span" sx={{ fontWeight: 500, color: theme.palette.text.primary }}>
+        <Box
+          component="span"
+          sx={{ fontWeight: 500, color: theme.palette.text.primary }}
+        >
           {(selected as string[]).join(", ")}
         </Box>
       );
@@ -274,11 +290,14 @@ const AscendDropdown: React.FC<AscendDropdownProps> = ({
             },
           },
           "&.Mui-disabled": {
-            backgroundColor: theme.customComponents.ascendTextField.disabled.backgroundColor,
+            backgroundColor:
+              theme.customComponents.ascendTextField.disabled.backgroundColor,
             opacity: 0.6,
           },
           "& .MuiSelect-icon": {
-            color: isSelected ? theme.palette.primary.main : theme.palette.text.secondary,
+            color: isSelected
+              ? theme.palette.primary.main
+              : theme.palette.text.secondary,
             transition: "transform 0.2s ease-in-out, color 0.2s ease-in-out",
           },
           "&.Mui-focused .MuiSelect-icon": {

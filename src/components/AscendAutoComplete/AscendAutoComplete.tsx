@@ -57,7 +57,8 @@ function AscendAutoComplete<T>({
             sx: {
               marginTop: "8px",
               borderRadius: "12px",
-              boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08)",
+              boxShadow:
+                "0px 8px 24px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08)",
               border: `1px solid ${theme.palette.border.main}`,
               "& .MuiAutocomplete-listbox": {
                 padding: "8px",
