@@ -46,7 +46,6 @@ const handleApiError = (error: unknown): never => {
     const axiosError = error as AxiosError<ApiErrorResponse>;
     const status = axiosError.response?.status || 500;
     const errorData = axiosError.response?.data;
-
     // Handle new error format: { error: { message, code, cause? } }
     if (errorData?.error) {
       throw new TenantApiError(
