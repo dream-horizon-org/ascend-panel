@@ -32,7 +32,7 @@ export interface CreateExperimentRequest {
   experiment_key: string;
   description?: string;
   hypothesis: string;
-  status: "DRAFT" | "LIVE" | "PAUSED";
+  status: "DRAFT" | "LIVE" | "PAUSED" | "TEST";
   assignment_domain: string;
   distribution_strategy: string;
   cohorts: string[];
@@ -44,6 +44,7 @@ export interface CreateExperimentRequest {
   threshold: number;
   created_by: string;
   tags: string[];
+  overrides?: Record<string, string[]>;
 }
 
 // Response type for Create Experiment API

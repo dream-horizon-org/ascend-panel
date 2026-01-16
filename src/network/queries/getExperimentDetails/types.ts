@@ -32,6 +32,10 @@ export interface WinningVariant {
   variant: string;
 }
 
+export interface ExperimentOverrides {
+  override_ids: Record<string, string[]>;
+}
+
 export interface Experiment {
   experimentId: string;
   projectKey: string;
@@ -48,7 +52,7 @@ export interface Experiment {
   ruleAttributes: RuleAttribute[];
   distributionStrategy: string;
   assignmentDomain: string;
-  overrides: string[];
+  overrides?: ExperimentOverrides;
   winningVariant?: WinningVariant;
   exposure: number;
   threshold: number;
