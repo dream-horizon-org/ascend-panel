@@ -63,6 +63,7 @@ const ExperimentForm = ({
       tags: [],
       rateLimit: "100",
       maxUsers: "",
+      isTestMode: true,
       variants: [
         {
           name: "Control Group",
@@ -101,6 +102,7 @@ const ExperimentForm = ({
   const watchedDescription = watch("description");
   const watchedRateLimit = watch("rateLimit");
   const watchedMaxUsers = watch("maxUsers");
+  const watchedIsTestMode = watch("isTestMode");
 
   const hasChanges = useMemo(() => {
     if (isEditMode) {
@@ -210,6 +212,17 @@ const ExperimentForm = ({
   const handleFormSubmit = (data: ExperimentFormData) => {
     onSubmit(data);
   };
+
+  // Handle isTestMode change - clear overrideIds when switching to LIVE (only in create mode)
+  useEffect(() => {
+    if (!isEditMode && watchedIsTestMode === false) {
+      // When switching to LIVE in create mode, clear all overrideIds
+      const currentVariants = watch("variants");
+      currentVariants.forEach((_, index) => {
+        setValue(`variants.${index}.overrideIds`, [], { shouldValidate: false });
+      });
+    }
+  }, [watchedIsTestMode, setValue, watch, isEditMode]);
 
   return (
     <Box
@@ -443,7 +456,12 @@ const ExperimentForm = ({
           </Box>
 
           {/* Variants Flow */}
-          <VariantsFlow control={control} isEditMode={isEditMode} />
+          <VariantsFlow 
+            control={control} 
+            isEditMode={isEditMode} 
+            isTestMode={watchedIsTestMode ?? true}
+            setValue={setValue}
+          />
         </Box>
 
         {/* Advance Configuration Section */}

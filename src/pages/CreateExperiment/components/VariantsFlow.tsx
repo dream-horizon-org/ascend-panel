@@ -497,11 +497,15 @@ const generateEdges = (variants: number, isAssignCohortsDirectly: boolean) => {
 interface VariantsFlowProps {
   control: Control<any>;
   isEditMode?: boolean;
+  isTestMode?: boolean;
+  setValue?: (name: string, value: any, options?: any) => void;
 }
 
 export default function VariantsFlow({
   control,
   isEditMode = false,
+  isTestMode = true,
+  setValue,
 }: VariantsFlowProps) {
   const [isTrafficEdited, setIsTrafficEdited] = useState(false);
 
@@ -920,6 +924,8 @@ export default function VariantsFlow({
               handleParentModalClose={handleParentModalClose}
               control={control}
               isEditMode={isEditMode}
+              isTestMode={isTestMode}
+              setValue={setValue}
             />
           ),
         }}
@@ -1012,13 +1018,26 @@ function CreateExperimentTargetingParentModal({
   handleParentModalClose,
   control,
   isEditMode = false,
+  isTestMode: initialIsTestMode = true,
+  setValue,
 }: {
   handleParentModalClose: () => void;
   control: Control<any>;
   isEditMode?: boolean;
+  isTestMode?: boolean;
+  setValue?: (name: string, value: any, options?: any) => void;
 }) {
   const [isUserOverrideExpanded, setIsUserOverrideExpanded] = useState(false);
   const [isCohortsExpanded, setIsCohortsExpanded] = useState(false);
+  
+  // Use useController for isTestMode to properly integrate with form
+  const { field: isTestModeField } = useController({
+    control,
+    name: "isTestMode",
+    defaultValue: initialIsTestMode,
+  });
+  
+  const isTestMode = isTestModeField.value ?? initialIsTestMode;
 
   // Use react-hook-form for isAssignCohortsDirectly
   const { field: isAssignCohortsDirectlyField } = useController({
@@ -1600,21 +1619,26 @@ function CreateExperimentTargetingParentModal({
               display: "flex",
               alignItems: "flex-start",
               gap: 1,
-              cursor: "pointer",
+              cursor: isTestMode ? "pointer" : "not-allowed",
               padding: "14px 16px",
               borderRadius: isUserOverrideExpanded ? "8px 8px 0 0" : "8px",
-              backgroundColor: "#F9FAFB",
+              backgroundColor: isTestMode ? "#F9FAFB" : "#F5F5F5",
               border: "1px solid #E5E7EB",
               borderBottom: isUserOverrideExpanded
                 ? "none"
                 : "1px solid #E5E7EB",
               transition: "all 0.2s ease",
+              opacity: isTestMode ? 1 : 0.6,
               "&:hover": {
-                backgroundColor: "#F3F4F6",
-                borderColor: "#D1D5DB",
+                backgroundColor: isTestMode ? "#F3F4F6" : "#F5F5F5",
+                borderColor: isTestMode ? "#D1D5DB" : "#E5E7EB",
               },
             }}
-            onClick={() => setIsUserOverrideExpanded(!isUserOverrideExpanded)}
+            onClick={() => {
+              if (isTestMode) {
+                setIsUserOverrideExpanded(!isUserOverrideExpanded);
+              }
+            }}
           >
             <Box sx={{ flex: 1 }}>
               <Box
@@ -1692,6 +1716,51 @@ function CreateExperimentTargetingParentModal({
                 borderTop: "none",
               }}
             >
+              {/* Test Mode Checkbox */}
+              <Box sx={{ mb: 2, pb: 2, borderBottom: "1px solid #E5E7EB" }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={isTestMode}
+                      onChange={(e) => {
+                        isTestModeField.onChange(e.target.checked);
+                      }}
+                      sx={{
+                        color: "#0060E5",
+                        "&.Mui-checked": {
+                          color: "#0060E5",
+                        },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography
+                      sx={{
+                        fontFamily: "Inter",
+                        fontSize: "0.875rem",
+                        color: "#111827",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Test Mode
+                    </Typography>
+                  }
+                />
+                <Typography
+                  sx={{
+                    fontFamily: "Inter",
+                    fontSize: "0.75rem",
+                    color: "#6B7280",
+                    mt: 0.5,
+                    ml: 4.5,
+                  }}
+                >
+                  {isTestMode
+                    ? "Experiment will be created with TEST status. Pilot Users and ID Overrides are enabled."
+                    : "Experiment will be created with LIVE status. Pilot Users and ID Overrides are disabled."}
+                </Typography>
+              </Box>
+
               {/* Column Headers */}
               <Box
                 sx={{
@@ -1805,7 +1874,7 @@ function CreateExperimentTargetingParentModal({
                           options={[]}
                           multiple
                           filterSelectedOptions
-                          disabled={isEditMode}
+                          disabled={isEditMode || !isTestMode}
                           chipStyles={{
                             backgroundColor: "#3B82F6",
                             color: "#FFFFFF",

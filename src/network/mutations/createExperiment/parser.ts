@@ -33,6 +33,7 @@ export interface ExperimentFormData {
   tags?: string[];
   rateLimit?: string;
   maxUsers?: string;
+  isTestMode?: boolean;
   variants: FormVariant[];
   targeting?: FormTargeting;
 }
@@ -126,12 +127,15 @@ export const transformToRequestBody = (
     }
   });
 
+  // Determine status based on isTestMode (default to true if not specified)
+  const status = data.isTestMode !== false ? "TEST" : "LIVE";
+
   const requestBody: any = {
     name: data.name,
     experiment_key: data.id,
     description: data.description || "",
     hypothesis: data.hypothesis || "",
-    status: "LIVE",
+    status: status,
     assignment_domain: assignmentType,
     distribution_strategy: "RANDOM",
     cohorts: cohorts,

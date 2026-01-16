@@ -85,6 +85,9 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
     const isAssignCohortsDirectly = exp.assignmentDomain === "STRATIFIED";
     const filters = exp.ruleAttributes?.[0]?.conditions || [];
 
+    // Determine isTestMode based on status
+    const isTestMode = exp.status === "TEST";
+
     return {
       name: exp.name || "",
       id: exp.key || exp.experimentId || "",
@@ -93,6 +96,7 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
       tags: exp.tags || [],
       rateLimit: exp.exposure ? `${exp.exposure}%` : "100%",
       maxUsers: exp.threshold ? exp.threshold.toString() : "",
+      isTestMode: isTestMode,
       variants:
         variants.length > 0
           ? variants
@@ -146,6 +150,13 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
       if (maxUsersValue !== originalThreshold) {
         dirty.threshold = maxUsersValue;
       }
+    }
+
+    // Handle status change based on isTestMode
+    const newStatus = data.isTestMode !== false ? "TEST" : "LIVE";
+    const originalStatus = experiment?.status || "";
+    if (newStatus !== originalStatus) {
+      dirty.status = newStatus;
     }
 
     return dirty;
@@ -462,6 +473,7 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
       tags: [],
       rateLimit: "100%",
       maxUsers: "",
+      isTestMode: true,
       variants: [
         {
           name: "Control Group",
