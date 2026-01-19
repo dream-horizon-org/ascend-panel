@@ -802,13 +802,6 @@ const Home: React.FC = () => {
           >
             Experiment
           </AscendButton>
-          <AscendButton
-            startIcon={<AddIcon />}
-            size="small"
-            onClick={() => setIsCreateAudienceModalOpen(true)}
-          >
-            Audience
-          </AscendButton>
         </Box>
       </Box>
 
