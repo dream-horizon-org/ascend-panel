@@ -20,6 +20,7 @@ export const experimentSchema = z.object({
       },
     ),
   maxUsers: z.string().optional(),
+  isTestMode: z.boolean().optional().default(true),
   variants: z.array(
     z.object({
       name: z.string().min(1, "Variant name is required"),
@@ -32,6 +33,7 @@ export const experimentSchema = z.object({
         }),
       ),
       cohorts: z.string().optional(),
+      overrideIds: z.array(z.string()).optional(),
     }),
   ),
   targeting: z

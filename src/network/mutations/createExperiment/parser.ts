@@ -10,6 +10,7 @@ interface FormVariant {
     value: string;
   }[];
   cohorts?: string; // Stored as string in form, converted to array for API
+  overrideIds?: string[]; // User IDs for manual override
 }
 
 interface FormTargeting {
@@ -32,6 +33,7 @@ export interface ExperimentFormData {
   tags?: string[];
   rateLimit?: string;
   maxUsers?: string;
+  isTestMode?: boolean;
   variants: FormVariant[];
   targeting?: FormTargeting;
 }
@@ -113,12 +115,27 @@ export const transformToRequestBody = (
   // Extract cohorts from targeting - convert string to array
   const cohorts = data.targeting?.cohorts ? [data.targeting.cohorts] : [];
 
-  return {
+  // Build overrides object from variant overrideIds
+  const overrides: Record<string, string[]> = {};
+  let hasOverrides = false;
+
+  data.variants.forEach((variant, index) => {
+    const key = index === 0 ? "control" : `variant${index}`;
+    if (variant.overrideIds && variant.overrideIds.length > 0) {
+      overrides[key] = variant.overrideIds;
+      hasOverrides = true;
+    }
+  });
+
+  // Determine status based on isTestMode (default to true if not specified)
+  const status = data.isTestMode !== false ? "TEST" : "LIVE";
+
+  const requestBody: any = {
     name: data.name,
     experiment_key: data.id,
     description: data.description || "",
     hypothesis: data.hypothesis || "",
-    status: "LIVE",
+    status: status,
     assignment_domain: assignmentType,
     distribution_strategy: "RANDOM",
     cohorts: cohorts,
@@ -134,4 +151,11 @@ export const transformToRequestBody = (
     created_by: "user@example.com",
     tags: data.tags || [],
   };
+
+  // Only add overrides if there are any
+  if (hasOverrides) {
+    requestBody.overrides = overrides;
+  }
+
+  return requestBody;
 };

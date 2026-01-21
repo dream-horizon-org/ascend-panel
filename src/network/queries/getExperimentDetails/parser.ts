@@ -8,6 +8,7 @@ import {
   RuleCondition,
   RuleAttribute,
   WinningVariant,
+  ExperimentOverrides,
 } from "./types";
 
 // API Response types (snake_case)
@@ -59,7 +60,7 @@ interface ApiExperiment {
   rule_attributes: ApiRuleAttribute[];
   distribution_strategy: string;
   assignment_domain: string;
-  overrides: string[];
+  overrides?: Record<string, string[]>;
   winning_variant?: ApiWinningVariant;
   exposure: number;
   threshold: number;
@@ -119,6 +120,17 @@ const parseWinningVariant = (
   };
 };
 
+const parseOverrides = (
+  apiOverrides?: Record<string, string[]>,
+): ExperimentOverrides | undefined => {
+  if (!apiOverrides || Object.keys(apiOverrides).length === 0) {
+    return undefined;
+  }
+  return {
+    override_ids: apiOverrides,
+  };
+};
+
 const parseExperiment = (apiExperiment: ApiExperiment): Experiment => {
   const parsedVariants = Object.entries(apiExperiment.variants).reduce(
     (acc, [key, value]) => {
@@ -144,7 +156,7 @@ const parseExperiment = (apiExperiment: ApiExperiment): Experiment => {
     ruleAttributes: apiExperiment.rule_attributes.map(parseRuleAttribute),
     distributionStrategy: apiExperiment.distribution_strategy,
     assignmentDomain: apiExperiment.assignment_domain,
-    overrides: apiExperiment.overrides,
+    overrides: parseOverrides(apiExperiment.overrides),
     winningVariant: apiExperiment.winning_variant
       ? parseWinningVariant(apiExperiment.winning_variant)
       : undefined,

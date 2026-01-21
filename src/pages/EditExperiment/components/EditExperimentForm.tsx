@@ -66,6 +66,9 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
         cohortsValue = String(weight[0]);
       }
 
+      // Get override IDs for this variant
+      const overrideIds = exp.overrides?.override_ids?.[key] || [];
+
       return {
         name: variant.display_name || key,
         trafficSplit: trafficSplit,
@@ -75,11 +78,15 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
           value: v.value || "",
         })),
         cohorts: cohortsValue,
+        overrideIds: overrideIds,
       };
     });
 
     const isAssignCohortsDirectly = exp.assignmentDomain === "STRATIFIED";
     const filters = exp.ruleAttributes?.[0]?.conditions || [];
+
+    // Determine isTestMode based on status
+    const isTestMode = exp.status === "TEST";
 
     return {
       name: exp.name || "",
@@ -89,6 +96,7 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
       tags: exp.tags || [],
       rateLimit: exp.exposure ? `${exp.exposure}%` : "100%",
       maxUsers: exp.threshold ? exp.threshold.toString() : "",
+      isTestMode: isTestMode,
       variants:
         variants.length > 0
           ? variants
@@ -98,6 +106,7 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
                 trafficSplit: "50",
                 variables: [{ key: "", data_type: "", value: "" }],
                 cohorts: "",
+                overrideIds: [],
               },
             ],
       targeting: {
@@ -141,6 +150,13 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
       if (maxUsersValue !== originalThreshold) {
         dirty.threshold = maxUsersValue;
       }
+    }
+
+    // Handle status change based on isTestMode
+    const newStatus = data.isTestMode !== false ? "TEST" : "LIVE";
+    const originalStatus = experiment?.status || "";
+    if (newStatus !== originalStatus) {
+      dirty.status = newStatus;
     }
 
     return dirty;
@@ -457,12 +473,14 @@ const EditExperimentForm = ({ experimentId }: EditExperimentFormProps) => {
       tags: [],
       rateLimit: "100%",
       maxUsers: "",
+      isTestMode: true,
       variants: [
         {
           name: "Control Group",
           trafficSplit: "50",
           variables: [{ key: "", data_type: "", value: "" }],
           cohorts: "",
+          overrideIds: [],
         },
       ],
       targeting: {
