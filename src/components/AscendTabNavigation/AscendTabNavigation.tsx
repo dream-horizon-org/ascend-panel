@@ -18,13 +18,12 @@ function getProjectInitials(name: string): string {
   return name.substring(0, 2).toUpperCase();
 }
 
-
-
 export default function SideNavTabs() {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const { selectedProject, setSelectedProject, setProjects, projects } = useProject();
+  const { selectedProject, setSelectedProject, setProjects, projects } =
+    useProject();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -214,7 +213,6 @@ export default function SideNavTabs() {
                     paddingY: 1.5,
                   }}
                 >
-                  
                   <Typography
                     sx={{
                       fontSize: "14px",

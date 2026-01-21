@@ -124,7 +124,10 @@ export interface ApiKeyMetadataResponse {
 }
 
 type StoredTenant = TenantDetails;
-type StoredProject = ProjectDetailsResponse & { project_key: string; status: TenantStatus };
+type StoredProject = ProjectDetailsResponse & {
+  project_key: string;
+  status: TenantStatus;
+};
 
 type StoredApiKey = {
   key_id: string;
@@ -226,12 +229,17 @@ export const tenantManagementMockApi = {
     const name = payload.name?.trim() || "";
     const contactEmail = payload.contact_email?.trim() || "";
 
-    if (name.length < 3) throw new MockApiError(400, "name must be at least 3 characters");
-    if (!isValidEmail(contactEmail)) throw new MockApiError(400, "contact_email must be a valid email");
+    if (name.length < 3)
+      throw new MockApiError(400, "name must be at least 3 characters");
+    if (!isValidEmail(contactEmail))
+      throw new MockApiError(400, "contact_email must be a valid email");
 
     const store = loadStore();
     if (store.tenantOrder.length > 0) {
-      throw new MockApiError(409, "Only one tenant can be created in this mock UI");
+      throw new MockApiError(
+        409,
+        "Only one tenant can be created in this mock UI",
+      );
     }
     const tenant_id = uuid();
     const created_at = nowIso();
@@ -325,7 +333,8 @@ export const tenantManagementMockApi = {
     const conflict = existingProjectIds
       .map((pid) => store.projects[pid])
       .some((p) => p?.project_key === project_key);
-    if (conflict) throw new MockApiError(409, "Duplicate project_key within tenant");
+    if (conflict)
+      throw new MockApiError(409, "Duplicate project_key within tenant");
 
     const project_id = uuid();
     const created_at = nowIso();
@@ -341,7 +350,10 @@ export const tenantManagementMockApi = {
       status: "ACTIVE",
     };
     store.projects[project_id] = project;
-    store.projectsByTenant[tenant_id] = [project_id, ...(store.projectsByTenant[tenant_id] || [])];
+    store.projectsByTenant[tenant_id] = [
+      project_id,
+      ...(store.projectsByTenant[tenant_id] || []),
+    ];
     saveStore(store);
 
     return {
@@ -363,7 +375,8 @@ export const tenantManagementMockApi = {
     const limit = Math.max(1, params?.limit ?? 20);
 
     const store = loadStore();
-    if (!store.tenants[tenant_id]) throw new MockApiError(404, "Tenant not found");
+    if (!store.tenants[tenant_id])
+      throw new MockApiError(404, "Tenant not found");
 
     const allIds = store.projectsByTenant[tenant_id] || [];
     const total = allIds.length;
@@ -399,7 +412,8 @@ export const tenantManagementMockApi = {
     await delay(250);
     const store = loadStore();
     const project = store.projects[project_id];
-    if (!project || project.tenant_id !== tenant_id) throw new MockApiError(404, "Project not found");
+    if (!project || project.tenant_id !== tenant_id)
+      throw new MockApiError(404, "Project not found");
     return {
       data: {
         project_id: project.project_id,
@@ -421,7 +435,8 @@ export const tenantManagementMockApi = {
     await delay(200);
     const store = loadStore();
     const project = store.projects[project_id];
-    if (!project || project.tenant_id !== tenant_id) throw new MockApiError(404, "Project not found");
+    if (!project || project.tenant_id !== tenant_id)
+      throw new MockApiError(404, "Project not found");
 
     project.description = payload.description?.trim() || undefined;
     project.stats_engine = payload.stats_engine || "ORG_DEFAULT";
@@ -450,11 +465,15 @@ export const tenantManagementMockApi = {
     await delay(200);
     const store = loadStore();
     const project = store.projects[project_id];
-    if (!project || project.tenant_id !== tenant_id) throw new MockApiError(404, "Project not found");
+    if (!project || project.tenant_id !== tenant_id)
+      throw new MockApiError(404, "Project not found");
 
     const existingKeyId = store.apiKeyByProject[project_id];
     if (existingKeyId) {
-      throw new MockApiError(409, "This project already has an API key. Rotate it instead.");
+      throw new MockApiError(
+        409,
+        "This project already has an API key. Rotate it instead.",
+      );
     }
 
     const key_id = `key_${uuid()}`;
@@ -499,9 +518,11 @@ export const tenantManagementMockApi = {
     await delay(200);
     const store = loadStore();
     const project = store.projects[project_id];
-    if (!project || project.tenant_id !== tenant_id) throw new MockApiError(404, "Project not found");
+    if (!project || project.tenant_id !== tenant_id)
+      throw new MockApiError(404, "Project not found");
     const existing = store.apiKeys[key_id];
-    if (!existing || existing.project_id !== project_id) throw new MockApiError(404, "API key not found");
+    if (!existing || existing.project_id !== project_id)
+      throw new MockApiError(404, "API key not found");
 
     const rotated_at = nowIso();
     const rawKey = `exp_live_NEW_SECRET_${Math.random().toString(36).slice(2)}${Math.random()
@@ -532,9 +553,11 @@ export const tenantManagementMockApi = {
     await delay(250);
     const store = loadStore();
     const project = store.projects[project_id];
-    if (!project || project.tenant_id !== tenant_id) throw new MockApiError(404, "Project not found");
+    if (!project || project.tenant_id !== tenant_id)
+      throw new MockApiError(404, "Project not found");
     const existing = store.apiKeys[key_id];
-    if (!existing || existing.project_id !== project_id) throw new MockApiError(404, "API key not found");
+    if (!existing || existing.project_id !== project_id)
+      throw new MockApiError(404, "API key not found");
 
     return {
       data: {
@@ -556,11 +579,10 @@ export const tenantManagementMockApi = {
     await delay(150);
     const store = loadStore();
     const project = store.projects[project_id];
-    if (!project || project.tenant_id !== tenant_id) throw new MockApiError(404, "Project not found");
+    if (!project || project.tenant_id !== tenant_id)
+      throw new MockApiError(404, "Project not found");
     const keyId = store.apiKeyByProject[project_id];
     if (!keyId) return null;
     return store.apiKeys[keyId] || null;
   },
 };
-
-

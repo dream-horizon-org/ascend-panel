@@ -33,7 +33,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       // Restore from localStorage using project_key (source of truth)
       if (storedProjectKey) {
         projectToSelect = projects.find(
-          (p) => p.project_key === storedProjectKey
+          (p) => p.project_key === storedProjectKey,
         );
       }
 
@@ -66,11 +66,11 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     if (selectedProject) {
       localStorage.setItem(
         STORAGE_KEYS.PROJECT_KEY,
-        selectedProject.project_key
+        selectedProject.project_key,
       );
       localStorage.setItem(
         STORAGE_KEYS.PROJECT_API_KEY,
-        selectedProject.api_key ?? ""
+        selectedProject.api_key ?? "",
       );
     }
   }, [selectedProject]);

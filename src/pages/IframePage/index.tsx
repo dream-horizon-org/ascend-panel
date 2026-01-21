@@ -11,14 +11,13 @@ export default function IframePage() {
   const navigate = useNavigate();
   const { selectedProject } = useProject();
 
-  const iframeOrigin = useMemo(
-    () => new URL(IFRAME_BASE_URL).origin,
-    []
-  );
+  const iframeOrigin = useMemo(() => new URL(IFRAME_BASE_URL).origin, []);
 
   // Build iframe URL with API key as parameter
   const iframeUrl = useMemo(() => {
-    const apiKey = selectedProject?.api_key || localStorage.getItem(STORAGE_KEYS.PROJECT_API_KEY);
+    const apiKey =
+      selectedProject?.api_key ||
+      localStorage.getItem(STORAGE_KEYS.PROJECT_API_KEY);
     if (apiKey) {
       return `${IFRAME_BASE_URL}?apiKey=${encodeURIComponent(apiKey)}`;
     }
@@ -29,7 +28,7 @@ export default function IframePage() {
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== iframeOrigin) return;
-      
+
       if (event.data?.type === "ROUTE_CHANGE") {
         const newPath = `/audience${event.data.path}`;
 
