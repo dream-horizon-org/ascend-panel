@@ -3,11 +3,12 @@ import { Tabs, Tab, Box, Typography, Menu, MenuItem } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate, useLocation } from "react-router";
 import ScienceIcon from "@mui/icons-material/Science";
+import PeopleIcon from "@mui/icons-material/People";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useProject } from "../../context/ProjectContext";
 import { tenantManagementApi } from "../../network/tenantManagement/api";
 
-const tabRoutes = ["/", "/settings"];
+const tabRoutes = ["/", "/audience", "/settings"];
 
 function getProjectInitials(name: string): string {
   const words = name.trim().split(/\s+/);
@@ -15,24 +16,6 @@ function getProjectInitials(name: string): string {
     return (words[0][0] + words[1][0]).toUpperCase();
   }
   return name.substring(0, 2).toUpperCase();
-}
-
-function getProjectColor(name: string): string {
-  const colors = [
-    "#4ECDC4", // Teal
-    "#FF6B6B", // Red
-    "#45B7D1", // Blue
-    "#FFA07A", // Light Salmon
-    "#98D8C8", // Mint
-    "#F7DC6F", // Yellow
-    "#BB8FCE", // Purple
-    "#85C1E2", // Sky Blue
-  ];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
 }
 
 export default function SideNavTabs() {
@@ -46,7 +29,8 @@ export default function SideNavTabs() {
 
   // Determine active tab based on current path
   const getActiveTab = () => {
-    if (location.pathname === "/settings") return 1;
+    if (location.pathname.startsWith("/audience")) return 1;
+    if (location.pathname === "/settings") return 2;
     return 0;
   };
 
@@ -131,7 +115,7 @@ export default function SideNavTabs() {
               width: "48px",
               height: "48px",
               borderRadius: "6px",
-              backgroundColor: getProjectColor(selectedProject.name),
+              backgroundColor: "#0060e5",
               "&:hover": {
                 opacity: 0.9,
               },
@@ -152,7 +136,7 @@ export default function SideNavTabs() {
                 sx={{
                   fontSize: "12px",
                   fontWeight: 600,
-                  color: getProjectColor(selectedProject.name),
+                  color: "#0060e5",
                 }}
               >
                 {getProjectInitials(selectedProject.name)}
@@ -215,7 +199,7 @@ export default function SideNavTabs() {
               const isSelected =
                 selectedProject?.project_id === project.project_id;
               const initials = getProjectInitials(project.name);
-              const color = getProjectColor(project.name);
+              const color = "#0060e5";
               return (
                 <MenuItem
                   key={project.project_id}
@@ -229,31 +213,10 @@ export default function SideNavTabs() {
                     paddingY: 1.5,
                   }}
                 >
-                  <Box
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "6px",
-                      backgroundColor: color,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        color: "#FFFFFF",
-                      }}
-                    >
-                      {initials}
-                    </Typography>
-                  </Box>
                   <Typography
                     sx={{
                       fontSize: "14px",
+                      marginLeft: "10px",
                       fontWeight: isSelected ? 600 : 400,
                       color: isSelected ? theme.palette.primary.main : "#333",
                       flex: 1,
@@ -323,6 +286,7 @@ export default function SideNavTabs() {
         }}
       >
         <Tab icon={<ScienceIcon />} aria-label="experiments" />
+        <Tab icon={<PeopleIcon />} aria-label="audience" />
         <Tab icon={<SettingsIcon />} aria-label="settings" />
       </Tabs>
     </Box>
